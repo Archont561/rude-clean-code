@@ -74,6 +74,10 @@ explicitly in the pull request.
 ## Pull requests
 
 Use [Conventional Commits](https://www.conventionalcommits.org/) for
-commit messages, such as `fix: handle missing input`. Explain the change,
-tests, and any limitations in the pull request. State the documentation
-impact: which documents you updated, or why none were needed.
+commit messages, such as `fix: handle missing input`. The pull request
+template ([.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md))
+is pre-filled with the checklist; follow it. Open bugs and feature
+suggestions through the issue forms in [.github/ISSUE_TEMPLATE/](.github/ISSUE_TEMPLATE/)
+(blank issues are disabled). Explain the change, tests, and any
+limitations in the pull request. State the documentation impact: which
+documents you updated, or why none were needed.
