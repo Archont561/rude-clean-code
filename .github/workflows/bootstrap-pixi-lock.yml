@@ -1,5 +1,6 @@
 # Temporary: generate pixi.lock on a networked runner (conda-forge is not
-# reachable from the authoring sandbox). Removed once the lockfile is committed.
+# reachable from the authoring sandbox). Commits the lockfile back to this
+# branch. Removed once the lockfile lands.
 name: Bootstrap pixi.lock
 
 on:
@@ -10,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: bootstrap-pixi-lock-${{ github.ref }}
@@ -18,22 +19,22 @@ concurrency:
 
 jobs:
   lock:
-    name: Generate pixi.lock
+    name: Generate and commit pixi.lock
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
       - uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94 # v0.11.2
         with:
           pixi-version: v0.83.0
           run-install: false
           cache: false
       - run: pixi lock
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: pixi-lock
-          path: pixi.lock
-          if-no-files-found: error
-          retention-days: 7
+      - name: Commit pixi.lock
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pixi.lock
+          git commit -m "chore: add pixi lockfile" -m "Generated with pixi v0.83.0 via the temporary bootstrap workflow (conda-forge is unreachable from the authoring environment)."
+          git push origin HEAD:arena/e2fe3e61-rude-clean-code
