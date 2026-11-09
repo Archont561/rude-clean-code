@@ -79,6 +79,32 @@ jobs:
           COMMIT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           COMMIT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
 
+  compat:
+    name: Python compatibility
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { python: '3.11', toxenv: py311 }
+          - { python: '3.12', toxenv: py312 }
+          - { python: '3.13', toxenv: py313 }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
+        with:
+          pixi-version: v0.83.0
+          locked: true
+          cache: true
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          # tox discovers interpreters on PATH; setup-python guarantees the
+          # interpreter matching this leg of the matrix.
+          python-version: ${{ matrix.python }}
+      - run: pixi run --locked tox -e ${{ matrix.toxenv }}
+
   docs:
     name: Documentation
     runs-on: ubuntu-24.04

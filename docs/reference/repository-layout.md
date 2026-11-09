@@ -22,6 +22,7 @@ What lives where, and the invariants the layout enforces. Invariants marked
 | `package.json`, `bun.lock`     | tooling     | Developer CLIs (backlog.md, markdownlint-cli2, skills)          |
 | `lefthook.yml`                 | hooks       | pre-commit / commit-msg / pre-push hooks                        |
 | `ruff.toml`, `mypy.ini`, `.coveragerc`, `.versionrc` | config | Lint, types, coverage, Conventional Commits    |
+| `tox.ini`                       | config      | Committed tox matrix (py311–py313) run by CI    |
 | `.alint.yml`                   | policy      | Repository structure rules (`alint check`)                      |
 | `.vale.ini`                    | prose       | Vale configuration                                              |
 | `codecov.yml`, `skills-lock.json`, `.gitignore`      | misc   | Upload policy, skills pinning, ignores                         |
