@@ -9,27 +9,20 @@ finished.
 ## Set up
 
 The locked Pixi workspace targets Linux x86-64 (`linux-64`). Install
-Pixi, clone the repository, and run:
+Pixi (or restore the published sandbox), then:
 
 ```sh
 pixi install --locked
 pixi run --locked install-projects
 ```
 
-The local project is not an editable Pixi dependency. Package test and
-coverage tasks install it without build isolation and test the current
-source. Re-run `install-projects` after changing package metadata.
-Default-environment activation adds `src` directories belonging to
-tracked or unignored `pyproject.toml` files to `PYTHONPATH`. Run
-`pixi run install-hooks` to check and install the hooks defined in
-`lefthook.yml` (agents must do this at session start).
-
-If Pixi itself is missing, restore the published developer sandbox
-instead of installing tools by hand: `sh scripts/restore.sh` restores
-the locked `default` environment from the `sandbox/developer-linux-64`
-branch (plan: `pixi-sandbox.toml`; publisher:
-`.github/workflows/pixi-sandbox.yml`) and registers `pixi` as a user
-tool under `$HOME/.local/bin`.
+The full walkthrough — restoring the published developer sandbox with
+`scripts/restore.sh`, finishing the PyPI install, installing hooks, and
+troubleshooting — lives in the
+[development setup guide](docs/guides/development-setup.md). The local
+project is not an editable Pixi dependency; re-run `install-projects` after
+changing package metadata. Run `pixi run install-hooks` at the start of every
+session.
 
 ## Make a change
 
@@ -55,18 +48,32 @@ pixi run --locked typecheck
 pixi run --locked check-packages
 pixi run --locked audit
 pixi run --locked lint-prose
+pixi run --locked docs-lint
 pixi run --locked alint
 pixi run --locked actionlint
 pixi run --locked test
 pixi run --locked coverage
 ```
 
+CI additionally checks links in the maintained markdown with lychee. See
+[running the checks](docs/guides/running-the-checks.md) for what each
+check covers and where its configuration lives.
+
 The coverage configuration (`.coveragerc`) requires at least 91% total
 line coverage of the package source tree. For a focused run, use
 `pixi run --locked test`.
+
+## Documentation
+
+Documentation is part of the product. User-visible changes must update the
+canonical documents under [`docs/`](docs/README.md), and the documentation
+standard in [docs/development/documentation.md](docs/development/documentation.md)
+defines what "done" means. If no documentation change is necessary, say so
+explicitly in the pull request.
 
 ## Pull requests
 
 Use [Conventional Commits](https://www.conventionalcommits.org/) for
 commit messages, such as `fix: handle missing input`. Explain the change,
-tests, and any limitations in the pull request.
+tests, and any limitations in the pull request. State the documentation
+impact: which documents you updated, or why none were needed.
