@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/Archont561/rude-clean-code#readme
+    about: Read the README and the docs/ knowledge layer before filing an issue.
+  - name: Contributing guide
+    url: https://github.com/Archont561/rude-clean-code/blob/main/CONTRIBUTING.md
+    about: How to propose work, run the checks, and send a pull request.

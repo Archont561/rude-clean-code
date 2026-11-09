@@ -1,0 +1,51 @@
+name: Bug Report
+description: Something in the tooling, checks, or packaging behaves incorrectly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. The fastest route to a fix is a
+        deterministic reproduction; please include the commands and output.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: The released version or the commit SHA you ran.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you expected, and what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `pixi run --locked ...`
+        2. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        - OS and version:
+        - pixi --version:
+        - python --version (locked env):
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant output. Redact any secrets.
+      render: shell
+    validations:
+      required: false

@@ -23,8 +23,8 @@ directories of tracked or unignored `pyproject.toml` projects to
 | `audit`            | `pip-audit --local --skip-editable`                                 | Dependency vulnerability scan (not part of CI)       |
 | `check-packages`   | `python scripts/check_packages.py`                                  | Build wheel + sdist, `twine check`, wheel contents   |
 | `alint`            | `alint check`                                                       | Repository structure rules from `.alint.yml`         |
-| `lint-prose`       | `vale --no-global README.md AGENTS.md CONTRIBUTING.md CHANGELOG.md backlog packages/*/README.md docs` | Vale prose lint; `docs/` and root guides           |
-| `docs-lint`        | `bun x --bun --no-install markdownlint-cli2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' 'docs/**/*.md' 'packages/*/README.md'` | markdownlint-cli2 over maintained markdown (config: `.markdownlint-cli2.jsonc`) |
+| `lint-prose`       | `vale --no-global README.md AGENTS.md CONTRIBUTING.md CHANGELOG.md .github/PULL_REQUEST_TEMPLATE.md backlog packages/*/README.md docs` | Vale prose lint; `docs/`, the PR template, and root guides |
+| `docs-lint`        | `bun x --bun --no-install markdownlint-cli2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' '.github/PULL_REQUEST_TEMPLATE.md' 'docs/**/*.md' 'packages/*/README.md'` | markdownlint-cli2 over maintained markdown (config: `.markdownlint-cli2.jsonc`) |
 | `actionlint`       | `actionlint .github/workflows/*.yml`                                | GitHub Actions workflow lint                        |
 | `install-hooks`    | `sh scripts/install_hooks.sh`                                       | Install (or validate) lefthook hooks                |
 | `hooks-install`    | Alias for `install-hooks`                                           | Backwards compatibility                              |
