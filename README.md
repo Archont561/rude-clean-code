@@ -26,7 +26,7 @@ working on this repository:
 - [Running the checks](docs/guides/running-the-checks.md) — the CI suite locally
 - [Python version compatibility](docs/guides/python-version-compatibility.md) — testing against 3.11–3.13 with tox (local and CI)
 - [Releasing to PyPI](docs/guides/releasing.md) — tag-triggered release workflow with trusted publishing
-- [Pixi tasks](docs/reference/pixi-tasks.md) — the locked task catalogue
+- [Pixi and doit tasks](docs/reference/pixi-tasks.md) — the locked task catalogue
 - [Repository layout](docs/reference/repository-layout.md) — what lives where and why
 - [Version-only scaffold](docs/concepts/version-only-scaffold.md) — why the package exposes only `VERSION`
 - [Architecture overview](docs/architecture/overview.md) — components and how they fit together
@@ -46,7 +46,7 @@ pixi install --locked
 ## Usage
 
 ```sh
-pixi run --locked test
+pixi run --locked doit test
 ```
 
 To inspect the installed version (read from distribution metadata):
@@ -60,7 +60,7 @@ print(VERSION)
 ## Run tests
 
 ```sh
-pixi run --locked test
+pixi run --locked doit test
 ```
 
 ## Author

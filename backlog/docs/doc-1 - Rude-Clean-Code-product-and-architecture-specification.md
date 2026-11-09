@@ -2,14 +2,13 @@
 id: doc-1
 title: Rude Clean Code product and architecture specification
 type: specification
-created_date: '2026-11-08 18:30'
-updated_date: '2026-11-08 18:30'
+created_date: 2026-11-08 18:30
+updated_date: '2026-11-09T23:06:00Z'
 tags:
   - specification
   - architecture
   - product
 ---
-
 ## Status and purpose
 
 **Design specification, not an implementation claim.** This document
@@ -35,13 +34,17 @@ Codes follow decision-5 (`CC` + family digit + two digits). Severity
 follows the classification in §4. This table is the summary; the full
 proposed catalogue with per-rule detection contracts, configuration
 options, scope limits, and false-positive notes is **doc-2 (Proposed
-rule catalogue and detection contracts)** and includes families only
-summarised here (CC4xx naming details, CC5xx DRY variants, CC6xx SOLID
-indicators beyond CC601/CC602, and the config-driven CC8xx
-design-pattern boundary rules).
+rule catalogue and detection contracts)** and includes families and rules
+only summarised here (`CC0xx` module and package organization, `CC105`–`CC108`
+parameter and dead-helper checks, `CC204`–`CC207` class coupling and base
+counts, `CC304`–`CC311` readability and fail-fast rules, `CC4xx` naming
+details, `CC5xx` DRY variants, `CC6xx` SOLID and Demeter indicators,
+`CC8xx` design-pattern boundaries, and `CC9xx` comment, suppression, and
+docstring accuracy rules).
 
 | Code | Rule | Detection |
 | --- | --- | --- |
+| CC001–CC005 | Module organization, `__init__.py` facades, and `__all__` | Line count, AST top-level exports, relative imports |
 | CC101 | Function too long | Line count |
 | CC102 | Too many parameters | Signature |
 | CC103 | Too many return statements | AST, own scope |
@@ -52,14 +55,16 @@ design-pattern boundary rules).
 | CC301 | Excessive nesting | AST depth, own scope |
 | CC302 | Excessive boolean operands | Boolean expression analysis |
 | CC303 | Excessive branching | Branch count (distinct from Rude's C901) |
+| CC306–CC311 | Readability, `global` state, and fail-fast error handling | AST expressions, `except`/`raise`/`try` structure |
 | CC401 | Unclear naming | Naming heuristics |
 | CC501 | Duplicate function bodies | AST similarity (same file first, §5) |
 | CC502 | Duplicate code blocks | Subtree similarity (project-wide, §5) |
 | CC601 | Repeated type-switch dispatch | `isinstance`/conditional analysis |
 | CC602 | Suspicious overridden methods (LSP indicators) | Inheritance analysis |
+| CC604–CC605 | Law of Demeter and private member access | Attribute/call chains and `_attr` receivers |
 | CC701 | Forbidden concrete imports in domain code | Config-driven import analysis |
 | CC801–CC805 | Design-pattern boundaries (repository, factory, strategy, decorator, DI) | Config-driven; see doc-2 |
-| CC901–CC904 | Documentation and comments (docstrings, commented-out code, TODO references, noise comments) | AST and comment analysis; see doc-2 |
+| CC901–CC910 | Documentation, `TODO` markers, suppressions, and comment accuracy | AST, docstring sections, and comment analysis; see doc-2 |
 
 Every diagnostic message must carry the measured value, the configured
 limit, and a suggested action; the long "why" lives in the rule docstring
@@ -110,13 +115,18 @@ extraction-style fix qualifies.
 
 ## 6. Phasing
 
-1. Deterministic core: CC101–CC104, CC201–CC202, CC301–CC302.
-2. Heuristics in-file: CC401, CC501 (same file), CC601.
-3. Config-driven architecture: CC701, then the CC8xx design-pattern
-   boundary rules (doc-2); profiles published as snippets.
-4. Project-wide analysis when Rude permits it (§5): CC203, CC502,
-   circular dependencies.
-5. Safe autofixes only, per §5.
+1. Deterministic core: CC101–CC104, CC201–CC202, CC301–CC303.
+2. In-file heuristics, module organization, and fail-fast extensions:
+   CC001–CC005, CC107, CC207, CC306, CC308–CC311, CC401–CC403, CC501
+   (same file), CC601.
+3. Config-driven architecture: CC701–CC702, CC704, then the CC8xx
+   design-pattern boundary rules (doc-2); profiles published as snippets.
+4. Maturing heuristics and documentation/comment rules: CC105–CC106,
+   CC108, CC204–CC206, CC304–CC305, CC307, CC503–CC504, CC602–CC605,
+   CC901–CC910.
+5. Project-wide analysis when Rude permits it (§5): CC203, CC502,
+   CC703, circular dependencies.
+6. Safe autofixes only, per §5.
 
 Per-rule implementation order and acceptance detail: doc-2,
 "Implementation order".

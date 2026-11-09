@@ -14,6 +14,6 @@ issue or backlog task if there is one. -->
 ## Checklist
 
 - [ ] Commits are Conventional Commits (the `Policy` job checks with `convco`)
-- [ ] `pixi run --locked test` passes
+- [ ] `pixi run --locked doit test` passes
 - [ ] Documentation impact stated: which canonical docs under `docs/` were updated, or why none were needed
-- [ ] `pixi run --locked lint-prose`, `docs-lint`, and `alint` pass when applicable
+- [ ] `pixi run --locked doit lint-prose`, `docs-lint`, and `alint` pass when applicable

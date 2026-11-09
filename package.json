@@ -21,11 +21,11 @@
     "skills": "1.7.6"
   },
   "scripts": {
-    "build": "pixi run --locked check-packages",
-    "test": "pixi run --locked test",
-    "coverage": "pixi run --locked coverage",
-    "lint": "pixi run --locked lint",
-    "format": "pixi run --locked format-check",
-    "typecheck": "pixi run --locked typecheck"
+    "build": "pixi run --locked doit check-packages",
+    "test": "pixi run --locked doit test",
+    "coverage": "pixi run --locked doit coverage",
+    "lint": "pixi run --locked doit lint",
+    "format": "pixi run --locked doit format-check",
+    "typecheck": "pixi run --locked doit typecheck"
   }
 }

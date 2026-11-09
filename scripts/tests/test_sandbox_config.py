@@ -1,11 +1,20 @@
 """Guard the published, wheel-only developer sandbox."""
 
+import importlib.util
 import re
-import shlex
 import tomllib
 from pathlib import Path
+from types import ModuleType
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def _load_dodo() -> ModuleType:
+    spec = importlib.util.spec_from_file_location("dodo", ROOT / "dodo.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_published_bundle_matches_workflow_and_uses_wheels():
@@ -47,12 +56,16 @@ def test_package_tests_install_local_projects_without_editable_lock_entries():
     dependencies = manifest["pypi-dependencies"]
     assert "rude-clean-code" not in dependencies
     assert "hatchling" in dependencies
-    tasks = manifest["tasks"]
-    install = tasks["install-projects"]
-    assert "--no-build-isolation" in install
-    assert "--no-deps" in install
-    assert shlex.split(install)[-1] == "."
-    for name in ("test", "coverage"):
-        assert "install-projects" in tasks[name]["depends-on"]
-        assert "PYTHONPATH=" not in tasks[name]["cmd"]
+    assert "doit" in dependencies
     assert "scripts/activate.py" in manifest["activation"]["env"]["PYTHONPATH"]
+
+    dodo = _load_dodo()
+    install_cmd = dodo.task_install_projects()["actions"][0]
+    assert "--no-build-isolation" in install_cmd
+    assert "--no-deps" in install_cmd
+    assert install_cmd[-1] == "."
+    for task_fn in (dodo.task_test, dodo.task_coverage):
+        task = task_fn()
+        assert "install-projects" in task["task_dep"]
+        for action in task["actions"]:
+            assert not any("PYTHONPATH=" in part for part in action)

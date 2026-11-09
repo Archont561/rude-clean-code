@@ -45,21 +45,22 @@ pixi install --frozen
 Then install the local package and run the test suite:
 
 ```sh
-pixi run --locked install-projects
-pixi run --locked test
+pixi run --locked doit install-projects
+pixi run --locked doit test
 ```
 
 ## Install the git hooks
 
 ```sh
-pixi run install-hooks
+pixi run --locked doit install-hooks
 ```
 
 This installs (or validates) the lefthook hooks defined in
-[`lefthook.yml`](../../lefthook.yml): pre-commit runs lint, format-check,
-typecheck, lint-prose, alint and actionlint; commit-msg validates
-Conventional Commits with convco; pre-push runs the tests. Hooks use the
-same locked Pixi tasks as CI — do not bypass them; report failures.
+[`lefthook.yml`](../../lefthook.yml): pre-commit runs the `pre-commit`
+doit task (lint, format-check, typecheck, lint-prose, alint, actionlint,
+and docs-lint); commit-msg validates Conventional Commits with convco;
+pre-push runs the tests. Hooks use the same locked doit tasks as CI — do
+not bypass them; report failures.
 
 ## Verify the setup
 
@@ -67,9 +68,9 @@ Run the same commands CI runs (see
 [running the checks](running-the-checks.md)):
 
 ```sh
-pixi run --locked lint
-pixi run --locked test
-pixi run --locked alint
+pixi run --locked doit lint
+pixi run --locked doit test
+pixi run --locked doit alint
 ```
 
 ## How the setup works
@@ -78,10 +79,10 @@ The default environment's activation script
 ([`scripts/activate.py`](../../scripts/activate.py)) prepends the `src/`
 directories of local, tracked (or unignored) `pyproject.toml` projects to
 `PYTHONPATH`, so `import rude_clean_code` resolves to the current source
-without an editable install. `pixi run --locked install-projects` installs
-the wheel without build isolation so `VERSION` reads the right distribution
-metadata. The local project is never an editable Pixi dependency: re-run
-`install-projects` after changing package metadata
+without an editable install. `pixi run --locked doit install-projects`
+installs the wheel without build isolation so `VERSION` reads the right
+distribution metadata. The local project is never an editable Pixi
+dependency: re-run `doit install-projects` after changing package metadata
 ([decision-2](../../backlog/decisions/decision-2%20-%20Expose-only-VERSION-from-package-initializers.md)).
 
 ## Troubleshooting

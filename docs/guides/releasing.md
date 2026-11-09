@@ -13,8 +13,8 @@ and the workflow's publish job requests its OIDC token.
 Two jobs, in order:
 
 1. **Build and check distributions** (`build`): checks out the tag, sets up
-   the locked Pixi environment, and runs
-   [scripts/build-release.sh](../../scripts/build-release.sh). That script
+   the locked Pixi environment, and runs the `build-release` task in
+   [`dodo.py`](../../dodo.py). That task
    - verifies that the tag (sans a leading `v`) matches the `version` in
      `pyproject.toml` — a mismatch fails the job
      before anything can be uploaded;
@@ -45,12 +45,12 @@ Two jobs, in order:
 ## Dry-running the build locally
 
 ```sh
-pixi run --locked scripts/build-release.sh
+pixi run --locked doit build-release
 ```
 
 This performs the same build and `twine check`, writing distributions to
 `dist/` (gitignored) without uploading anything. Outside CI it skips the
-tag check, which only applies when `GITHUB_REF_NAME` is set.
+tag check, which only applies when `GITHUB_REF_NAME` (or `--ref`) is set.
 
 ## What is not automated
 
@@ -67,6 +67,6 @@ tag check, which only applies when `GITHUB_REF_NAME` is set.
 Pull requests that change the workflow are covered by actionlint and by a
 commit-message check (Policy job), and the workflow path is covered by
 alint: `release.yml` must exist, and every `run:` step in `ci.yml` and
-`release.yml` must be a single line — shell logic belongs in `scripts/`
-where it can be read and tested, which is why the build itself lives in
-`scripts/build-release.sh`.
+`release.yml` must be a single line — automation logic belongs in
+[`dodo.py`](../../dodo.py) where it can be read and tested, which is why
+the build itself lives in `build_release()` inside `dodo.py`.

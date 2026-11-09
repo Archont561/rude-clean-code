@@ -2,11 +2,15 @@
 
 The checks below are the same commands CI runs. If they pass locally they
 pass in CI ([`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)).
-Run them through the locked environment:
+Run them through the locked `doit` runner in [`dodo.py`](../../dodo.py):
 
 ```sh
-pixi run --locked <task>
+pixi run --locked doit <task>
 ```
+
+Running `pixi run --locked doit` (or `pixi run --locked doit ci`) executes
+the full local CI sweep (`policy`, `docs-lint`, `test-scripts`, and
+`coverage`).
 
 ## The CI suite
 
@@ -17,7 +21,7 @@ workflow runs separately on changes to the Pixi manifests (see
 ### `Package tests`
 
 ```sh
-pixi run --locked coverage
+pixi run --locked doit coverage
 ```
 
 Installs the local package and runs the BDD tests under
@@ -27,18 +31,20 @@ total line coverage (`fail_under`); the current suite sits at 100%.
 ### `Policy`
 
 ```sh
-pixi run --locked lint           # ruff check .
-pixi run --locked format-check   # ruff format --check .
-pixi run --locked typecheck      # mypy src
-pixi run --locked check-packages # build wheels/sdists, twine check, wheel inspection
-pixi run --locked lint-prose     # vale --no-global README.md AGENTS.md ... docs
-pixi run --locked alint          # repository structure rules (.alint.yml)
-pixi run --locked actionlint     # workflow syntax and semantics
+pixi run --locked doit lint           # ruff check .
+pixi run --locked doit format-check   # ruff format --check .
+pixi run --locked doit typecheck      # mypy src
+pixi run --locked doit check-packages # build wheels/sdists, twine check, wheel inspection
+pixi run --locked doit lint-prose     # vale --no-global README.md AGENTS.md ... docs
+pixi run --locked doit alint          # repository structure rules (.alint.yml)
+pixi run --locked doit actionlint     # workflow syntax and semantics
 ```
 
+You can run those checks together locally with `pixi run --locked doit policy`.
 The same job validates that every incoming commit message is a valid
-Conventional Commit (`convco check`). Commits that do not parse cannot be
-merged; see `.versionrc` for the configured types and scope regex.
+Conventional Commit (`pixi run --locked doit check-commit-messages`).
+Commits that do not parse cannot be merged; see `.versionrc` for the
+configured types and scope regex.
 
 ### `Python compatibility`
 
@@ -53,14 +59,14 @@ Python version, from the committed `tox.ini`. See
 ### `Documentation`
 
 ```sh
-bun install --frozen-lockfile    # or: pixi run --locked bun-install
+bun install --frozen-lockfile    # or: pixi run --locked doit bun-install
 bun x --bun --no-install markdownlint-cli2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' '.github/PULL_REQUEST_TEMPLATE.md' 'docs/**/*.md'
 ```
 
 The `docs-lint` task wraps this:
 
 ```sh
-pixi run --locked docs-lint
+pixi run --locked doit docs-lint
 ```
 
 It lints the maintained markdown surface with markdownlint-cli2 (rule
@@ -72,15 +78,15 @@ scope: backlog files are immutable records and skills are owned upstream.
 
 Vale prose lint and alint enforce the documentation standard's style and
 repository conventions; see [the documentation standard](../development/documentation.md)
-and [the Pixi task reference](../reference/pixi-tasks.md) for the full
+and [the task reference](../reference/pixi-tasks.md) for the full
 catalogue.
 
 ## Auxiliary checks
 
 ```sh
-pixi run --locked test          # package tests without coverage
-pixi run --locked test-scripts  # tests for the repository scripts (scripts/tests/)
-pixi run --locked audit         # pip-audit --local --skip-editable
+pixi run --locked doit test          # package tests without coverage
+pixi run --locked doit test-scripts  # automation and script tests (scripts/tests/)
+pixi run --locked doit audit         # pip-audit --local --skip-editable
 ```
 
 `audit` is not part of CI (it queries PyPI advisories over the network) but
@@ -88,9 +94,10 @@ should be run before releases.
 
 ## Hooks
 
-`pixi run install-hooks` installs the lefthook hooks that map onto the same
-tasks: pre-commit runs lint, format-check, typecheck, lint-prose, alint,
-actionlint and docs-lint; commit-msg runs convco, pre-push runs the tests.
+`pixi run --locked doit install-hooks` installs the lefthook hooks that map
+onto the same tasks: pre-commit runs `doit pre-commit` (lint, format-check,
+typecheck, lint-prose, alint, actionlint, and docs-lint); commit-msg runs
+`doit lint-commit`; pre-push runs `doit test`.
 
 ## When something fails
 

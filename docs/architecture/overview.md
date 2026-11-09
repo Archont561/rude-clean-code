@@ -13,7 +13,7 @@ this page describes the repository as built.
                         pyproject.toml (version is the source of truth)
                                    │
                                    ▼  hatchling build
-                      wheel + sdist (scripts/check_packages.py)
+                      wheel + sdist (dodo.py check-packages)
                                    │
                                    ▼  pip install --no-deps --no-build-isolation
                     installed dist-info METADATA (no editable install)
@@ -33,16 +33,18 @@ this page describes the repository as built.
   time. Its BDD contract lives in `features/package_version.feature` and its
   steps in `tests/`; the tests inspect a fresh interpreter to avoid leakage
   from earlier imports.
-- **Repository scripts** (`scripts/`) are tooling, not product code: the
-  activation helper (`activate.py` — puts local `src/` directories on
-  `PYTHONPATH`), the package builder/validator (`check_packages.py`), the
-  sandbox restore (`restore.sh`), and the hook installer
-  (`install_hooks.sh`). Their tests live in `scripts/tests/`.
+- **Task automation and scripts** (`dodo.py` and `scripts/`) are tooling,
+  not product code: [`dodo.py`](../../dodo.py) implements the unified `doit`
+  tasks (test, coverage, lint, package validation, release build, commit
+  message checking, and hook installation), while `scripts/` holds the
+  pre-Pixi sandbox restore (`restore.sh`) and Pixi activation helper
+  (`activate.py` — puts local `src/` directories on `PYTHONPATH`). Their
+  tests live in `scripts/tests/`.
 - **The locked workspace** (`pixi.toml` / `pixi.lock`) pins every tool used
-  locally and in CI: Python and the lint/test/coverage stack from PyPI, the
-  CLI tools (lefthook, bun, convco, actionlint, vale, shellcheck) from
-  conda-forge. `bun.lock` pins the Bun-side CLIs (backlog.md,
-  markdownlint-cli2, skills).
+  locally and in CI: Python and the lint/test/coverage/automation stack
+  (including `doit`) from PyPI, the CLI tools (lefthook, bun, convco,
+  actionlint, vale, shellcheck) from conda-forge. `bun.lock` pins the
+  Bun-side CLIs (backlog.md, markdownlint-cli2, skills).
 - **CI** (`.github/workflows/ci.yml`) runs on every push and pull
   request: `Package tests` (coverage, with a 91% line gate from
   `.coveragerc`), `Policy` (lint, format-check, typecheck, check-packages,
@@ -52,7 +54,7 @@ this page describes the repository as built.
   (3.11/3.12/3.13, `tox` via the committed `tox.ini`).
 - **The backlog** (`backlog/`) is the planning source of truth: the product
   specification (doc-1), the proposed rule catalogue (doc-2), decisions
-  (1-5), milestones (m-0..m-5) and tasks (RCC-1..RCC-8). It exists so
+  (1-5), milestones (m-0..m-5) and tasks (RCC-1..RCC-12). It exists so
   proposed work can be traced to decisions instead of improvised.
 
 ## The developer sandbox pipeline

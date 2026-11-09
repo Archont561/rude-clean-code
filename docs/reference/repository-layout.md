@@ -9,9 +9,10 @@ What lives where, and the invariants the layout enforces. Invariants marked
 | Entry                          | Kind        | Purpose                                                        |
 | ------------------------------ | ----------- | -------------------------------------------------------------- |
 | `pyproject.toml`, `src/`, `features/`, `tests/` | package | The only distribution: `rude-clean-code` (VERSION-only scaffold), at the repository root |
-| `scripts/`                     | scripts     | Repository automation (activation, release build, commit-message check, sandbox restore) |
-| `scripts/tests/`               | tests       | Tests for the repository scripts                                |
-| `backlog/`                     | workspace   | Backlog.md records: spec, decisions 1-5, milestones m-0..m-5, tasks RCC-1..RCC-8 |
+| `dodo.py`                      | automation  | Unified `doit` task definitions (checks, tests, packaging, hooks, release, commit checks) |
+| `scripts/`                     | scripts     | Pre-Pixi sandbox restore (`restore.sh`) and Pixi environment activation (`activate.py`) |
+| `scripts/tests/`               | tests       | Tests for `dodo.py` automation and repository sandbox configuration |
+| `backlog/`                     | workspace   | Backlog.md records: spec, decisions 1-5, milestones m-0..m-5, tasks RCC-1..RCC-12 |
 | `docs/`                        | docs        | This documentation layer (see [`docs/README.md`](../README.md))  |
 | `.agents/skills/`              | vendored    | Upstream agent skills (TDD, BDD, refactor, clean-code)         |
 | `.github/`                     | community   | `workflows/` (ci.yml, pixi-sandbox.yml, release.yml), `ISSUE_TEMPLATE/` (bug report, feature request, config), `PULL_REQUEST_TEMPLATE.md`, `dependabot.yml` |
@@ -45,7 +46,8 @@ What lives where, and the invariants the layout enforces. Invariants marked
   (decision-2). No other modules, no other exports, no lint rules yet
   (decision-4).
 - Package behavior, tests, and Gherkin features live in the root package
-  (decision-3). Repository scripts live in root `scripts/` with tests in
+  (decision-3). Unified automation tasks live in `dodo.py`, pre-Pixi/activation
+  scripts live in root `scripts/`, and automation/script tests live in
   `scripts/tests/`.
 
 ## The workflows

@@ -23,8 +23,9 @@ unavailable, report the blocker rather than claiming setup succeeded or
 improvising a venv; this workspace's environment of record is
 `pixi.toml` / `pixi.lock`.
 
-Once Pixi is available, run `pixi run install-hooks` at the start of
-every session. Do not bypass a failed installation; report the error.
+Once Pixi is available, run `pixi run --locked doit install-hooks` at the
+start of every session. Do not bypass a failed installation; report the
+error.
 
 ## Start each session with a backlog survey
 
@@ -61,24 +62,27 @@ mark unfinished or unverified work complete.
 - Keep product features and tests in the package that owns the behavior
   (decision-3): the package lives at the repository root
   (`{src,features,tests}` and `pyproject.toml`).
-  Repository scripts live under root `scripts/`, with their tests under
-  `scripts/tests/`.
+  Unified repository automation tasks live in `dodo.py` (`doit`); pre-Pixi
+  bootstrap and Pixi environment activation scripts live under root
+  `scripts/`, with automation and script tests under `scripts/tests/`.
 - For user-visible features, write a Gherkin scenario and a failing test
   in the owning package before implementation when practical.
 - The environment of record is the locked Pixi workspace:
-  `pixi install --locked`, then `pixi run --locked <task>`. The root
-  `package.json` is the private developer-tooling manifest (the
-  `agents-md` tool reads it); installing or running there only
-  fronts the developer CLIs, it does not provision the product environment.
-- Run all checks through `pixi run --locked ...`; they are the same
+  `pixi install --locked`, then `pixi run --locked doit <task>` (or
+  `pixi run --locked do <task>`; developer CLIs such as `backlog`, `skills`,
+  and `agents-md` also remain direct Pixi tasks). The root `package.json` is
+  the private developer-tooling manifest (the `agents-md` tool reads it);
+  installing or running there only fronts the developer CLIs, it does not
+  provision the product environment.
+- Run all checks through `pixi run --locked doit ...`; they are the same
   commands CI runs. Report anything unimplemented or unverified.
 - Commits are Conventional Commits (convco, `.versionrc`). Changelogs are
   generated from commit history; never hand-edit them.
 - Documentation is part of the product: user-visible changes must update the
   canonical documents under `docs/` (see
   [docs/development/documentation.md](docs/development/documentation.md));
-  run `pixi run --locked lint-prose` and `pixi run --locked docs-lint`
-  before pushing.
+  run `pixi run --locked doit lint-prose` and
+  `pixi run --locked doit docs-lint` before pushing.
 - AGENTS.md follows the agents-md marker contract (see
   [How this file is maintained](#how-this-file-is-maintained)): the
   marked sections are owned by the `agents-md` tool; refresh them with
@@ -94,12 +98,14 @@ The canonical check catalogue is
 [docs/guides/running-the-checks.md](docs/guides/running-the-checks.md)
 and [docs/reference/pixi-tasks.md](docs/reference/pixi-tasks.md).
 
-- `pixi run --locked test` — the package BDD suite
+- `pixi run --locked doit test` — the package BDD suite
   (pytest-bdd against `features/`; steps in `tests/`).
-- `pixi run --locked coverage` — the same suite with the `.coveragerc`
+- `pixi run --locked doit coverage` — the same suite with the `.coveragerc`
   gate (at least 91% total line coverage; currently 100%).
-- `pixi run --locked test-scripts` — repository script tests
-  (`scripts/tests/`).
+- `pixi run --locked doit test-scripts` — repository automation and script
+  tests (`scripts/tests/`).
+- `pixi run --locked doit` (or `pixi run --locked doit ci`) — full local CI
+  check suite.
 - A change is done when the full CI suite passes: `Package tests`,
   `Policy`, `Documentation`, and `Python compatibility` jobs in
   [.github/workflows/ci.yml](.github/workflows/ci.yml).
@@ -111,8 +117,8 @@ and [docs/reference/pixi-tasks.md](docs/reference/pixi-tasks.md).
   behavior; Conventional Commits enforced by convco in CI and the
   commit-msg hook.
 - `VERSION` reads installed distribution metadata: it fails until
-  `pixi run --locked install-projects` has run, and it goes stale after a
-  `pyproject.toml` version bump until you reinstall.
+  `pixi run --locked doit install-projects` has run, and it goes stale
+  after a `pyproject.toml` version bump until you reinstall.
 - `pixi run --locked ...` requires the committed `pixi.lock`. After
   changing Pixi dependencies, regenerate the lock on a networked machine
   (`pixi lock`); conda-forge is not reachable from every authoring sandbox.
@@ -133,7 +139,7 @@ and [docs/reference/pixi-tasks.md](docs/reference/pixi-tasks.md).
 
 ## Boundaries (durable)
 
-- ✅ **Always**: run `pixi run --locked test` before committing; keep
+- ✅ **Always**: run `pixi run --locked doit test` before committing; keep
   product code and tests at the repository root (`src/`, `features/`,
   `tests/`); keep docs in
   sync with behavior (the documentation standard applies); write
@@ -173,7 +179,7 @@ Tests live in `tests/`. _TBD: what must pass before a change is done; verify aga
 
 <!-- agents-md:begin id=structure -->
 ## Project structure
-Top-level: `backlog/`, `docs/`, `scripts/`, `src/`, `features/`, `tests/`. _TBD: note where the important code lives_
+Top-level: `backlog/`, `docs/`, `features/`, `scripts/`, `src/`, `tests/`. _TBD: note where the important code lives_
 <!-- agents-md:end id=structure -->
 
 <!-- agents-md:begin id=conventions -->
@@ -230,10 +236,10 @@ read them before running the tool:
   marked stubs. The canonical detail lives in `docs/`
   ([docs/README.md](docs/README.md)).
 - The `npm run <script>` commands in the marked Commands section front
-  the same pixi tasks listed in
+  the same doit tasks listed in
   [docs/reference/pixi-tasks.md](docs/reference/pixi-tasks.md) (see the
-  `package.json` scripts); the pixi forms remain the environment of
-  record.
+  `package.json` scripts); `pixi run --locked doit ...` remains the
+  invocation of record.
 - If you change commands, layout, or conventions, update both the
   human-owned sections and whatever the tool reads from metadata, then run
   `pixi run --locked agents-md` and review the diff. A re-run is a safe

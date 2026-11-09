@@ -1,8 +1,8 @@
 # Publishes rude-clean-code to PyPI via trusted publishing (OIDC).
 #
 # Trigger: push of a version tag (v*, for example v0.1.0). The tag must
-# match the package version in pyproject.toml — scripts/build-release.sh
-# enforces that before any publishing can happen. The `pypi` GitHub
+# match the package version in pyproject.toml — the `build-release` doit task
+# in dodo.py enforces that before any publishing can happen. The `pypi` GitHub
 # environment (configured in repository settings) holds the trusted
 # publisher registration; the publish job requests its OIDC token.
 name: Release
@@ -32,7 +32,7 @@ jobs:
           locked: true
           cache: true
       - name: Build and check distributions
-        run: pixi run --locked scripts/build-release.sh
+        run: pixi run --locked doit build-release
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: distributions

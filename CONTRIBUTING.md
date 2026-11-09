@@ -13,16 +13,16 @@ Pixi (or restore the published sandbox), then:
 
 ```sh
 pixi install --locked
-pixi run --locked install-projects
+pixi run --locked doit install-projects
 ```
 
 The full walkthrough — restoring the published developer sandbox with
 `scripts/restore.sh`, finishing the PyPI install, installing hooks, and
 troubleshooting — lives in the
 [development setup guide](docs/guides/development-setup.md). The local
-project is not an editable Pixi dependency; re-run `install-projects` after
-changing package metadata. Run `pixi run install-hooks` at the start of every
-session.
+project is not an editable Pixi dependency; re-run `doit install-projects`
+after changing package metadata. Run `pixi run --locked doit install-hooks`
+at the start of every session.
 
 ## Make a change
 
@@ -31,29 +31,32 @@ session.
    backlog records rather than editing task files directly.
 2. Keep product code, tests, and Gherkin features in the owning package
    (the package at the repository root: `src/`, `features/`, `tests/`).
-   Put repository scripts and their tests
-   under `scripts/` and `scripts/tests/`. For user-visible behavior, add
-   a scenario and a failing test first when practical.
+   Put repository automation tasks in `dodo.py` (with bootstrap/activation
+   helpers in `scripts/` and automation tests under `scripts/tests/`). For
+   user-visible behavior, add a scenario and a failing test first when
+   practical.
 3. Update the relevant documentation and report any behavior or checks
    that remain unimplemented or unverified. Keep `examples/` empty until
    the public API is stable.
 
 ## Checks
 
-Run the checks relevant to your change; the full CI suite includes:
+Run the checks relevant to your change; the full local CI suite runs with
+`pixi run --locked doit` (or `pixi run --locked doit ci`), and individual
+checks include:
 
 ```sh
-pixi run --locked lint
-pixi run --locked format-check
-pixi run --locked typecheck
-pixi run --locked check-packages
-pixi run --locked audit
-pixi run --locked lint-prose
-pixi run --locked docs-lint
-pixi run --locked alint
-pixi run --locked actionlint
-pixi run --locked test
-pixi run --locked coverage
+pixi run --locked doit lint
+pixi run --locked doit format-check
+pixi run --locked doit typecheck
+pixi run --locked doit check-packages
+pixi run --locked doit audit
+pixi run --locked doit lint-prose
+pixi run --locked doit docs-lint
+pixi run --locked doit alint
+pixi run --locked doit actionlint
+pixi run --locked doit test
+pixi run --locked doit coverage
 ```
 
 CI additionally checks links in the maintained markdown with lychee. See
@@ -62,7 +65,7 @@ check covers and where its configuration lives.
 
 The coverage configuration (`.coveragerc`) requires at least 91% total
 line coverage of the package source tree. For a focused run, use
-`pixi run --locked test`.
+`pixi run --locked doit test`.
 
 ## Documentation
 
