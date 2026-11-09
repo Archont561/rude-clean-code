@@ -38,8 +38,8 @@ treat it as a defect and fix it.
 
 ## Reference
 
-- [Pixi tasks](reference/pixi-tasks.md) — the locked task catalogue used by
-  local development and CI.
+- [Pixi and doit tasks](reference/pixi-tasks.md) — the locked task catalogue
+  used by local development and CI.
 - [Repository layout](reference/repository-layout.md) — what lives where and
   why, including the invariants the layout enforces.
 
@@ -61,6 +61,6 @@ treat it as a defect and fix it.
 Documentation changes follow the same pull request and CI process as code.
 The documentation checks run in the `Documentation` job of the CI workflow
 (`.github/workflows/ci.yml`): markdownlint-cli2 for formatting consistency
-and lychee for link validity. Vale (`pixi run --locked lint-prose`) and
-alint (`pixi run --locked alint`) run in the `Policy` job. See
+and lychee for link validity. Vale (`pixi run --locked doit lint-prose`) and
+alint (`pixi run --locked doit alint`) run in the `Policy` job. See
 [running the checks](guides/running-the-checks.md) for details.

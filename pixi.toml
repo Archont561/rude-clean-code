@@ -31,6 +31,7 @@ twine = ">=6.2,<7"
 pip-audit = ">=2.9,<3"
 packaging = ">=26,<27"
 tox = ">=4.67.13, <5"
+doit = ">=0.37.0, <0.38"
 
 # Pixi evaluates activation.env in the platform shell. Disable word splitting and
 # globbing inside the substitution so checkout paths containing spaces are safe.
@@ -38,27 +39,11 @@ tox = ">=4.67.13, <5"
 PYTHONPATH = '$(IFS=; set -f; python ${PIXI_PROJECT_ROOT}/scripts/activate.py)'
 
 [tasks]
-# Install only the local project wheel, without dependency resolution or network.
-install-projects = "python -m pip install --no-deps --no-build-isolation --force-reinstall ."
-test = { cmd = "python -m pytest tests", depends-on = ["install-projects"] }
-test-scripts = "python -m pytest scripts/tests"
-coverage = { cmd = "python -m pytest tests --cov=src --cov-report=term-missing --cov-report=xml:coverage.xml", depends-on = ["install-projects"] }
-lint = "ruff check ."
-format-check = "ruff format --check ."
-typecheck = "mypy src"
-audit = "pip-audit --local --skip-editable"
-check-packages = "python scripts/check_packages.py"
-alint = "alint check"
-lint-prose = "vale --no-global README.md AGENTS.md CONTRIBUTING.md CHANGELOG.md .github/PULL_REQUEST_TEMPLATE.md backlog docs"
-docs-lint = { cmd = "bun x --bun --no-install markdownlint-cli2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' '.github/PULL_REQUEST_TEMPLATE.md' 'docs/**/*.md'", depends-on = ["bun-install"] }
-actionlint = "actionlint .github/workflows/*.yml"
-install-hooks = "sh scripts/install_hooks.sh"
-# Backwards-compatible alias.
-hooks-install = { depends-on = ["install-hooks"] }
-lint-commit = "convco check --from-stdin --strip"
+# Unified automation runner; all check, test, build, hook, and release tasks live in dodo.py.
+do = "doit"
 bun-install = "bun install --frozen-lockfile"
-# Generate and safely refresh AGENTS.md (marked sections only; see the
-# marker contract documented in AGENTS.md and docs/reference/pixi-tasks.md).
+# Direct Bun developer CLIs so arbitrary flags (for example `--help`) pass through untouched
+# and Backlog.md skill instructions (`pixi run backlog ...`) keep working verbatim.
 agents-md = { cmd = "bun x --bun --no-install agents-md", depends-on = ["bun-install"] }
 backlog = { cmd = "bun x --bun --no-install backlog", depends-on = ["bun-install"] }
 skills = { cmd = "bun x --bun --no-install skills", depends-on = ["bun-install"] }

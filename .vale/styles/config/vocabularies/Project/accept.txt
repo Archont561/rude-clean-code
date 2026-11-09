@@ -9,6 +9,8 @@ PyPI
 (?i:boolean)
 (?i:config)
 (?i:convco)
+(?i:dodo)
+(?i:doit)
 (?i:docstring)
 (?i:initializer)
 (?i:lefthook)

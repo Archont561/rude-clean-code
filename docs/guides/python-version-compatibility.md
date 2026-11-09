@@ -67,7 +67,7 @@ The non-obvious setting is load-bearing:
   metadata was found` and a long debugging session.
 
 `.tox/` is gitignored so virtual environments never reach version
-control. The `commands` mirror the `pixi run --locked test` task — the
+control. The `commands` mirror the `pixi run --locked doit test` task — the
 package is built (hatchling) and installed into each tox environment,
 and the pytest-bdd suite runs against the installed distribution,
 reading `VERSION` from its metadata rather than from the source tree.

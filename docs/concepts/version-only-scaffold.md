@@ -55,7 +55,7 @@ tested end to end, before any rule exists.
 ## Verifying the contract
 
 ```sh
-pixi run --locked test
+pixi run --locked doit test
 ```
 
 The BDD feature (`features/package_version.feature`) asserts, from a fresh

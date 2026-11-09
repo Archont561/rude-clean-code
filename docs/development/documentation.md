@@ -85,12 +85,13 @@ whether documentation accurately reflects the implemented behavior.
 
 ### How these layers are wired in this repository
 
-- `alint` (`.alint.yml`, run by `pixi run --locked alint` in the CI `Policy`
-  job) requires the structure and entry points of this documentation tree.
+- `alint` (`.alint.yml`, run by `pixi run --locked doit alint` in the CI
+  `Policy` job) requires the structure and entry points of this documentation
+  tree.
 - `markdownlint-cli2` (config `.markdownlint-cli2.jsonc`, run by
-  `pixi run --locked docs-lint` and the CI `Documentation` job) checks
+  `pixi run --locked doit docs-lint` and the CI `Documentation` job) checks
   formatting and consistency of the maintained markdown surface.
-- `Vale` (`.vale.ini`, run by `pixi run --locked lint-prose` in the CI
+- `Vale` (`.vale.ini`, run by `pixi run --locked doit lint-prose` in the CI
   `Policy` job) checks style, terminology, and language quality; project
   terminology lives in `.vale/styles/config/vocabularies/Project/accept.txt`
   and substitution rules in `.vale/styles/Project/Terms.yml`.

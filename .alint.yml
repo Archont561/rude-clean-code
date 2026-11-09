@@ -27,6 +27,11 @@ rules:
     paths: scripts/restore.sh
     level: error
     message: Required scripts/restore.sh is missing.
+  - id: require-dodo-file
+    kind: file_exists
+    paths: dodo.py
+    level: error
+    message: Required dodo.py task file is missing.
   - id: require-package-manifest
     kind: file_exists
     paths: pyproject.toml
@@ -177,7 +182,7 @@ rules:
     path: $.jobs[*].steps[*].run
     matches: '^[^\n]+$'
     level: error
-    message: Workflow run steps must be a single line — move shell logic into scripts/ and call the script instead.
+    message: Workflow run steps must be a single line — move logic into dodo.py (or scripts/ for pre-Pixi bootstrap) and call it instead.
   - id: require-release-workflow
     kind: file_exists
     paths: .github/workflows/release.yml

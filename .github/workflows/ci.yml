@@ -26,7 +26,7 @@ jobs:
           pixi-version: v0.83.0
           locked: true
           cache: true
-      - run: pixi run --locked coverage
+      - run: pixi run --locked doit coverage
 
   policy:
     name: Policy
@@ -41,18 +41,18 @@ jobs:
           pixi-version: v0.83.0
           locked: true
           cache: true
-      - run: pixi run --locked lint
-      - run: pixi run --locked format-check
-      - run: pixi run --locked typecheck
-      - run: pixi run --locked check-packages
-      - run: pixi run --locked lint-prose
-      - run: pixi run --locked alint
-      - run: pixi run --locked actionlint
+      - run: pixi run --locked doit lint
+      - run: pixi run --locked doit format-check
+      - run: pixi run --locked doit typecheck
+      - run: pixi run --locked doit check-packages
+      - run: pixi run --locked doit lint-prose
+      - run: pixi run --locked doit alint
+      - run: pixi run --locked doit actionlint
       - name: Check every incoming commit message
         if: github.event_name != 'workflow_dispatch'
-        # The script derives a base from the repository when the event
+        # The task derives a base from the repository when the event
         # base is empty or the zero SHA (first push, branch creation).
-        run: pixi run --locked scripts/check-commit-messages.sh
+        run: pixi run --locked doit check-commit-messages
         env:
           COMMIT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           COMMIT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -95,7 +95,7 @@ jobs:
           pixi-version: v0.83.0
           locked: true
           cache: true
-      - run: pixi run --locked docs-lint
+      - run: pixi run --locked doit docs-lint
       # Backlog records (backlog/**) are immutable and vendored skills
       # (.agents/**) are owned upstream, so both are excluded from the link
       # check; the maintained documentation surface is what this job gates.
