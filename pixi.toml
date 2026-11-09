@@ -56,5 +56,8 @@ install-hooks = "sh scripts/install_hooks.sh"
 hooks-install = { depends-on = ["install-hooks"] }
 lint-commit = "convco check --from-stdin --strip"
 bun-install = "bun install --frozen-lockfile"
+# Generate and safely refresh AGENTS.md (marked sections only; see the
+# marker contract documented in AGENTS.md and docs/reference/pixi-tasks.md).
+agents-md = { cmd = "bun x --bun --no-install agents-md", depends-on = ["bun-install"] }
 backlog = { cmd = "bun x --bun --no-install backlog", depends-on = ["bun-install"] }
 skills = { cmd = "bun x --bun --no-install skills", depends-on = ["bun-install"] }

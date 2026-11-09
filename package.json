@@ -2,7 +2,7 @@
   "name": "rude-clean-code-dev",
   "private": true,
   "version": "0.1.0",
-  "description": "Developer tooling for the Rude Clean Code workspace",
+  "description": "Rude Clean Code \u2014 an early-stage, version-only scaffold of a Clean Code / SOLID-inspired plugin for the Rude Python linter. This manifest carries the developer CLIs; the product is Python and the environment of record is pixi.lock.",
   "author": "Archont561",
   "license": "MIT",
   "homepage": "https://github.com/Archont561/rude-clean-code#readme",
@@ -15,8 +15,17 @@
   },
   "packageManager": "bun@1.4.2",
   "devDependencies": {
+    "@eugeniughelbur/agents-md": "0.1.0",
     "backlog.md": "1.53.0",
     "markdownlint-cli2": "0.24.0",
     "skills": "1.7.4"
+  },
+  "scripts": {
+    "build": "pixi run --locked check-packages",
+    "test": "pixi run --locked test",
+    "coverage": "pixi run --locked coverage",
+    "lint": "pixi run --locked lint",
+    "format": "pixi run --locked format-check",
+    "typecheck": "pixi run --locked typecheck"
   }
 }
