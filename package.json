@@ -18,7 +18,7 @@
     "@eugeniughelbur/agents-md": "0.1.0",
     "backlog.md": "1.53.0",
     "markdownlint-cli2": "0.24.0",
-    "skills": "1.7.4"
+    "skills": "1.7.6"
   },
   "scripts": {
     "build": "pixi run --locked check-packages",
