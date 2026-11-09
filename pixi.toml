@@ -19,6 +19,8 @@ vale = ">=3,<4"
 [pypi-dependencies]
 # The build backend is locked so local projects can be installed without network.
 hatchling = ">=1.27,<1.30"
+# Repository structure policy linter (.alint.yml); PyPI-only distribution.
+alint = ">=0.22,<1"
 pytest = ">=8,<10"
 pytest-bdd = ">=8,<10"
 pytest-cov = ">=6,<8"
