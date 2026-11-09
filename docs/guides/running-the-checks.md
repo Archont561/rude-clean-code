@@ -10,7 +10,7 @@ pixi run --locked <task>
 
 ## The CI suite
 
-The `CI` workflow has three jobs, and the `Publish developer sandbox`
+The `CI` workflow has four kinds of jobs, and the `Publish developer sandbox`
 workflow runs separately on changes to the Pixi manifests (see
 [development setup](development-setup.md#how-the-setup-works)).
 
@@ -21,7 +21,7 @@ pixi run --locked coverage
 ```
 
 Installs the local package and runs the BDD tests under
-packages/rude-clean-code with coverage. `.coveragerc` requires at least 91%
+the root package with coverage. `.coveragerc` requires at least 91%
 total line coverage (`fail_under`); the current suite sits at 100%.
 
 ### `Policy`
@@ -29,7 +29,7 @@ total line coverage (`fail_under`); the current suite sits at 100%.
 ```sh
 pixi run --locked lint           # ruff check .
 pixi run --locked format-check   # ruff format --check .
-pixi run --locked typecheck      # mypy packages/rude-clean-code/src
+pixi run --locked typecheck      # mypy src
 pixi run --locked check-packages # build wheels/sdists, twine check, wheel inspection
 pixi run --locked lint-prose     # vale --no-global README.md AGENTS.md ... docs
 pixi run --locked alint          # repository structure rules (.alint.yml)
@@ -40,11 +40,21 @@ The same job validates that every incoming commit message is a valid
 Conventional Commit (`convco check`). Commits that do not parse cannot be
 merged; see `.versionrc` for the configured types and scope regex.
 
+### `Python compatibility`
+
+```sh
+pixi run --locked tox            # py311, py312, py313 (interpreters from PATH)
+```
+
+Runs the same BDD suite in isolated virtual environments, one per supported
+Python version, from the committed `tox.ini`. See
+[Python version compatibility](python-version-compatibility.md).
+
 ### `Documentation`
 
 ```sh
 bun install --frozen-lockfile    # or: pixi run --locked bun-install
-bun x --bun --no-install markdownlint-cli2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' '.github/PULL_REQUEST_TEMPLATE.md' 'docs/**/*.md' 'packages/*/README.md'
+bun x --bun --no-install markdownlint-cli2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' '.github/PULL_REQUEST_TEMPLATE.md' 'docs/**/*.md'
 ```
 
 The `docs-lint` task wraps this:
@@ -56,7 +66,7 @@ pixi run --locked docs-lint
 It lints the maintained markdown surface with markdownlint-cli2 (rule
 configuration: [`.markdownlint-cli2.jsonc`](../../.markdownlint-cli2.jsonc)).
 CI additionally checks for broken links with lychee over the same files
-(`docs/**`, the root markdown guides, and package READMEs). Backlog records
+(`docs/**` and the root markdown guides). Backlog records
 (`backlog/**`) and vendored skills (`.agents/**`) are intentionally out of
 scope: backlog files are immutable records and skills are owned upstream.
 

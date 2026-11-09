@@ -18,7 +18,7 @@ not a replacement.
 
 ## Supported versions
 
-`packages/rude-clean-code/pyproject.toml` declares `requires-python = ">=3.11"`,
+The root `pyproject.toml` declares `requires-python = ">=3.11"`,
 and the Pixi lock targets `>=3.11,<3.14`. The versions to test are
 **3.11, 3.12 and 3.13** — the versions this repository supports today.
 Do not test 3.9 or 3.10; the package does not support them.
@@ -42,34 +42,29 @@ this one configuration. Its content is:
 ```ini
 [tox]
 envlist = py311, py312, py313
-# This repository has no root pyproject.toml by invariant, so point tox at
-# the package explicitly.
-package_root = packages/rude-clean-code
+# The pyproject.toml at the repository root is the package manifest.
 skip_missing_interpreters = false
 
 [testenv]
 description = Run the package BDD suite with pytest
-# Without this, tox silently defaults to `package = skip`: the suite runs
-# but never installs the distribution and fails with PackageNotFoundError.
+# Without this, tox silently defaults to `package = skip` on trees with no
+# recognizable build configuration: the suite runs but never installs the
+# distribution and fails with PackageNotFoundError.
 package = sdist
 deps =
     pytest
     pytest-bdd
 commands =
-    pytest packages/rude-clean-code/tests
+    pytest tests
 ```
 
-Two non-obvious settings are required and both are load-bearing:
+The non-obvious setting is load-bearing:
 
-- `package_root = packages/rude-clean-code` — tox looks for the package
-  to build in the *tox root* (where `tox.ini` lives). This repository
-  has no root `pyproject.toml` by invariant, so you must point tox at
-  the package directory explicitly.
-- `package = sdist` — when tox finds no `pyproject.toml`, `setup.py` or
-  `setup.cfg` in the tox root, it silently defaults to `package = skip`:
-  the suite runs but never installs the distribution, and the BDD test
-  fails with `PackageNotFoundError: No package metadata was found`.
-  Be explicit, or you will be confused for a while (we were).
+- `package = sdist` — tox builds and installs the sdist into each
+  environment, and the pytest-bdd suite then reads the installed
+  distribution's metadata. Do not drop it: being implicit about the
+  package configuration invites `PackageNotFoundError: No package
+  metadata was found` and a long debugging session.
 
 `.tox/` is gitignored so virtual environments never reach version
 control. The `commands` mirror the `pixi run --locked test` task — the

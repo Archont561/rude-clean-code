@@ -29,7 +29,7 @@ rules:
     message: Required scripts/restore.sh is missing.
   - id: require-package-manifest
     kind: file_exists
-    paths: packages/rude-clean-code/pyproject.toml
+    paths: pyproject.toml
     level: error
     message: Rude Clean Code package manifest is missing.
   - id: require-hooks
@@ -169,3 +169,17 @@ rules:
     paths: .github/PULL_REQUEST_TEMPLATE.md
     level: error
     message: Pull request template is missing.
+  - id: workflow-run-steps-single-line
+    kind: yaml_path_matches
+    paths:
+      - .github/workflows/ci.yml
+      - .github/workflows/release.yml
+    path: $.jobs[*].steps[*].run
+    matches: '^[^\n]+$'
+    level: error
+    message: Workflow run steps must be a single line — move shell logic into scripts/ and call the script instead.
+  - id: require-release-workflow
+    kind: file_exists
+    paths: .github/workflows/release.yml
+    level: error
+    message: Release workflow is missing.

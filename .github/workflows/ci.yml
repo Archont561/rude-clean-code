@@ -50,31 +50,9 @@ jobs:
       - run: pixi run --locked actionlint
       - name: Check every incoming commit message
         if: github.event_name != 'workflow_dispatch'
-        # A zero or unresolvable event base (first push, branch creation)
-        # must not fail the job: derive a base from the repository, and
-        # skip cleanly if no valid range can be formed.
-        run: |
-          set -eu
-          head="${COMMIT_HEAD}"
-          base="${COMMIT_BASE}"
-          zero="0000000000000000000000000000000000000000"
-          if [ -z "${base}" ] || [ "${base}" = "${zero}" ]; then
-            if git cat-file -e "HEAD^{commit}" 2>/dev/null; then
-              base="$(git rev-parse HEAD^)"
-            else
-              base="$(git rev-list --max-parents=0 HEAD | head -n 1)"
-            fi
-          fi
-          if [ -z "${head}" ] || ! git cat-file -e "${head}^{commit}" 2>/dev/null; then
-            echo "No valid head ('${head:-empty}'); skipping commit-message check."
-            exit 0
-          fi
-          if [ -z "${base}" ] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
-            echo "No valid base ref available (event base: '${COMMIT_BASE:-empty}'); skipping commit-message check."
-            exit 0
-          fi
-          echo "Checking commits ${base}..${head}"
-          pixi run --locked -x convco check "${base}..${head}"
+        # The script derives a base from the repository when the event
+        # base is empty or the zero SHA (first push, branch creation).
+        run: pixi run --locked scripts/check-commit-messages.sh
         env:
           COMMIT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           COMMIT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -124,6 +102,6 @@ jobs:
       - name: Check links with lychee
         uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
-          args: --no-progress --max-retries 3 --retry-wait-time 2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' '.github/PULL_REQUEST_TEMPLATE.md' 'docs/**/*.md' 'packages/*/README.md'
+          args: --no-progress --max-retries 3 --retry-wait-time 2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' '.github/PULL_REQUEST_TEMPLATE.md' 'docs/**/*.md'
         env:
           GITHUB_TOKEN: ${{ github.token }}

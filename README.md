@@ -25,6 +25,7 @@ working on this repository:
 - [Development setup](docs/guides/development-setup.md) — clone, restore the locked developer sandbox, install hooks
 - [Running the checks](docs/guides/running-the-checks.md) — the CI suite locally
 - [Python version compatibility](docs/guides/python-version-compatibility.md) — testing against 3.11–3.13 with tox (local and CI)
+- [Releasing to PyPI](docs/guides/releasing.md) — tag-triggered release workflow with trusted publishing
 - [Pixi tasks](docs/reference/pixi-tasks.md) — the locked task catalogue
 - [Repository layout](docs/reference/repository-layout.md) — what lives where and why
 - [Version-only scaffold](docs/concepts/version-only-scaffold.md) — why the package exposes only `VERSION`
@@ -46,6 +47,14 @@ pixi install --locked
 
 ```sh
 pixi run --locked test
+```
+
+To inspect the installed version (read from distribution metadata):
+
+```python
+from rude_clean_code import VERSION
+
+print(VERSION)
 ```
 
 ## Run tests

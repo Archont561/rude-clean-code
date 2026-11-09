@@ -51,7 +51,7 @@ mark unfinished or unverified work complete.
 ## Engineering rules
 
 - The package is a **version-only scaffold** (backlog decision-4):
-  `packages/rude-clean-code/src/rude_clean_code/` contains only
+  `src/rude_clean_code/` contains only
   `__init__.py` and it exports only `VERSION`. Do not add rules, modules,
   or public exports without a backlog task that deliberately relaxes
   that decision.
@@ -59,10 +59,10 @@ mark unfinished or unverified work complete.
   package's `pyproject.toml` (decision-2). Never hard-code a second copy
   of the version string in source.
 - Keep product features and tests in the package that owns the behavior
-  (decision-3): `packages/rude-clean-code/{src,features,tests}`.
+  (decision-3): the package lives at the repository root
+  (`{src,features,tests}` and `pyproject.toml`).
   Repository scripts live under root `scripts/`, with their tests under
-  `scripts/tests/`. There is no root `src/`, root `tests/`, or root
-  `pyproject.toml`.
+  `scripts/tests/`.
 - For user-visible features, write a Gherkin scenario and a failing test
   in the owning package before implementation when practical.
 - The environment of record is the locked Pixi workspace:
@@ -95,14 +95,13 @@ The canonical check catalogue is
 and [docs/reference/pixi-tasks.md](docs/reference/pixi-tasks.md).
 
 - `pixi run --locked test` — the package BDD suite
-  (pytest-bdd against `packages/rude-clean-code/features/`; steps in
-  `packages/rude-clean-code/tests/`).
+  (pytest-bdd against `features/`; steps in `tests/`).
 - `pixi run --locked coverage` — the same suite with the `.coveragerc`
   gate (at least 91% total line coverage; currently 100%).
 - `pixi run --locked test-scripts` — repository script tests
   (`scripts/tests/`).
 - A change is done when the full CI suite passes: `Package tests`,
-  `Policy`, and `Documentation` jobs in
+  `Policy`, `Documentation`, and `Python compatibility` jobs in
   [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
 ## Conventions and gotchas (durable)
@@ -135,7 +134,8 @@ and [docs/reference/pixi-tasks.md](docs/reference/pixi-tasks.md).
 ## Boundaries (durable)
 
 - ✅ **Always**: run `pixi run --locked test` before committing; keep
-  product code and tests inside `packages/rude-clean-code/`; keep docs in
+  product code and tests at the repository root (`src/`, `features/`,
+  `tests/`); keep docs in
   sync with behavior (the documentation standard applies); write
   Conventional Commits.
 - ⚠️ **Ask first**: relaxing the version-only scaffold (decision-4);
@@ -168,12 +168,12 @@ Rude Clean Code — an early-stage, version-only scaffold of a Clean Code / SOLI
 
 <!-- agents-md:begin id=testing -->
 ## Testing
-_TBD: how tests are run and what must pass before a change is considered done_
+Tests live in `tests/`. _TBD: what must pass before a change is done; verify against real behavior, not just unit tests_
 <!-- agents-md:end id=testing -->
 
 <!-- agents-md:begin id=structure -->
 ## Project structure
-Top-level: `backlog/`, `docs/`, `packages/`, `scripts/`. _TBD: note where the important code lives_
+Top-level: `backlog/`, `docs/`, `scripts/`, `src/`, `features/`, `tests/`. _TBD: note where the important code lives_
 <!-- agents-md:end id=structure -->
 
 <!-- agents-md:begin id=conventions -->

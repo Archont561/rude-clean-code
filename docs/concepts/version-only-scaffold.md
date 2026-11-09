@@ -13,7 +13,7 @@ backlog:
 
 ## What exists today
 
-A single package, `packages/rude-clean-code/`, that exposes exactly one
+A single package at the repository root that exposes exactly one
 public name:
 
 ```python
@@ -49,7 +49,7 @@ The constraint is deliberate, not an accident of an unfinished codebase:
   ([decision-4](../../backlog/decisions/decision-4%20-%20Keep-the-package-a-version-only-scaffold.md)).
 
 The practical effect: installing the package is safe and meaningful today
-(`pip install ./packages/rude-clean-code`), and the version contract is
+(`pip install .`), and the version contract is
 tested end to end, before any rule exists.
 
 ## Verifying the contract

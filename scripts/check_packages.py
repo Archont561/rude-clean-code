@@ -7,7 +7,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGES = ("rude-clean-code",)
+SOURCES = (ROOT,)
 
 
 def run(*args: str) -> None:
@@ -19,17 +19,17 @@ def run(*args: str) -> None:
 def main() -> None:
     outputs = ROOT / "distributions"
     outputs.mkdir(exist_ok=True)
-    for package in PACKAGES:
+    for source in SOURCES:
         run(
             sys.executable,
             "-m",
             "build",
-            str(ROOT / "packages" / package),
+            str(source),
             "--outdir",
             str(outputs),
         )
     files = sorted(outputs.iterdir())
-    if len(files) != 2 * len(PACKAGES):
+    if len(files) != 2 * len(SOURCES):
         raise RuntimeError("Expected one wheel and one sdist per distribution")
     run(sys.executable, "-m", "twine", "check", *(str(path) for path in files))
     wheels = sorted(outputs.glob("*.whl"))

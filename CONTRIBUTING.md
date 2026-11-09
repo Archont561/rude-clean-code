@@ -30,7 +30,8 @@ session.
    `pixi run backlog` and its task instructions to create or update
    backlog records rather than editing task files directly.
 2. Keep product code, tests, and Gherkin features in the owning package
-   (`packages/rude-clean-code/`). Put repository scripts and their tests
+   (the package at the repository root: `src/`, `features/`, `tests/`).
+   Put repository scripts and their tests
    under `scripts/` and `scripts/tests/`. For user-visible behavior, add
    a scenario and a failing test first when practical.
 3. Update the relevant documentation and report any behavior or checks

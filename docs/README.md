@@ -28,6 +28,8 @@ treat it as a defect and fix it.
   [version-only scaffold concept](concepts/version-only-scaffold.md) and the
   [architecture overview](architecture/overview.md) first, so you know what
   the repository does (and does not do yet).
+- **Cutting a release?** See [Releasing to PyPI](guides/releasing.md) —
+  the release workflow, trusted publishing, and the tag/version guard.
 - **Changing code or workflows?** The [documentation standard](development/documentation.md)
   defines what "done" means for documentation impact.
 - **Checking Python 3.11–3.13 compatibility?** See
