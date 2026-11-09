@@ -6,7 +6,7 @@
       "name": "rude-clean-code-dev",
       "devDependencies": {
         "@eugeniughelbur/agents-md": "0.1.0",
-        "backlog.md": "1.53.0",
+        "backlog.md": "1.55.3",
         "markdownlint-cli2": "0.24.0",
         "skills": "1.7.4",
       },
@@ -37,19 +37,19 @@
 
     "argparse": ["argparse@2.0.1", "", {}, "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="],
 
-    "backlog.md": ["backlog.md@1.53.0", "", { "optionalDependencies": { "backlog.md-darwin-arm64": "1.53.0", "backlog.md-darwin-x64": "1.53.0", "backlog.md-linux-arm64": "1.53.0", "backlog.md-linux-x64": "1.53.0", "backlog.md-windows-arm64": "1.53.0", "backlog.md-windows-x64": "1.53.0" }, "bin": { "backlog": "cli.js" } }, "sha512-VfYdR7RGu+mgEpSbHpBfdsyHVlJ+d4DIRzixkmyLqsfgCk4pLPDRhNkbu6dU3UgLEbQfxKhDuXUIbN/RLyGk1A=="],
+    "backlog.md": ["backlog.md@1.55.3", "", { "optionalDependencies": { "backlog.md-darwin-arm64": "1.55.3", "backlog.md-darwin-x64": "1.55.3", "backlog.md-linux-arm64": "1.55.3", "backlog.md-linux-x64": "1.55.3", "backlog.md-windows-arm64": "1.55.3", "backlog.md-windows-x64": "1.55.3" }, "bin": { "backlog": "cli.js" } }, "sha512-HN37ifPKQR28QAEdKO9g9sF/DjmTaVkBSfMK2BleNrbIShe8evFqoPpGlyvQtAQM1XKW+5guPW3+c5Tt8Mrpew=="],
 
-    "backlog.md-darwin-arm64": ["backlog.md-darwin-arm64@1.53.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-NQT4XHXoeudV5rZ/JVe039eTJV3hKcCdnEZd6rI1GCuMFnSYY9t5NaiFk2f/OzJTJPcFanpVnKOGefLiPs37uw=="],
+    "backlog.md-darwin-arm64": ["backlog.md-darwin-arm64@1.55.3", "", { "os": "darwin", "cpu": "arm64" }, "sha512-DTNxLl2FUu7k+F9XngvhNFWdQgcKbZwzlJrseBLc6S4Hs2zeh4BNQrMvSwE30Ei8Ic8FyfezikMljr7jjjGjOg=="],
 
-    "backlog.md-darwin-x64": ["backlog.md-darwin-x64@1.53.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-fC0vCuhGfHFAvvDNRf1dN/7F3GdmbuSZGzMVVHKx0+To4cakLOwuqOUhPX5KIGXeK6minHBMPIxIJFFtae2xvA=="],
+    "backlog.md-darwin-x64": ["backlog.md-darwin-x64@1.55.3", "", { "os": "darwin", "cpu": "x64" }, "sha512-2b6vBrxexCQ0nzMS6BgLeHUROiP3iHitzJgo4pZFqbljECE00d7nhw1C77v4/LNt8hUdSzu+xcofDvoNhQs8ZA=="],
 
-    "backlog.md-linux-arm64": ["backlog.md-linux-arm64@1.53.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-7EjAd91HexoteCYsz0jIKKMNxPaVg5gPv1LkcqHHiOpmCjmz3bDb02Wsk/VecPGeNFqFgpbpLyYI184UCCW0vA=="],
+    "backlog.md-linux-arm64": ["backlog.md-linux-arm64@1.55.3", "", { "os": "linux", "cpu": "arm64" }, "sha512-EoHqKYU80UNyCa7l/nhuEyztW1GCxG9O9S6wm167Vxf6ZRD8fwWrTgqGnvWbesbUrgOshw3OShAbGYRHyWie/g=="],
 
-    "backlog.md-linux-x64": ["backlog.md-linux-x64@1.53.0", "", { "os": "linux", "cpu": "x64" }, "sha512-EusW2vDzNjzKRaloJ3yPNgGwjqJ8Fow8aKdBRLZGs6+Pb1V9CREyhqOOia/H1OvQ86M74gjVBnnIpCDRrU0m8w=="],
+    "backlog.md-linux-x64": ["backlog.md-linux-x64@1.55.3", "", { "os": "linux", "cpu": "x64" }, "sha512-UBBNFDWmiJhkAqKy0jE39meVTF587EA8hh2qLk9Ag/mGosMpK5QdFqPqRafCIaowgxZCp0y++Vy5ZID2zoMpZg=="],
 
-    "backlog.md-windows-arm64": ["backlog.md-windows-arm64@1.53.0", "", { "os": "win32", "cpu": "arm64" }, "sha512-ia0gxBfewMhQSaGprz8DH1FA3iel3OqbEjngdZDKjfQrMNk8gqkmDUM3hQr1IMOXsq/YbteRQhdlHpCLUgLBoA=="],
+    "backlog.md-windows-arm64": ["backlog.md-windows-arm64@1.55.3", "", { "os": "win32", "cpu": "arm64" }, "sha512-gVAV63W+BpXQg0A5IEawLAM6GKbMsakNnFr/X20OWjxqURgiOAP6n6nA8OszzABFqaH2r5V+dQq9qE1yMGZh0Q=="],
 
-    "backlog.md-windows-x64": ["backlog.md-windows-x64@1.53.0", "", { "os": "win32", "cpu": "x64" }, "sha512-EzNL6Rx/DA6Hnq52wNAP78MTAK23xpBi2aAqMqObW3LhjhefG3h4M5SjTSUkizbH2FyvYsZlahlYJFdxUpz31g=="],
+    "backlog.md-windows-x64": ["backlog.md-windows-x64@1.55.3", "", { "os": "win32", "cpu": "x64" }, "sha512-aChbRaLGYyuRM3HDYQsU5CeylwyqyhpqYLPa2Q88YTDvjHqcjTFG8yHPTENP6JMjfqq0MyxMBuTN/rrriF9C7w=="],
 
     "braces": ["braces@3.0.3", "", { "dependencies": { "fill-range": "^7.1.1" } }, "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA=="],
 
