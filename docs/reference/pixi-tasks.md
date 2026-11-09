@@ -39,7 +39,7 @@ directories of tracked or unignored `pyproject.toml` projects to
 - **Conda (locked in `pixi.lock`)**: Python (`>=3.11,<3.14`), lefthook,
   bun, convco, actionlint, shellcheck, vale.
 - **PyPI (locked in `pixi.lock`)**: hatchling, alint, pytest, pytest-bdd,
-  pytest-cov, ruff, mypy, build, twine, pip-audit, packaging.
+  pytest-cov, ruff, mypy, build, twine, pip-audit, packaging, tox.
 - **Bun (locked in `bun.lock`)**: backlog.md, markdownlint-cli2, skills,
   `@eugeniughelbur/agents-md`.
 
@@ -52,3 +52,7 @@ directories of tracked or unignored `pyproject.toml` projects to
 - The developer sandbox consumed by `scripts/restore.sh` packs exactly this
   environment; see
   [the architecture overview](../architecture/overview.md#the-developer-sandbox-pipeline).
+- `tox` is available in the locked environment for Python-version
+  compatibility checks (see
+  [the tox guide](../guides/python-version-compatibility.md)); it is not a
+  task and it is not used by CI.

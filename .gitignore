@@ -12,3 +12,5 @@ coverage.xml
 .ruff_cache/
 .hypothesis/
 node_modules/
+.tox/
+tox.ini

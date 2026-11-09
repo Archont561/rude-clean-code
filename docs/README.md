@@ -30,6 +30,9 @@ treat it as a defect and fix it.
   the repository does (and does not do yet).
 - **Changing code or workflows?** The [documentation standard](development/documentation.md)
   defines what "done" means for documentation impact.
+- **Checking Python 3.11–3.13 compatibility?** See
+  [Python version compatibility with tox](guides/python-version-compatibility.md)
+  (auxiliary to the locked Pixi environment).
 
 ## Reference
 

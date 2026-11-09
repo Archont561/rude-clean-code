@@ -44,3 +44,4 @@ PyPI
 (?i:sdists?)
 (?i:gitignored?)
 (?i:isort)
+(?i:tox)

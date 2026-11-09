@@ -1,0 +1,37 @@
+# Dependency update automation (Dependabot v2 configuration).
+# Dependabot reads this file from the default branch.
+#
+# Covered:
+#   - bun            — package.json + bun.lock (the developer CLIs).
+#                      Note: Dependabot does not offer security updates
+#                      for the bun ecosystem; watch `bun audit` output.
+#   - github-actions — SHA-pinned actions in .github/workflows/.
+#
+# Deliberately not covered:
+#   - Pixi/conda and PyPI dependencies locked in pixi.toml / pixi.lock —
+#     Dependabot cannot parse Pixi manifests. Bump them by editing
+#     pixi.toml and regenerating the lock with `pixi lock` on a
+#     networked machine.
+#   - pip — packages/rude-clean-code/pyproject.toml currently declares
+#     no dependencies, so there is nothing for Dependabot to bump.
+#
+# Commit prefixes are valid convco types from .versionrc ("build" and
+# "ci") and carry no scope, matching the repository's commit convention.
+version: 2
+updates:
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "build"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
