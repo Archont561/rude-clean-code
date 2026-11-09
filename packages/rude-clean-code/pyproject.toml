@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling>=1.27,<1.30"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rude-clean-code"
+version = "0.1.0"
+description = "Version-only placeholder for a future Clean Code plugin for the Rude linter."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/Archont561/rude-clean-code"
+Issues = "https://github.com/Archont561/rude-clean-code/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rude_clean_code"]
