@@ -4,9 +4,11 @@ __pycache__/
 .venv/
 dist/
 build/
+distributions/
 .coverage
 coverage.xml
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .hypothesis/
+node_modules/
