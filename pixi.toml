@@ -1,0 +1,59 @@
+[workspace]
+name = "rude-clean-code"
+version = "0.1.0"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[dependencies]
+python = ">=3.11,<3.14"
+lefthook = ">=2.2,<3"
+bun = ">=1.4.2,<1.5"
+convco = ">=0.7.2,<0.8"
+actionlint = ">=1.7,<2"
+shellcheck = ">=0.11,<1"
+# Prose linter (see .vale.ini). From conda-forge, not a Bun-packaged
+# binary: one less runtime between the locked workspace and the tool
+# CI and hooks execute.
+vale = ">=3,<4"
+
+[pypi-dependencies]
+# The build backend is locked so local projects can be installed without network.
+hatchling = ">=1.27,<1.30"
+# Repository structure policy linter (.alint.yml); PyPI-only distribution.
+alint = ">=0.22,<1"
+pytest = ">=8,<10"
+pytest-bdd = ">=8,<10"
+pytest-cov = ">=6,<8"
+ruff = ">=0.11,<1"
+mypy = ">=1.15,<2"
+build = ">=1.2,<2"
+twine = ">=6.2,<7"
+pip-audit = ">=2.9,<3"
+packaging = ">=26,<27"
+
+# Pixi evaluates activation.env in the platform shell. Disable word splitting and
+# globbing inside the substitution so checkout paths containing spaces are safe.
+[activation.env]
+PYTHONPATH = '$(IFS=; set -f; python ${PIXI_PROJECT_ROOT}/scripts/activate.py)'
+
+[tasks]
+# Install only the local project wheel, without dependency resolution or network.
+install-projects = "python -m pip install --no-deps --no-build-isolation --force-reinstall ./packages/rude-clean-code"
+test = { cmd = "python -m pytest packages/rude-clean-code/tests", depends-on = ["install-projects"] }
+test-scripts = "python -m pytest scripts/tests"
+coverage = { cmd = "python -m pytest packages/rude-clean-code/tests --cov=packages/rude-clean-code/src --cov-report=term-missing --cov-report=xml:coverage.xml", depends-on = ["install-projects"] }
+lint = "ruff check ."
+format-check = "ruff format --check ."
+typecheck = "mypy packages/rude-clean-code/src"
+audit = "pip-audit --local --skip-editable"
+check-packages = "python scripts/check_packages.py"
+alint = "alint check"
+lint-prose = "vale --no-global README.md AGENTS.md CONTRIBUTING.md CHANGELOG.md backlog packages/*/README.md"
+actionlint = "actionlint .github/workflows/*.yml"
+install-hooks = "sh scripts/install_hooks.sh"
+# Backwards-compatible alias.
+hooks-install = { depends-on = ["install-hooks"] }
+lint-commit = "convco check --from-stdin --strip"
+bun-install = "bun install --frozen-lockfile"
+backlog = { cmd = "bun x --bun --no-install backlog", depends-on = ["bun-install"] }
+skills = { cmd = "bun x --bun --no-install skills", depends-on = ["bun-install"] }
