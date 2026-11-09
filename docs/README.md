@@ -42,7 +42,9 @@ treat it as a defect and fix it.
 
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — the contributor entry point
   (GitHub surfaces it on pull requests).
-- [AGENTS.md](../AGENTS.md) — operational instructions for AI agents.
+- [AGENTS.md](../AGENTS.md) — operational instructions for AI agents,
+  maintained with [agents-md](https://github.com/eugeniughelbur/agents-md)
+  (`pixi run --locked agents-md`); `CLAUDE.md` symlinks to it.
 - [CHANGELOG.md](../CHANGELOG.md) — notable changes, generated with convco
   from Conventional Commits.
 - [backlog/](../backlog/README.md) — the Backlog.md workspace: the product
