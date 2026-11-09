@@ -24,7 +24,7 @@ working on this repository:
 - [Documentation index](docs/README.md) — everything, organized by purpose
 - [Development setup](docs/guides/development-setup.md) — clone, restore the locked developer sandbox, install hooks
 - [Running the checks](docs/guides/running-the-checks.md) — the CI suite locally
-- [Python version compatibility](docs/guides/python-version-compatibility.md) — testing against 3.11–3.13 with tox (auxiliary)
+- [Python version compatibility](docs/guides/python-version-compatibility.md) — testing against 3.11–3.13 with tox (local and CI)
 - [Pixi tasks](docs/reference/pixi-tasks.md) — the locked task catalogue
 - [Repository layout](docs/reference/repository-layout.md) — what lives where and why
 - [Version-only scaffold](docs/concepts/version-only-scaffold.md) — why the package exposes only `VERSION`

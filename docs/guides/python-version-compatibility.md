@@ -5,13 +5,16 @@ workspace (`pixi.toml` + `pixi.lock`), targeting Python >= 3.11 and
 < 3.14 on linux-64. CI runs the locked checks on exactly that
 configuration; everyday development needs nothing else.
 
-Use [tox](https://tox.wiki/) when you want to verify that the package
-also works on the other Python versions the project supports — for
-example, before a release, or when you suspect version-specific
-behavior. tox runs the test suite in isolated virtual environments,
-one per Python version. **tox ships in the locked Pixi environment**
-as a PyPI dependency, so no separate installation is needed — but it is
-**not wired into CI**; treat it as an auxiliary local tool.
+Use [tox](https://tox.wiki/) to verify that the package works on every
+Python version the project supports — for example, before a release, or
+when you suspect version-specific behavior. tox runs the test suite in
+isolated virtual environments, one per Python version. **tox ships in
+the locked Pixi environment** as a PyPI dependency, so no separate
+installation is needed, and it **runs in CI** as the `Python
+compatibility` job in `.github/workflows/ci.yml`, a matrix over the
+supported versions. The locked Pixi environment remains the environment
+of record for development and release checks; tox is a complement to it,
+not a replacement.
 
 ## Supported versions
 
@@ -33,16 +36,21 @@ to `[dependencies]` — `pixi add --pypi tox` already pinned it.
 
 ## 2. Configure tox
 
-Create a `tox.ini` in the repository root:
+`tox.ini` is committed at the repository root — CI and local runs share
+this one configuration. Its content is:
 
 ```ini
 [tox]
 envlist = py311, py312, py313
+# This repository has no root pyproject.toml by invariant, so point tox at
+# the package explicitly.
 package_root = packages/rude-clean-code
-skip_missing_interpreters = true
+skip_missing_interpreters = false
 
 [testenv]
 description = Run the package BDD suite with pytest
+# Without this, tox silently defaults to `package = skip`: the suite runs
+# but never installs the distribution and fails with PackageNotFoundError.
 package = sdist
 deps =
     pytest
@@ -63,13 +71,11 @@ Two non-obvious settings are required and both are load-bearing:
   fails with `PackageNotFoundError: No package metadata was found`.
   Be explicit, or you will be confused for a while (we were).
 
-`tox.ini` and `.tox/` are gitignored on purpose: the locked Pixi
-environment remains the source of truth for how this repository builds
-and tests itself. The `commands` mirror the `pixi run --locked test`
-task — the package is built (hatchling) and installed into each tox
-environment, and the pytest-bdd suite runs against the installed
-distribution, reading `VERSION` from its metadata rather than from the
-source tree.
+`.tox/` is gitignored so virtual environments never reach version
+control. The `commands` mirror the `pixi run --locked test` task — the
+package is built (hatchling) and installed into each tox environment,
+and the pytest-bdd suite runs against the installed distribution,
+reading `VERSION` from its metadata rather than from the source tree.
 
 ## 3. Run compatibility tests
 
@@ -96,54 +102,44 @@ python3.13 --version
 ```
 
 If a version is missing, install it through your operating system's
-package manager or a version manager such as pyenv. The
-`skip_missing_interpreters = true` setting lets tox skip missing
-versions with a warning instead of failing; when you rely on the
-result (for example, before a release), confirm every supported version
-actually ran rather than silently skipping.
+package manager or a version manager such as pyenv. A missing
+interpreter is a hard error, not a warning: `skip_missing_interpreters`
+is `false` in the committed configuration, so tox reports
+`could not find python interpreter` and exits non-zero rather than
+silently skipping a version you thought you tested. For a partial
+sweep over only the versions you have, override on the command line,
+for example `pixi run --locked tox -x testenv.skip_missing_interpreters=true`;
+environments are then reported as `SKIP`, and tox still exits non-zero
+if every requested environment was skipped.
 
 ## 5. CI/CD integration
 
-This repository's CI deliberately runs the locked Pixi environment on a
-single Python version. Do not copy a tox matrix into
-`.github/workflows/ci.yml` as an incidental change — workflow changes
-are an ask-first action (see the boundaries in `AGENTS.md`).
+The `Python compatibility` job in `.github/workflows/ci.yml` runs tox
+on every push, pull request and manual dispatch, as a matrix over the
+supported versions:
 
-For reference, a matrix job on its own repository would look like:
+- one job per interpreter (`3.11`, `3.12`, `3.13`, quoted so unquoted
+  `3.10`-style values cannot parse as numbers), kept in sync with the
+  `tox.ini` `envlist`;
+- `fail-fast: false`, so one failing version does not cancel the
+  others;
+- actions are pinned to commit SHAs with version comments, matching the
+  rest of the workflow; `actions/setup-python` provides the interpreter
+  for each matrix leg, and `prefix-dev/setup-pixi` provides the locked
+  environment (and therefore tox itself);
+- each leg runs `pixi run --locked tox -e <toxenv>` — the same
+  configuration you use locally, not a re-implementation;
+- `skip_missing_interpreters = false`, so a missing interpreter fails
+  the job loudly instead of green-lighting a skipped leg.
 
-```yaml
-name: Python compatibility
+Workflow changes are an ask-first action in this repository (see the
+boundaries in `AGENTS.md`); the job landed on explicit maintainer
+request.
 
-on: [push, pull_request]
-
-permissions:
-  contents: read
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - { python: "3.11", toxenv: py311 }
-          - { python: "3.12", toxenv: py312 }
-          - { python: "3.13", toxenv: py313 }
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
-      - run: pip install tox
-      - run: tox -e ${{ matrix.toxenv }}
-```
-
-Quote the versions (unquoted `3.10` parses as the number `3.1`), and
-keep the `toxenv` names in sync with the `tox.ini` `envlist`.
-
-Alternatively, [tox-gh](https://github.com/tox-dev/tox-gh) maps tox
-environments onto GitHub Actions runners directly. If compatibility
-testing should become a release gate for this repository, decide that
-explicitly with the maintainer and wire it in as its own change.
+Whether compatibility becomes a release gate is a separate decision and
+is not wired in today. [tox-gh](https://github.com/tox-dev/tox-gh) maps
+tox environments onto GitHub Actions runners directly and remains an
+alternative to the explicit matrix.
 
 ## 6. Best practices
 
@@ -156,8 +152,7 @@ explicitly with the maintainer and wire it in as its own change.
 - Test dependency bounds when dependencies are added (the package
   currently declares none): pin both the oldest and the newest
   supported versions and test against both.
-- Automate in CI when it matters; make sure missing interpreters fail
-  loudly instead of silently passing.
+- CI already fails loudly on missing interpreters (`skip_missing_interpreters = false`); keep it that way.
 
 ## Further reading
 

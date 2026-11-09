@@ -13,4 +13,3 @@ coverage.xml
 .hypothesis/
 node_modules/
 .tox/
-tox.ini
