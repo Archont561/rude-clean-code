@@ -39,3 +39,7 @@ PyPI
 (?i:dogfood)
 (?i:dunders)
 (?i:repo)
+(?i:typecheck)
+(?i:shellcheck)
+(?i:sdists?)
+(?i:gitignored?)
