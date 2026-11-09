@@ -13,18 +13,18 @@ directories of tracked or unignored `pyproject.toml` projects to
 
 | Task               | What it runs                                                        | Purpose                                            |
 | ------------------ | ------------------------------------------------------------------- | -------------------------------------------------- |
-| `install-projects` | `pip install --no-deps --no-build-isolation --force-reinstall ./packages/rude-clean-code` | Install the local wheel without network or build isolation        |
-| `test`             | `python -m pytest packages/rude-clean-code/tests`                   | Run the package BDD tests (via `install-projects`) |
+| `install-projects` | `pip install --no-deps --no-build-isolation --force-reinstall .` | Install the local wheel without network or build isolation        |
+| `test`             | `python -m pytest tests`                                     | Run the package BDD tests (via `install-projects`) |
 | `test-scripts`     | `python -m pytest scripts/tests`                                    | Run the repository script tests                      |
-| `coverage`         | `python -m pytest packages/rude-clean-code/tests --cov=... --cov-report=term-missing --cov-report=xml:coverage.xml` | Coverage gate: `.coveragerc` requires ≥ 91% total line coverage |
+| `coverage`         | `python -m pytest tests --cov=src --cov-report=term-missing --cov-report=xml:coverage.xml` | Coverage gate: `.coveragerc` requires ≥ 91% total line coverage |
 | `lint`             | `ruff check .`                                                      | Python lint (extends `I`, `PTH`)                     |
 | `format-check`     | `ruff format --check .`                                             | Python formatting (diffs fail CI)                    |
-| `typecheck`        | `mypy packages/rude-clean-code/src`                                 | Static types (`mypy.ini`)                            |
+| `typecheck`        | `mypy src`                                                     | Static types (`mypy.ini`)                            |
 | `audit`            | `pip-audit --local --skip-editable`                                 | Dependency vulnerability scan (not part of CI)       |
 | `check-packages`   | `python scripts/check_packages.py`                                  | Build wheel + sdist, `twine check`, wheel contents   |
 | `alint`            | `alint check`                                                       | Repository structure rules from `.alint.yml`         |
-| `lint-prose`       | `vale --no-global README.md AGENTS.md CONTRIBUTING.md CHANGELOG.md .github/PULL_REQUEST_TEMPLATE.md backlog packages/*/README.md docs` | Vale prose lint; `docs/`, the PR template, and root guides |
-| `docs-lint`        | `bun x --bun --no-install markdownlint-cli2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' '.github/PULL_REQUEST_TEMPLATE.md' 'docs/**/*.md' 'packages/*/README.md'` | markdownlint-cli2 over maintained markdown (config: `.markdownlint-cli2.jsonc`) |
+| `lint-prose`       | `vale --no-global README.md AGENTS.md CONTRIBUTING.md CHANGELOG.md .github/PULL_REQUEST_TEMPLATE.md backlog docs` | Vale prose lint; `docs/`, the PR template, and root guides |
+| `docs-lint`        | `bun x --bun --no-install markdownlint-cli2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' '.github/PULL_REQUEST_TEMPLATE.md' 'docs/**/*.md'` | markdownlint-cli2 over maintained markdown (config: `.markdownlint-cli2.jsonc`) |
 | `actionlint`       | `actionlint .github/workflows/*.yml`                                | GitHub Actions workflow lint                        |
 | `install-hooks`    | `sh scripts/install_hooks.sh`                                       | Install (or validate) lefthook hooks                |
 | `hooks-install`    | Alias for `install-hooks`                                           | Backwards compatibility                              |

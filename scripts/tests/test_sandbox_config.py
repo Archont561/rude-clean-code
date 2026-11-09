@@ -1,6 +1,7 @@
 """Guard the published, wheel-only developer sandbox."""
 
 import re
+import shlex
 import tomllib
 from pathlib import Path
 
@@ -50,7 +51,7 @@ def test_package_tests_install_local_projects_without_editable_lock_entries():
     install = tasks["install-projects"]
     assert "--no-build-isolation" in install
     assert "--no-deps" in install
-    assert "./packages/rude-clean-code" in install
+    assert shlex.split(install)[-1] == "."
     for name in ("test", "coverage"):
         assert "install-projects" in tasks[name]["depends-on"]
         assert "PYTHONPATH=" not in tasks[name]["cmd"]

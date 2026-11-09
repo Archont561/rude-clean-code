@@ -19,7 +19,7 @@ this page describes the repository as built.
                     installed dist-info METADATA (no editable install)
                                    │
                                    ▼  importlib.metadata.version("rude-clean-code")
-                    packages/rude-clean-code/src/rude_clean_code/__init__.py
+                    src/rude_clean_code/__init__.py
                                    │
                                    ▼
                               VERSION (the only export)
@@ -27,7 +27,7 @@ this page describes the repository as built.
 
 ### Components
 
-- **The package** (`packages/rude-clean-code/`) is the only distribution and
+- **The package** (at the repository root) is the only distribution and
   the only product artifact. It is built by hatchling from the `src/` layout
   and exposes `VERSION`, read from installed distribution metadata at import
   time. Its BDD contract lives in `features/package_version.feature` and its
@@ -43,12 +43,13 @@ this page describes the repository as built.
   CLI tools (lefthook, bun, convco, actionlint, vale, shellcheck) from
   conda-forge. `bun.lock` pins the Bun-side CLIs (backlog.md,
   markdownlint-cli2, skills).
-- **CI** (`.github/workflows/ci.yml`) runs three jobs on every push and pull
+- **CI** (`.github/workflows/ci.yml`) runs on every push and pull
   request: `Package tests` (coverage, with a 91% line gate from
   `.coveragerc`), `Policy` (lint, format-check, typecheck, check-packages,
   Vale prose lint, alint repository rules, actionlint, and a convco check of
-  the incoming commits), and `Documentation` (markdownlint-cli2 formatting +
-  lychee link checking).
+  the incoming commits), `Documentation` (markdownlint-cli2 formatting +
+  lychee link checking), and a `Python compatibility` matrix
+  (3.11/3.12/3.13, `tox` via the committed `tox.ini`).
 - **The backlog** (`backlog/`) is the planning source of truth: the product
   specification (doc-1), the proposed rule catalogue (doc-2), decisions
   (1-5), milestones (m-0..m-5) and tasks (RCC-1..RCC-8). It exists so

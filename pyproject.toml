@@ -18,3 +18,12 @@ Issues = "https://github.com/Archont561/rude-clean-code/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/rude_clean_code"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/**",
+  "tests/**",
+  "features/**",
+  "/README.md",
+  "/LICENSE",
+]

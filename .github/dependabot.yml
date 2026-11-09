@@ -12,7 +12,7 @@
 #     Dependabot cannot parse Pixi manifests. Bump them by editing
 #     pixi.toml and regenerating the lock with `pixi lock` on a
 #     networked machine.
-#   - pip — packages/rude-clean-code/pyproject.toml currently declares
+#   - pip — the root pyproject.toml currently declares
 #     no dependencies, so there is nothing for Dependabot to bump.
 #
 # Commit prefixes are valid convco types from .versionrc ("build" and
