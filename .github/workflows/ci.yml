@@ -54,3 +54,26 @@ jobs:
         env:
           COMMIT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           COMMIT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94 # v0.11.2
+        with:
+          pixi-version: v0.83.0
+          locked: true
+          cache: true
+      - run: pixi run --locked docs-lint
+      # Backlog records (backlog/**) are immutable and vendored skills
+      # (.agents/**) are owned upstream, so both are excluded from the link
+      # check; the maintained documentation surface is what this job gates.
+      - name: Check links with lychee
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: --no-progress --max-retries 3 --retry-wait-time 2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' 'docs/**/*.md' 'packages/*/README.md'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

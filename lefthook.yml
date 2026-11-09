@@ -14,6 +14,8 @@ pre-commit:
       run: pixi run --locked alint
     - name: workflow-lint
       run: pixi run --locked actionlint
+    - name: markdownlint
+      run: pixi run --locked docs-lint
 
 commit-msg:
   jobs:

@@ -72,3 +72,48 @@ rules:
     paths: .vale.ini
     level: error
     message: Required Vale configuration is missing.
+  - id: require-markdownlint-config
+    kind: file_exists
+    paths: .markdownlint-cli2.jsonc
+    level: error
+    message: markdownlint-cli2 configuration is missing.
+  - id: require-docs-index
+    kind: file_exists
+    paths: docs/README.md
+    level: error
+    message: Documentation index docs/README.md is missing.
+  - id: require-docs-guides
+    kind: file_exists
+    paths: docs/guides/development-setup.md
+    level: error
+    message: Required docs/guides/development-setup.md is missing.
+  - id: require-docs-checks-guide
+    kind: file_exists
+    paths: docs/guides/running-the-checks.md
+    level: error
+    message: Required docs/guides/running-the-checks.md is missing.
+  - id: require-docs-concepts
+    kind: file_exists
+    paths: docs/concepts/version-only-scaffold.md
+    level: error
+    message: Required docs/concepts/version-only-scaffold.md is missing.
+  - id: require-docs-reference-tasks
+    kind: file_exists
+    paths: docs/reference/pixi-tasks.md
+    level: error
+    message: Required docs/reference/pixi-tasks.md is missing.
+  - id: require-docs-reference-layout
+    kind: file_exists
+    paths: docs/reference/repository-layout.md
+    level: error
+    message: Required docs/reference/repository-layout.md is missing.
+  - id: require-docs-architecture
+    kind: file_exists
+    paths: docs/architecture/overview.md
+    level: error
+    message: Required docs/architecture/overview.md is missing.
+  - id: require-docs-documentation-standard
+    kind: file_exists
+    paths: docs/development/documentation.md
+    level: error
+    message: Required docs/development/documentation.md is missing.

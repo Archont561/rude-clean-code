@@ -3,9 +3,20 @@
   "private": true,
   "version": "0.1.0",
   "description": "Developer tooling for the Rude Clean Code workspace",
+  "author": "Archont561",
+  "license": "MIT",
+  "homepage": "https://github.com/Archont561/rude-clean-code#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Archont561/rude-clean-code.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Archont561/rude-clean-code/issues"
+  },
   "packageManager": "bun@1.4.2",
   "devDependencies": {
     "backlog.md": "1.53.0",
+    "markdownlint-cli2": "0.24.0",
     "skills": "1.7.4"
   }
 }

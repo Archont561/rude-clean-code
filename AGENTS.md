@@ -59,5 +59,10 @@ mark unfinished or unverified work complete.
 - Run all checks through `pixi run --locked ...`; they are the same
   commands CI runs. Report anything unimplemented or unverified.
 - Commits are Conventional Commits (convco, `.versionrc`).
+- Documentation is part of the product: user-visible changes must update the
+  canonical documents under `docs/` (see
+  [docs/development/documentation.md](docs/development/documentation.md));
+  run `pixi run --locked lint-prose` and `pixi run --locked docs-lint`
+  before pushing.
 - Do not push, create a pull request, merge, tag, publish, or release
   without explicit user authorization.
