@@ -1,0 +1,9 @@
+# Repository-wide Python linting and formatting.
+target-version = "py311"
+extend-exclude = [".cache", ".pixi", ".venv", "dist", "build", "*.egg-info", "**/*.md"]
+
+[lint]
+extend-select = ["I", "PTH"]
+
+[lint.isort]
+known-first-party = ["rude_clean_code"]

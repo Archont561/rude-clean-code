@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "bdd-patterns": {
+      "source": "Archont561/qgis-sdk",
+      "sourceType": "github",
+      "computedHash": "568efbb372f2c9f180c68fe37a52303a47192afaa1a739a9dfba3bcc8eff464c",
+      "skillPath": ".agents/skills/bdd-patterns/SKILL.md"
+    },
+    "bdd-scenarios": {
+      "source": "Archont561/qgis-sdk",
+      "sourceType": "github",
+      "computedHash": "7ee39ea5a4f60c34321ef9455bdad9da0888ce7be9b56fae806716d6fdf995d9",
+      "skillPath": ".agents/skills/bdd-scenarios/SKILL.md"
+    },
+    "clean-code-principles": {
+      "source": "Archont561/qgis-sdk",
+      "sourceType": "github",
+      "computedHash": "85b96d51b30e226469104be2eebf36dc3067ea1307fdd960ad070fadef41652e",
+      "skillPath": ".agents/skills/clean-code-principles/SKILL.md"
+    },
+    "refactor": {
+      "source": "Archont561/qgis-sdk",
+      "sourceType": "github",
+      "computedHash": "458415b990888aa76c2b199e2ab27eab4272df50b7381d2599844376120f7421",
+      "skillPath": ".agents/skills/refactor/SKILL.md"
+    },
+    "tdd": {
+      "source": "Archont561/qgis-sdk",
+      "sourceType": "github",
+      "computedHash": "50fa1a1297be5c23e106df5d36639973ca4a9e8649c87a65bae580309a5e4ba9",
+      "skillPath": ".agents/skills/tdd/SKILL.md"
+    }
+  }
+}

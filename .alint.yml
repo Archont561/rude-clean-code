@@ -1,0 +1,74 @@
+# yaml-language-server: $schema=https://alint.org/_alint/configuration/schema.json
+version: 1
+
+rules:
+  - id: require-pixi-manifest
+    kind: file_exists
+    paths: pixi.toml
+    level: error
+    message: Required pixi.toml is missing.
+  - id: require-pixi-lock
+    kind: file_exists
+    paths: pixi.lock
+    level: error
+    message: Required pixi.lock is missing.
+  - id: require-sandbox-config
+    kind: file_exists
+    paths: pixi-sandbox.toml
+    level: error
+    message: Required pixi-sandbox.toml is missing.
+  - id: require-sandbox-workflow
+    kind: file_exists
+    paths: .github/workflows/pixi-sandbox.yml
+    level: error
+    message: Sandbox publishing workflow is missing.
+  - id: require-sandbox-restore
+    kind: file_exists
+    paths: scripts/restore.sh
+    level: error
+    message: Required scripts/restore.sh is missing.
+  - id: require-package-manifest
+    kind: file_exists
+    paths: packages/rude-clean-code/pyproject.toml
+    level: error
+    message: Rude Clean Code package manifest is missing.
+  - id: require-hooks
+    kind: file_exists
+    paths: lefthook.yml
+    level: error
+    message: Required lefthook.yml is missing.
+  - id: require-ruff-config
+    kind: file_exists
+    paths: ruff.toml
+    level: error
+    message: Required ruff.toml is missing.
+  - id: require-bun-manifest
+    kind: file_exists
+    paths: package.json
+    level: error
+    message: Developer tooling manifest is missing.
+  - id: require-bun-lock
+    kind: file_exists
+    paths: bun.lock
+    level: error
+    message: Bun lockfile is missing.
+  - id: require-skills-lock
+    kind: file_exists
+    paths: skills-lock.json
+    level: error
+    message: Skills lockfile is missing.
+  - id: require-convco-config
+    kind: file_exists
+    paths: .versionrc
+    level: error
+    message: Convco configuration is missing.
+  - id: require-codecov-config
+    kind: file_exists
+    paths: codecov.yml
+    level: error
+    message: Codecov configuration is missing.
+  - id: require-vale-config
+    kind: file_exists
+    paths: .vale.ini
+    level: error
+    message: Required Vale configuration is missing.

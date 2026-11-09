@@ -1,0 +1,8 @@
+# Upload is performed by the CI coverage step; coverage.py enforces the threshold.
+coverage:
+  status:
+    project: false
+    patch: false
+
+ignore:
+  - "**/tests/**"

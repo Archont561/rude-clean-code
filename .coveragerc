@@ -1,0 +1,5 @@
+[run]
+patch = subprocess
+
+[report]
+fail_under = 91
