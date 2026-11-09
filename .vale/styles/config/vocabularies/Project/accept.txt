@@ -43,3 +43,4 @@ PyPI
 (?i:shellcheck)
 (?i:sdists?)
 (?i:gitignored?)
+(?i:isort)

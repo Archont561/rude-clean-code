@@ -30,6 +30,7 @@ directories of tracked or unignored `pyproject.toml` projects to
 | `hooks-install`    | Alias for `install-hooks`                                           | Backwards compatibility                              |
 | `lint-commit`      | `convco check --from-stdin --strip`                                 | Validate a commit message from stdin                |
 | `bun-install`      | `bun install --frozen-lockfile`                                     | Install developer tooling from `bun.lock`           |
+| `agents-md`        | `bun x --bun --no-install agents-md`                                | Generate and safely refresh the marked sections of `AGENTS.md` (via `bun-install`) |
 | `backlog`          | `bun x --bun --no-install backlog`                                  | Backlog.md CLI (via `bun-install`)                  |
 | `skills`           | `bun x --bun --no-install skills`                                   | Skills CLI (via `bun-install`)                      |
 
@@ -39,7 +40,8 @@ directories of tracked or unignored `pyproject.toml` projects to
   bun, convco, actionlint, shellcheck, vale.
 - **PyPI (locked in `pixi.lock`)**: hatchling, alint, pytest, pytest-bdd,
   pytest-cov, ruff, mypy, build, twine, pip-audit, packaging.
-- **Bun (locked in `bun.lock`)**: backlog.md, markdownlint-cli2, skills.
+- **Bun (locked in `bun.lock`)**: backlog.md, markdownlint-cli2, skills,
+  `@eugeniughelbur/agents-md`.
 
 ## Notes
 

@@ -24,7 +24,7 @@ What lives where, and the invariants the layout enforces. Invariants marked
 | `.alint.yml`                   | policy      | Repository structure rules (`alint check`)                      |
 | `.vale.ini`                    | prose       | Vale configuration                                              |
 | `codecov.yml`, `skills-lock.json`, `.gitignore`      | misc   | Upload policy, skills pinning, ignores                         |
-| `README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `CHANGELOG.md`, `LICENSE` | docs | Entry points and legal             |
+| `README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `CLAUDE.md`, `CHANGELOG.md`, `LICENSE` | docs | Entry points and legal             |
 
 ## The package
 
@@ -67,5 +67,9 @@ packages/rude-clean-code/
   never by hand. CI and release notes derive from Conventional Commits.
 - `examples/` stays empty until the public API is stable (see
   [CONTRIBUTING.md](../../CONTRIBUTING.md)).
+- `CLAUDE.md` is a symlink to `AGENTS.md` (Claude Code does not read
+  `AGENTS.md` natively); keep them linked. The marked sections of
+  `AGENTS.md` are maintained with `pixi run --locked agents-md`, never by
+  hand — see `AGENTS.md`, "How this file is maintained".
 - Documentation is maintained continuously (see
   [the documentation standard](../development/documentation.md)).
