@@ -14,7 +14,8 @@ What lives where, and the invariants the layout enforces. Invariants marked
 | `backlog/`                     | workspace   | Backlog.md records: spec, decisions 1-5, milestones m-0..m-5, tasks RCC-1..RCC-8 |
 | `docs/`                        | docs        | This documentation layer (see [`docs/README.md`](../README.md))  |
 | `.agents/skills/`              | vendored    | Upstream agent skills (TDD, BDD, refactor, clean-code)         |
-| `.github/workflows/`           | CI          | `ci.yml` (checks) and `pixi-sandbox.yml` (sandbox publishing)  |
+| `.github/`                     | community   | `workflows/` (ci.yml, pixi-sandbox.yml), `ISSUE_TEMPLATE/` (bug report, feature request, config), `PULL_REQUEST_TEMPLATE.md`, `dependabot.yml` |
+| `.alint/`                      | policy      | JSON Schema consumed by the alint Dependabot policy rule        |
 | `.vale/`                       | config      | Vale styles and Project vocabulary                              |
 | `pixi.toml`, `pixi.lock`       | lockfile    | Locked linux-64 environment of record                           |
 | `pixi-sandbox.toml`            | plan        | Declares what the sandbox publisher packs                       |

@@ -49,8 +49,8 @@ typecheck = "mypy packages/rude-clean-code/src"
 audit = "pip-audit --local --skip-editable"
 check-packages = "python scripts/check_packages.py"
 alint = "alint check"
-lint-prose = "vale --no-global README.md AGENTS.md CONTRIBUTING.md CHANGELOG.md backlog packages/*/README.md docs"
-docs-lint = { cmd = "bun x --bun --no-install markdownlint-cli2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' 'docs/**/*.md' 'packages/*/README.md'", depends-on = ["bun-install"] }
+lint-prose = "vale --no-global README.md AGENTS.md CONTRIBUTING.md CHANGELOG.md .github/PULL_REQUEST_TEMPLATE.md backlog packages/*/README.md docs"
+docs-lint = { cmd = "bun x --bun --no-install markdownlint-cli2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' '.github/PULL_REQUEST_TEMPLATE.md' 'docs/**/*.md' 'packages/*/README.md'", depends-on = ["bun-install"] }
 actionlint = "actionlint .github/workflows/*.yml"
 install-hooks = "sh scripts/install_hooks.sh"
 # Backwards-compatible alias.

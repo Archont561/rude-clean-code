@@ -117,3 +117,55 @@ rules:
     paths: docs/development/documentation.md
     level: error
     message: Required docs/development/documentation.md is missing.
+  - id: require-dependabot-config
+    kind: file_exists
+    paths: .github/dependabot.yml
+    level: error
+    message: Dependabot configuration is missing.
+  - id: dependabot-matches-schema
+    kind: json_schema_passes
+    paths: .github/dependabot.yml
+    schema_path: .alint/schemas/dependabot.schema.json
+    level: error
+    message: dependabot.yml does not satisfy the repository Dependabot policy schema.
+  - id: require-issue-bug-template
+    kind: file_exists
+    paths: .github/ISSUE_TEMPLATE/bug_report.yml
+    level: error
+    message: Bug report issue form is missing.
+  - id: require-issue-feature-template
+    kind: file_exists
+    paths: .github/ISSUE_TEMPLATE/feature_request.yml
+    level: error
+    message: Feature request issue form is missing.
+  - id: require-issue-config
+    kind: file_exists
+    paths: .github/ISSUE_TEMPLATE/config.yml
+    level: error
+    message: Issue template configuration (.github/ISSUE_TEMPLATE/config.yml) is missing.
+  - id: issue-config-disables-blank-issues
+    kind: yaml_path_equals
+    paths: .github/ISSUE_TEMPLATE/config.yml
+    path: $.blank_issues_enabled
+    equals: false
+    level: error
+    message: Blank issues must be disabled so reports flow through the forms.
+  - id: bug-template-valid-body-types
+    kind: yaml_path_matches
+    paths: .github/ISSUE_TEMPLATE/bug_report.yml
+    path: $.body[*]['type']
+    matches: '^(markdown|input|textarea|dropdown|checkboxes)$'
+    level: error
+    message: bug_report.yml declares an unknown issue form body type.
+  - id: feature-template-valid-body-types
+    kind: yaml_path_matches
+    paths: .github/ISSUE_TEMPLATE/feature_request.yml
+    path: $.body[*]['type']
+    matches: '^(markdown|input|textarea|dropdown|checkboxes)$'
+    level: error
+    message: feature_request.yml declares an unknown issue form body type.
+  - id: require-pull-request-template
+    kind: file_exists
+    paths: .github/PULL_REQUEST_TEMPLATE.md
+    level: error
+    message: Pull request template is missing.

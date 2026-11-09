@@ -44,7 +44,7 @@ merged; see `.versionrc` for the configured types and scope regex.
 
 ```sh
 bun install --frozen-lockfile    # or: pixi run --locked bun-install
-bun x --bun --no-install markdownlint-cli2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' 'docs/**/*.md' 'packages/*/README.md'
+bun x --bun --no-install markdownlint-cli2 'README.md' 'AGENTS.md' 'CONTRIBUTING.md' 'CHANGELOG.md' '.github/PULL_REQUEST_TEMPLATE.md' 'docs/**/*.md' 'packages/*/README.md'
 ```
 
 The `docs-lint` task wraps this:
