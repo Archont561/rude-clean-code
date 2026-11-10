@@ -29,12 +29,17 @@ rules:
     message: Required scripts/restore.sh is missing.
   - id: require-dodo-file
     kind: file_exists
-    paths: dodo.py
+    paths: automation/dodo.py
     level: error
-    message: Required dodo.py task file is missing.
+    message: Required automation/dodo.py task file is missing.
+  - id: require-doit-config
+    kind: file_exists
+    paths: doit.cfg
+    level: error
+    message: Required doit.cfg task configuration is missing.
   - id: require-package-manifest
     kind: file_exists
-    paths: pyproject.toml
+    paths: rude-clean-code/pyproject.toml
     level: error
     message: Rude Clean Code package manifest is missing.
   - id: require-hooks
@@ -182,7 +187,7 @@ rules:
     path: $.jobs[*].steps[*].run
     matches: '^[^\n]+$'
     level: error
-    message: Workflow run steps must be a single line — move logic into dodo.py (or scripts/ for pre-Pixi bootstrap) and call it instead.
+    message: Workflow run steps must be a single line — move logic into automation/dodo.py (or scripts/ for pre-Pixi bootstrap) and call it instead.
   - id: require-release-workflow
     kind: file_exists
     paths: .github/workflows/release.yml

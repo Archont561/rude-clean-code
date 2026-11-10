@@ -8,10 +8,11 @@ What lives where, and the invariants the layout enforces. Invariants marked
 
 | Entry                          | Kind        | Purpose                                                        |
 | ------------------------------ | ----------- | -------------------------------------------------------------- |
-| `pyproject.toml`, `src/`, `features/`, `tests/` | package | The only distribution: `rude-clean-code` (VERSION-only scaffold), at the repository root |
-| `dodo.py`                      | automation  | Unified `doit` task definitions (checks, tests, packaging, hooks, release, commit checks) |
+| `rude-clean-code/`             | package     | The only distribution: `rude-clean-code` (`src/`, `features/`, `tests/`, `pyproject.toml`, `README.md`, `LICENSE`) |
+| `automation/`                  | automation  | Unified `doit` tasks (`dodo.py`), Gherkin specs (`features/`), and BDD tests (`tests/`) |
+| `doit.cfg`                     | automation  | Points `doit` at `automation/dodo.py` from the repository root |
 | `scripts/`                     | scripts     | Pre-Pixi sandbox restore (`restore.sh`) and Pixi environment activation (`activate.py`) |
-| `scripts/tests/`               | tests       | Tests for `dodo.py` automation and repository sandbox configuration |
+| `scripts/tests/`               | tests       | Tests for repository sandbox configuration                     |
 | `backlog/`                     | workspace   | Backlog.md records: spec, decisions 1-5, milestones m-0..m-5, tasks RCC-1..RCC-12 |
 | `docs/`                        | docs        | This documentation layer (see [`docs/README.md`](../README.md))  |
 | `.agents/skills/`              | vendored    | Upstream agent skills (TDD, BDD, refactor, clean-code)         |
@@ -32,22 +33,26 @@ What lives where, and the invariants the layout enforces. Invariants marked
 ## The package
 
 ```text
-(repository root)
-├── pyproject.toml                 # name/version source of truth (0.1.0)
+rude-clean-code/
+├── LICENSE                            # package MIT license
+├── README.md                          # package README for PyPI
+├── pyproject.toml                     # name/version source of truth (0.1.0)
 ├── features/package_version.feature   # Gherkin contract for VERSION
 ├── src/rude_clean_code/__init__.py    # the entire public surface: VERSION
 └── tests/test_package_version_bdd.py  # pytest-bdd steps for the feature
 ```
 
-- The hatchling sdist ships only `src/`, `tests/`, `features/`, the root
-  README and LICENSE (plus the always-forced `pyproject.toml` and PKG-INFO),
-  not the whole repository snapshot.
+- The hatchling sdist ships only `src/`, `tests/`, `features/`, and the
+  package `README.md` and `LICENSE` (plus the always-forced
+  `pyproject.toml` and PKG-INFO), not the whole repository snapshot.
 - Only `VERSION` is exported, read from installed distribution metadata
   (decision-2). No other modules, no other exports, no lint rules yet
   (decision-4).
-- Package behavior, tests, and Gherkin features live in the root package
-  (decision-3). Unified automation tasks live in `dodo.py`, pre-Pixi/activation
-  scripts live in root `scripts/`, and automation/script tests live in
+- Package behavior, tests, and Gherkin features live inside the owning
+  package under `rude-clean-code/` (decision-3). Unified automation tasks
+  (`dodo.py`), Gherkin specs (`features/`), and BDD tests (`tests/`) live in
+  `automation/` (configured via root `doit.cfg`), pre-Pixi/activation
+  scripts live in root `scripts/`, and sandbox/script tests live in
   `scripts/tests/`.
 
 ## The workflows
@@ -64,9 +69,11 @@ What lives where, and the invariants the layout enforces. Invariants marked
 
 ## Invariants
 
-- The package is the repository root: `pyproject.toml`, `src/`, `features/`,
-  and `tests/` at the top level. There is no `packages/` directory.
-- `VERSION` is never duplicated in source; change `pyproject.toml` instead.
+- The single `rude-clean-code` distribution lives under `rude-clean-code/`
+  (`pyproject.toml`, `src/`, `features/`, `tests/`, `README.md`, `LICENSE`),
+  while repository automation lives under `automation/`.
+- `VERSION` is never duplicated in source; change
+  `rude-clean-code/pyproject.toml` instead.
 - `pixi.lock` and `bun.lock` are committed. Edit manifests, then regenerate
   (`pixi lock` on a networked machine; `bun install` for `bun.lock`).
 - Backlog records are created and edited through `pixi run --locked backlog`,

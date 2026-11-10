@@ -18,7 +18,7 @@ not a replacement.
 
 ## Supported versions
 
-The root `pyproject.toml` declares `requires-python = ">=3.11"`,
+`rude-clean-code/pyproject.toml` declares `requires-python = ">=3.11"`,
 and the Pixi lock targets `>=3.11,<3.14`. The versions to test are
 **3.11, 3.12 and 3.13** — the versions this repository supports today.
 Do not test 3.9 or 3.10; the package does not support them.
@@ -42,15 +42,18 @@ this one configuration. Its content is:
 ```ini
 [tox]
 envlist = py311, py312, py313
-# The pyproject.toml at the repository root is the package manifest.
 skip_missing_interpreters = false
+
+[testenv:.pkg]
+package_root = rude-clean-code
 
 [testenv]
 description = Run the package BDD suite with pytest
 # Without this, tox silently defaults to `package = skip` on trees with no
-# recognizable build configuration: the suite runs but never installs the
+# root build configuration: the suite runs but never installs the
 # distribution and fails with PackageNotFoundError.
 package = sdist
+change_dir = rude-clean-code
 deps =
     pytest
     pytest-bdd

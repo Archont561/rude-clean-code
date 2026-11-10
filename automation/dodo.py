@@ -12,11 +12,13 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
+PACKAGE_DIR = "rude-clean-code"
 ZERO_SHA = "0" * 40
 
 VALE_TARGETS = (
     "README.md",
+    "rude-clean-code/README.md",
     "AGENTS.md",
     "CONTRIBUTING.md",
     "CHANGELOG.md",
@@ -27,6 +29,7 @@ VALE_TARGETS = (
 
 MARKDOWN_TARGETS = (
     "README.md",
+    "rude-clean-code/README.md",
     "AGENTS.md",
     "CONTRIBUTING.md",
     "CHANGELOG.md",
@@ -38,7 +41,7 @@ DOIT_CONFIG: dict[str, Any] = {
     "default_tasks": ["ci"],
     "verbosity": 2,
     "backend": "sqlite3",
-    "dep_file": ".doit.db",
+    "dep_file": str(ROOT / ".doit.db"),
 }
 
 
@@ -90,7 +93,7 @@ def check_packages(
     sources: Sequence[Path] | None = None,
 ) -> None:
     """Build wheel and sdist into distributions/, run twine check, and inspect wheels."""
-    package_sources = tuple(sources) if sources is not None else (root,)
+    package_sources = tuple(sources) if sources is not None else (root / PACKAGE_DIR,)
     outputs = root / "distributions"
     shutil.rmtree(outputs, ignore_errors=True)
     outputs.mkdir(parents=True, exist_ok=True)
@@ -124,9 +127,12 @@ def check_packages(
 
 def build_release(ref_name: str = "", root: Path = ROOT) -> None:
     """Verify an optional release tag matches pyproject.toml, build dist/, and run twine check."""
+    package_root = root / PACKAGE_DIR
     if ref_name:
         tag = ref_name.removeprefix("v")
-        manifest = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+        manifest = tomllib.loads(
+            (package_root / "pyproject.toml").read_text(encoding="utf-8")
+        )
         package_version = manifest["project"]["version"]
         if tag != package_version:
             raise RuntimeError(
@@ -135,7 +141,7 @@ def build_release(ref_name: str = "", root: Path = ROOT) -> None:
     dist_dir = root / "dist"
     shutil.rmtree(dist_dir, ignore_errors=True)
     _run_isolated(
-        [sys.executable, "-m", "build", "--outdir", str(dist_dir), str(root)],
+        [sys.executable, "-m", "build", "--outdir", str(dist_dir), str(package_root)],
         cwd=root,
     )
     files = sorted(dist_dir.iterdir())
@@ -218,7 +224,7 @@ def task_install_projects() -> dict[str, Any]:
                 "--no-deps",
                 "--no-build-isolation",
                 "--force-reinstall",
-                ".",
+                f"./{PACKAGE_DIR}",
             ]
         ],
     }
@@ -229,15 +235,23 @@ def task_test() -> dict[str, Any]:
     return {
         "basename": "test",
         "task_dep": ["install-projects"],
-        "actions": [[sys.executable, "-m", "pytest", "tests"]],
+        "actions": [[sys.executable, "-m", "pytest", f"{PACKAGE_DIR}/tests"]],
     }
 
 
 def task_test_scripts() -> dict[str, Any]:
-    """Run the repository automation and script tests."""
+    """Run the repository script tests."""
     return {
         "basename": "test-scripts",
         "actions": [[sys.executable, "-m", "pytest", "scripts/tests"]],
+    }
+
+
+def task_test_automation() -> dict[str, Any]:
+    """Run the automation BDD and unit tests."""
+    return {
+        "basename": "test-automation",
+        "actions": [[sys.executable, "-m", "pytest", "automation/tests"]],
     }
 
 
@@ -251,8 +265,8 @@ def task_coverage() -> dict[str, Any]:
                 sys.executable,
                 "-m",
                 "pytest",
-                "tests",
-                "--cov=src",
+                f"{PACKAGE_DIR}/tests",
+                f"--cov={PACKAGE_DIR}/src",
                 "--cov-report=term-missing",
                 "--cov-report=xml:coverage.xml",
             ]
@@ -281,7 +295,7 @@ def task_typecheck() -> dict[str, Any]:
     """Typecheck package sources with mypy."""
     return {
         "basename": "typecheck",
-        "actions": [["mypy", "src"]],
+        "actions": [["mypy", f"{PACKAGE_DIR}/src"]],
     }
 
 
@@ -460,6 +474,12 @@ def task_ci() -> dict[str, Any]:
     """Run the full local CI suite."""
     return {
         "basename": "ci",
-        "task_dep": ["policy", "docs-lint", "test-scripts", "coverage"],
+        "task_dep": [
+            "policy",
+            "docs-lint",
+            "test-scripts",
+            "test-automation",
+            "coverage",
+        ],
         "actions": None,
     }

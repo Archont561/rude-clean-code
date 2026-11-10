@@ -13,8 +13,8 @@ backlog:
 
 ## What exists today
 
-A single package at the repository root that exposes exactly one
-public name:
+A single package under `rude-clean-code/` that exposes exactly one public
+name:
 
 ```python
 from importlib.metadata import version as _version
@@ -58,11 +58,12 @@ tested end to end, before any rule exists.
 pixi run --locked doit test
 ```
 
-The BDD feature (`features/package_version.feature`) asserts, from a fresh
-interpreter, that `VERSION` is the only public export, that it equals the
-`pyproject.toml` version and the installed distribution metadata, that it is
-read from metadata, and that the package contains no other source files.
-Coverage must stay at or above the threshold in `.coveragerc` (91%).
+The BDD feature (`rude-clean-code/features/package_version.feature`)
+asserts, from a fresh interpreter, that `VERSION` is the only public export,
+that it equals the `rude-clean-code/pyproject.toml` version and the
+installed distribution metadata, that it is read from metadata, and that
+the package contains no other source files. Coverage must stay at or above
+the threshold in `.coveragerc` (91%).
 
 ## What "done" will mean for the first rule
 

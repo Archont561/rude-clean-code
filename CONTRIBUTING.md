@@ -30,9 +30,12 @@ at the start of every session.
    `pixi run backlog` and its task instructions to create or update
    backlog records rather than editing task files directly.
 2. Keep product code, tests, and Gherkin features in the owning package
-   (the package at the repository root: `src/`, `features/`, `tests/`).
-   Put repository automation tasks in `dodo.py` (with bootstrap/activation
-   helpers in `scripts/` and automation tests under `scripts/tests/`). For
+   (`rude-clean-code/src/`, `rude-clean-code/features/`,
+   `rude-clean-code/tests/`, with `rude-clean-code/pyproject.toml`).
+   Put repository automation tasks in `automation/dodo.py` with their
+   behavior specifications in `automation/features/` and tests in
+   `automation/tests/`, and keep pre-Pixi bootstrap/activation helpers in
+   `scripts/` with sandbox and script tests under `scripts/tests/`. For
    user-visible behavior, add a scenario and a failing test first when
    practical.
 3. Update the relevant documentation and report any behavior or checks

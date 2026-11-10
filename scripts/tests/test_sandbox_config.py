@@ -10,7 +10,9 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def _load_dodo() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("dodo", ROOT / "dodo.py")
+    spec = importlib.util.spec_from_file_location(
+        "dodo", ROOT / "automation" / "dodo.py"
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -63,7 +65,7 @@ def test_package_tests_install_local_projects_without_editable_lock_entries():
     install_cmd = dodo.task_install_projects()["actions"][0]
     assert "--no-build-isolation" in install_cmd
     assert "--no-deps" in install_cmd
-    assert install_cmd[-1] == "."
+    assert install_cmd[-1] == "./rude-clean-code"
     for task_fn in (dodo.task_test, dodo.task_coverage):
         task = task_fn()
         assert "install-projects" in task["task_dep"]

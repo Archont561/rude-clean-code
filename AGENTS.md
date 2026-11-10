@@ -60,11 +60,14 @@ mark unfinished or unverified work complete.
   package's `pyproject.toml` (decision-2). Never hard-code a second copy
   of the version string in source.
 - Keep product features and tests in the package that owns the behavior
-  (decision-3): the package lives at the repository root
-  (`{src,features,tests}` and `pyproject.toml`).
-  Unified repository automation tasks live in `dodo.py` (`doit`); pre-Pixi
-  bootstrap and Pixi environment activation scripts live under root
-  `scripts/`, with automation and script tests under `scripts/tests/`.
+  (decision-3): the package lives under `rude-clean-code/`
+  (`{src,features,tests}`, `pyproject.toml`, `README.md`, and `LICENSE`).
+  Unified repository automation tasks (`automation/dodo.py`), Gherkin
+  specs (`automation/features/`), and automation BDD tests
+  (`automation/tests/`) live under `automation/` (configured via root
+  `doit.cfg`); pre-Pixi bootstrap and Pixi environment activation scripts
+  live under root `scripts/`, with sandbox and script tests under
+  `scripts/tests/`.
 - For user-visible features, write a Gherkin scenario and a failing test
   in the owning package before implementation when practical.
 - The environment of record is the locked Pixi workspace:
@@ -99,11 +102,15 @@ The canonical check catalogue is
 and [docs/reference/pixi-tasks.md](docs/reference/pixi-tasks.md).
 
 - `pixi run --locked doit test` — the package BDD suite
-  (pytest-bdd against `features/`; steps in `tests/`).
+  (pytest-bdd against `rude-clean-code/features/`; steps in
+  `rude-clean-code/tests/`).
 - `pixi run --locked doit coverage` — the same suite with the `.coveragerc`
   gate (at least 91% total line coverage; currently 100%).
-- `pixi run --locked doit test-scripts` — repository automation and script
-  tests (`scripts/tests/`).
+- `pixi run --locked doit test-scripts` — repository sandbox and script tests
+  (`scripts/tests/`).
+- `pixi run --locked doit test-automation` — repository automation BDD
+  suite (`pytest-bdd` against `automation/features/`; steps in
+  `automation/tests/`).
 - `pixi run --locked doit` (or `pixi run --locked doit ci`) — full local CI
   check suite.
 - A change is done when the full CI suite passes: `Package tests`,
@@ -140,8 +147,8 @@ and [docs/reference/pixi-tasks.md](docs/reference/pixi-tasks.md).
 ## Boundaries (durable)
 
 - ✅ **Always**: run `pixi run --locked doit test` before committing; keep
-  product code and tests at the repository root (`src/`, `features/`,
-  `tests/`); keep docs in
+  product code and tests inside the owning package (`rude-clean-code/src/`,
+  `rude-clean-code/features/`, `rude-clean-code/tests/`); keep docs in
   sync with behavior (the documentation standard applies); write
   Conventional Commits.
 - ⚠️ **Ask first**: relaxing the version-only scaffold (decision-4);
@@ -174,12 +181,12 @@ Rude Clean Code — an early-stage, version-only scaffold of a Clean Code / SOLI
 
 <!-- agents-md:begin id=testing -->
 ## Testing
-Tests live in `tests/`. _TBD: what must pass before a change is done; verify against real behavior, not just unit tests_
+_TBD: how tests are run and what must pass before a change is considered done_
 <!-- agents-md:end id=testing -->
 
 <!-- agents-md:begin id=structure -->
 ## Project structure
-Top-level: `backlog/`, `docs/`, `features/`, `scripts/`, `src/`, `tests/`. _TBD: note where the important code lives_
+Top-level: `backlog/`, `docs/`, `scripts/`, `automation/`, `rude-clean-code/`. _TBD: note where the important code lives_
 <!-- agents-md:end id=structure -->
 
 <!-- agents-md:begin id=conventions -->
