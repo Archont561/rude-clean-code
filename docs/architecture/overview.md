@@ -10,16 +10,16 @@ this page describes the repository as built.
 ## The moving parts
 
 ```text
-                        pyproject.toml (version is the source of truth)
+                   rude-clean-code/pyproject.toml (version is the source of truth)
                                    │
                                    ▼  hatchling build
-                      wheel + sdist (dodo.py check-packages)
+                      wheel + sdist (automation/dodo.py check-packages)
                                    │
                                    ▼  pip install --no-deps --no-build-isolation
                     installed dist-info METADATA (no editable install)
                                    │
                                    ▼  importlib.metadata.version("rude-clean-code")
-                    src/rude_clean_code/__init__.py
+              rude-clean-code/src/rude_clean_code/__init__.py
                                    │
                                    ▼
                               VERSION (the only export)
@@ -27,19 +27,22 @@ this page describes the repository as built.
 
 ### Components
 
-- **The package** (at the repository root) is the only distribution and
-  the only product artifact. It is built by hatchling from the `src/` layout
+- **The package** (`rude-clean-code/`) is the only distribution and the
+  only product artifact. It is built by hatchling from the `src/` layout
   and exposes `VERSION`, read from installed distribution metadata at import
-  time. Its BDD contract lives in `features/package_version.feature` and its
-  steps in `tests/`; the tests inspect a fresh interpreter to avoid leakage
-  from earlier imports.
-- **Task automation and scripts** (`dodo.py` and `scripts/`) are tooling,
-  not product code: [`dodo.py`](../../dodo.py) implements the unified `doit`
-  tasks (test, coverage, lint, package validation, release build, commit
-  message checking, and hook installation), while `scripts/` holds the
-  pre-Pixi sandbox restore (`restore.sh`) and Pixi activation helper
-  (`activate.py` — puts local `src/` directories on `PYTHONPATH`). Their
-  tests live in `scripts/tests/`.
+  time. Its BDD contract lives in
+  `rude-clean-code/features/package_version.feature` and its steps in
+  `rude-clean-code/tests/`; the tests inspect a fresh interpreter to avoid
+  leakage from earlier imports.
+- **Task automation and scripts** (`automation/` and `scripts/`) are tooling,
+  not product code: [`automation/dodo.py`](../../automation/dodo.py)
+  implements the unified `doit` tasks (configured via root
+  [`doit.cfg`](../../doit.cfg) for test, coverage, lint, package validation,
+  release build, commit message checking, and hook installation), with its
+  Gherkin specs in `automation/features/` and tests in `automation/tests/`.
+  `scripts/` holds the pre-Pixi sandbox restore (`restore.sh`) and Pixi
+  activation helper (`activate.py` — puts local `src/` directories on
+  `PYTHONPATH`), with sandbox and script tests in `scripts/tests/`.
 - **The locked workspace** (`pixi.toml` / `pixi.lock`) pins every tool used
   locally and in CI: Python and the lint/test/coverage/automation stack
   (including `doit`) from PyPI, the CLI tools (lefthook, bun, convco,

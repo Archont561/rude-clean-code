@@ -1,8 +1,8 @@
 # Releasing to PyPI
 
-The package at the repository root is published to PyPI by the
-[release workflow](../../.github/workflows/release.yml), triggered by pushing
-a version tag. Publishing uses
+The `rude-clean-code` package under `rude-clean-code/` is published to PyPI
+by the [release workflow](../../.github/workflows/release.yml), triggered by
+pushing a version tag. Publishing uses
 [PyPI trusted publishing](https://docs.pypi.org/trusted-publishers/) (OIDC):
 no API token is stored in this repository or in GitHub secrets. The `pypi`
 GitHub environment — configured in repository settings — holds the trust,
@@ -14,7 +14,7 @@ Two jobs, in order:
 
 1. **Build and check distributions** (`build`): checks out the tag, sets up
    the locked Pixi environment, and runs the `build-release` task in
-   [`dodo.py`](../../dodo.py). That task
+   [`automation/dodo.py`](../../automation/dodo.py). That task
    - verifies that the tag (sans a leading `v`) matches the `version` in
      `pyproject.toml` — a mismatch fails the job
      before anything can be uploaded;
@@ -34,7 +34,7 @@ Two jobs, in order:
 
 ## Cutting a release
 
-1. Bump `version` in `pyproject.toml` and commit
+1. Bump `version` in `rude-clean-code/pyproject.toml` and commit
    the change. Version bumps are a maintainer action.
 2. Tag the commit with a `v`-prefixed tag matching the version, for
    example `git tag v0.1.0`, and push the tag: `git push origin v0.1.0`.
@@ -68,5 +68,6 @@ Pull requests that change the workflow are covered by actionlint and by a
 commit-message check (Policy job), and the workflow path is covered by
 alint: `release.yml` must exist, and every `run:` step in `ci.yml` and
 `release.yml` must be a single line — automation logic belongs in
-[`dodo.py`](../../dodo.py) where it can be read and tested, which is why
-the build itself lives in `build_release()` inside `dodo.py`.
+[`automation/dodo.py`](../../automation/dodo.py) where it can be read and
+tested, which is why the build itself lives in `build_release()` inside
+`automation/dodo.py`.

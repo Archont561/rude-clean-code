@@ -2,15 +2,15 @@
 
 The checks below are the same commands CI runs. If they pass locally they
 pass in CI ([`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)).
-Run them through the locked `doit` runner in [`dodo.py`](../../dodo.py):
+Run them through the locked `doit` runner in [`automation/dodo.py`](../../automation/dodo.py):
 
 ```sh
 pixi run --locked doit <task>
 ```
 
 Running `pixi run --locked doit` (or `pixi run --locked doit ci`) executes
-the full local CI sweep (`policy`, `docs-lint`, `test-scripts`, and
-`coverage`).
+the full local CI sweep (`policy`, `docs-lint`, `test-scripts`,
+`test-automation`, and `coverage`).
 
 ## The CI suite
 
@@ -25,7 +25,7 @@ pixi run --locked doit coverage
 ```
 
 Installs the local package and runs the BDD tests under
-the root package with coverage. `.coveragerc` requires at least 91%
+`rude-clean-code/` with coverage. `.coveragerc` requires at least 91%
 total line coverage (`fail_under`); the current suite sits at 100%.
 
 ### `Policy`
@@ -33,9 +33,9 @@ total line coverage (`fail_under`); the current suite sits at 100%.
 ```sh
 pixi run --locked doit lint           # ruff check .
 pixi run --locked doit format-check   # ruff format --check .
-pixi run --locked doit typecheck      # mypy src
+pixi run --locked doit typecheck      # mypy rude-clean-code/src
 pixi run --locked doit check-packages # build wheels/sdists, twine check, wheel inspection
-pixi run --locked doit lint-prose     # vale --no-global README.md AGENTS.md ... docs
+pixi run --locked doit lint-prose     # vale --no-global README.md ... docs
 pixi run --locked doit alint          # repository structure rules (.alint.yml)
 pixi run --locked doit actionlint     # workflow syntax and semantics
 ```
@@ -84,9 +84,10 @@ catalogue.
 ## Auxiliary checks
 
 ```sh
-pixi run --locked doit test          # package tests without coverage
-pixi run --locked doit test-scripts  # automation and script tests (scripts/tests/)
-pixi run --locked doit audit         # pip-audit --local --skip-editable
+pixi run --locked doit test            # package tests without coverage
+pixi run --locked doit test-scripts    # sandbox and script tests (scripts/tests/)
+pixi run --locked doit test-automation # automation BDD tests (automation/tests/)
+pixi run --locked doit audit           # pip-audit --local --skip-editable
 ```
 
 `audit` is not part of CI (it queries PyPI advisories over the network) but

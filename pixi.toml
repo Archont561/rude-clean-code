@@ -39,7 +39,7 @@ doit = ">=0.37.0, <0.38"
 PYTHONPATH = '$(IFS=; set -f; python ${PIXI_PROJECT_ROOT}/scripts/activate.py)'
 
 [tasks]
-# Unified automation runner; all check, test, build, hook, and release tasks live in dodo.py.
+# Unified automation runner; all check, test, build, hook, and release tasks live in automation/dodo.py.
 do = "doit"
 bun-install = "bun install --frozen-lockfile"
 # Direct Bun developer CLIs so arbitrary flags (for example `--help`) pass through untouched
