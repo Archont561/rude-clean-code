@@ -2,9 +2,10 @@
 
 This directory is the Backlog.md workspace for Rude Clean Code's planned
 product capabilities and engineering work. Its records describe intentions
-and progress; they are not a claim that the Rude plugin or any lint rule
-already exists. The package under `packages/rude-clean-code/` is currently a
-version-only scaffold (see decision-4).
+and progress; see the [rules reference](../docs/reference/rules.md) for the
+deterministic core rules (`CC101`–`CC104`, `CC201`–`CC202`,
+`CC301`–`CC303`) currently implemented under `rude-clean-code/`, while
+remaining rule families in the backlog remain planned.
 
 - [`docs/`](docs/) contains the product and architecture specification.
 - [`decisions/`](decisions/) records architectural decisions.
