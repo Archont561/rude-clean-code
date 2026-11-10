@@ -100,39 +100,49 @@ def bare_validation_workspace(tmp_path: Path, pkg_state: dict[str, Any]) -> None
     pkg_state["workspace"] = tmp_path
 
 
+@pytest.fixture
+def inspect_invalid_package(
+    dodo_module: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+    write_wheel: Callable[[Path, list[str]], None],
+    pkg_state: dict[str, Any],
+) -> Callable[[str, str], None]:
+    def _run(preset: str, sdist_present: str) -> None:
+        wheel_entries = WHEEL_PRESETS[preset]
+        create_sdist = sdist_present == "present"
+
+        def fake_run(
+            cmd: list[str], *, cwd: Path, env: dict[str, str], check: bool
+        ) -> subprocess.CompletedProcess[str]:
+            if cmd[:3] == [sys.executable, "-m", "build"]:
+                outdir = Path(cmd[cmd.index("--outdir") + 1])
+                if create_sdist:
+                    (outdir / "pkg-0.1.0.tar.gz").write_bytes(b"sdist")
+                write_wheel(outdir / "pkg-0.1.0-py3-none-any.whl", wheel_entries)
+            return subprocess.CompletedProcess(cmd, 0)
+
+        monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
+        try:
+            dodo_module.check_packages(root=pkg_state["workspace"])
+        except RuntimeError as exc:
+            pkg_state["error"] = exc
+        else:
+            pytest.fail("Expected check_packages to raise RuntimeError")
+
+    return _run
+
+
 @when(
     parsers.parse(
         'check_packages inspects a wheel preset "{preset}" with sdist "{sdist_present}"'
     )
 )
 def run_check_packages_invalid(
-    dodo_module: ModuleType,
-    monkeypatch: pytest.MonkeyPatch,
-    write_wheel: Callable[[Path, list[str]], None],
-    pkg_state: dict[str, Any],
+    inspect_invalid_package: Callable[[str, str], None],
     preset: str,
     sdist_present: str,
 ) -> None:
-    wheel_entries = WHEEL_PRESETS[preset]
-    create_sdist = sdist_present == "present"
-
-    def fake_run(
-        cmd: list[str], *, cwd: Path, env: dict[str, str], check: bool
-    ) -> subprocess.CompletedProcess[str]:
-        if cmd[:3] == [sys.executable, "-m", "build"]:
-            outdir = Path(cmd[cmd.index("--outdir") + 1])
-            if create_sdist:
-                (outdir / "pkg-0.1.0.tar.gz").write_bytes(b"sdist")
-            write_wheel(outdir / "pkg-0.1.0-py3-none-any.whl", wheel_entries)
-        return subprocess.CompletedProcess(cmd, 0)
-
-    monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
-    try:
-        dodo_module.check_packages(root=pkg_state["workspace"])
-    except RuntimeError as exc:
-        pkg_state["error"] = exc
-    else:
-        pytest.fail("Expected check_packages to raise RuntimeError")
+    inspect_invalid_package(preset, sdist_present)
 
 
 @then(parsers.parse('package validation fails with "{expected}"'))

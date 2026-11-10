@@ -51,11 +51,12 @@ mark unfinished or unverified work complete.
 
 ## Engineering rules
 
-- The package is a **version-only scaffold** (backlog decision-4):
-  `src/rude_clean_code/` contains only
-  `__init__.py` and it exports only `VERSION`. Do not add rules, modules,
-  or public exports without a backlog task that deliberately relaxes
-  that decision.
+- The package root `src/rude_clean_code/__init__.py` exports **only
+  `VERSION`** (backlog decision-2) and never imports Rude or plugin
+  submodules eagerly. `decision-4` was deliberately superseded by `RCC-2`
+  (`m-1`), so implemented rules live in submodules referenced by the
+  `rude.plugins` entry point (`rude_clean_code.plugin`); do not add
+  unplanned rule families or root exports without a backlog task.
 - `VERSION` comes from installed distribution metadata built from the
   package's `pyproject.toml` (decision-2). Never hard-code a second copy
   of the version string in source.
@@ -151,10 +152,10 @@ and [docs/reference/pixi-tasks.md](docs/reference/pixi-tasks.md).
   `rude-clean-code/features/`, `rude-clean-code/tests/`); keep docs in
   sync with behavior (the documentation standard applies); write
   Conventional Commits.
-- ⚠️ **Ask first**: relaxing the version-only scaffold (decision-4);
-  adding public exports or distributions; touching
-  `.github/workflows/` or the sandbox publisher; adding or removing
-  dependencies; anything affecting release, tag, or publish.
+- ⚠️ **Ask first**: adding public exports on `rude_clean_code.__init__` or
+  new distributions; touching `.github/workflows/` or the sandbox
+  publisher; adding or removing dependencies; anything affecting release,
+  tag, or publish.
 - 🚫 **Never**: commit secrets or API keys; push, merge, tag, publish, or
   release without explicit user authorization; edit `backlog/` records or
   `.agents/` skills by hand; hand-edit `pixi.lock` or `bun.lock`; edit
@@ -166,7 +167,7 @@ and [docs/reference/pixi-tasks.md](docs/reference/pixi-tasks.md).
 <!-- markdownlint-disable MD022 MD032 MD034 MD036 -->
 <!-- agents-md:begin id=overview -->
 ## Overview
-Rude Clean Code — an early-stage, version-only scaffold of a Clean Code / SOLID-inspired plugin for the Rude Python linter. This manifest carries the developer CLIs; the product is Python and the environment of record is pixi.lock. Stack: node.
+Rude Clean Code — Clean Code / SOLID-inspired plugin for the Rude Python linter. This manifest carries the developer CLIs; the product is Python and the environment of record is pixi.lock. Stack: node.
 <!-- agents-md:end id=overview -->
 
 <!-- agents-md:begin id=commands -->
@@ -186,7 +187,7 @@ _TBD: how tests are run and what must pass before a change is considered done_
 
 <!-- agents-md:begin id=structure -->
 ## Project structure
-Top-level: `backlog/`, `docs/`, `scripts/`, `automation/`, `rude-clean-code/`. _TBD: note where the important code lives_
+Top-level: `automation/`, `backlog/`, `docs/`, `rude-clean-code/`, `scripts/`, `distributions/`. _TBD: note where the important code lives_
 <!-- agents-md:end id=structure -->
 
 <!-- agents-md:begin id=conventions -->

@@ -16,18 +16,21 @@ treat it as a defect and fix it.
 | --------------------------------- | -------------------------------------------- |
 | [guides/](guides/)                | Task-oriented instructions and workflows      |
 | [concepts/](concepts/)            | Domain concepts and explanations              |
-| [reference/](reference/)          | Commands, configuration, and layout reference |
+| [reference/](reference/)          | Commands, rules, configuration, and layout   |
 | [architecture/](architecture/)    | System architecture and design                |
 | [development/](development/)      | Contribution and development workflows        |
 
 ## Where to start
 
+- **Configuring the plugin?** See
+  [Rules and configuration profiles](reference/rules.md) for the **Basic**
+  profile TOML snippet and the implemented `CC101`–`CC303` rule reference.
 - **New here?** Read the [development setup guide](guides/development-setup.md),
   then [running the checks](guides/running-the-checks.md).
 - **Evaluating the project?** Read the
-  [version-only scaffold concept](concepts/version-only-scaffold.md) and the
-  [architecture overview](architecture/overview.md) first, so you know what
-  the repository does (and does not do yet).
+  [architecture overview](architecture/overview.md) and the
+  [scaffold history concept](concepts/version-only-scaffold.md) to understand
+  both what ships today and why `rude_clean_code` exports only `VERSION`.
 - **Cutting a release?** See [Releasing to PyPI](guides/releasing.md) —
   the release workflow, trusted publishing, and the tag/version guard.
 - **Changing code or workflows?** The [documentation standard](development/documentation.md)
@@ -38,6 +41,8 @@ treat it as a defect and fix it.
 
 ## Reference
 
+- [Rules and configuration profiles](reference/rules.md) — implemented
+  `CC101`–`CC303` rules, default thresholds, and the Basic profile snippet.
 - [Pixi and doit tasks](reference/pixi-tasks.md) — the locked task catalogue
   used by local development and CI.
 - [Repository layout](reference/repository-layout.md) — what lives where and

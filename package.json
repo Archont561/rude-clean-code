@@ -2,7 +2,7 @@
   "name": "rude-clean-code-dev",
   "private": true,
   "version": "0.1.0",
-  "description": "Rude Clean Code \u2014 an early-stage, version-only scaffold of a Clean Code / SOLID-inspired plugin for the Rude Python linter. This manifest carries the developer CLIs; the product is Python and the environment of record is pixi.lock.",
+  "description": "Rude Clean Code — Clean Code / SOLID-inspired plugin for the Rude Python linter. This manifest carries the developer CLIs; the product is Python and the environment of record is pixi.lock.",
   "author": "Archont561",
   "license": "MIT",
   "homepage": "https://github.com/Archont561/rude-clean-code#readme",

@@ -2,7 +2,7 @@
 id: decision-4
 title: Keep the package a version-only scaffold
 date: '2026-11-08'
-status: accepted
+status: superseded
 ---
 
 ## Context

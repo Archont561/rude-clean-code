@@ -34,20 +34,40 @@ What lives where, and the invariants the layout enforces. Invariants marked
 
 ```text
 rude-clean-code/
-├── LICENSE                            # package MIT license
-├── README.md                          # package README for PyPI
-├── pyproject.toml                     # name/version source of truth (0.1.0)
-├── features/package_version.feature   # Gherkin contract for VERSION
-├── src/rude_clean_code/__init__.py    # the entire public surface: VERSION
-└── tests/test_package_version_bdd.py  # pytest-bdd steps for the feature
+├── LICENSE                              # package MIT license
+├── README.md                            # package README for PyPI
+├── pyproject.toml                       # version, rude dependency, rude.plugins entry point
+├── features/
+│   ├── deterministic_rules.feature      # Gherkin contract for CC101-CC303 discovery & CLI
+│   └── package_version.feature          # Gherkin contract for lazy VERSION-only __init__.py
+├── src/rude_clean_code/
+│   ├── __init__.py                      # public root surface: VERSION only
+│   ├── _scope.py                        # shared own-scope traversal & threshold rule base
+│   ├── plugin.py                        # rude.plugins entry-point module exposing RULES
+│   ├── py.typed                         # PEP 561 typed-package marker
+│   └── rules/
+│       ├── __init__.py                  # rule package marker
+│       ├── classes.py                   # CC201-CC202
+│       ├── complexity.py                # CC301-CC303
+│       └── functions.py                 # CC101-CC104
+└── tests/
+    ├── test_class_rules.py              # unit & Hypothesis tests for CC201-CC202
+    ├── test_complexity_rules.py         # unit & Hypothesis tests for CC301-CC303
+    ├── test_deterministic_rules_bdd.py  # pytest-bdd steps for deterministic_rules.feature
+    ├── test_function_rules.py           # unit & Hypothesis tests for CC101-CC104
+    ├── test_package_version_bdd.py      # pytest-bdd steps for package_version.feature
+    ├── test_plugin_discovery.py         # entry-point, prefix select/ignore, & worker config tests
+    └── test_scope_traversal.py          # unit & syntax-recovery tests for shared scope helpers
 ```
 
 - The hatchling sdist ships only `src/`, `tests/`, `features/`, and the
   package `README.md` and `LICENSE` (plus the always-forced
   `pyproject.toml` and PKG-INFO), not the whole repository snapshot.
-- Only `VERSION` is exported, read from installed distribution metadata
-  (decision-2). No other modules, no other exports, no lint rules yet
-  (decision-4).
+- Only `VERSION` is exported from `rude_clean_code/__init__.py`, read from
+  installed distribution metadata (decision-2). `decision-4` was deliberately
+  superseded by `RCC-2` (`m-1`): deterministic rule modules live inside
+  `rude_clean_code` and are loaded only when Rude imports the `rude.plugins`
+  entry point (`rude_clean_code.plugin`).
 - Package behavior, tests, and Gherkin features live inside the owning
   package under `rude-clean-code/` (decision-3). Unified automation tasks
   (`dodo.py`), Gherkin specs (`features/`), and BDD tests (`tests/`) live in

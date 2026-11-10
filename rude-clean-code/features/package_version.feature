@@ -5,4 +5,4 @@ Feature: Rude Clean Code package version discovery
     Then VERSION is its only public export
     And VERSION matches pyproject and installed distribution metadata
     And VERSION is read from distribution metadata
-    And the package has no other source files
+    And importing the root namespace does not load rude or plugin submodules
