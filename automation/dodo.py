@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -14,6 +15,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_DIR = "rude-clean-code"
+DOGFOOD_TARGETS = (PACKAGE_DIR, "automation", "scripts")
 ZERO_SHA = "0" * 40
 
 VALE_TARGETS = (
@@ -88,6 +90,15 @@ def clean_dist(root: Path = ROOT) -> None:
     shutil.rmtree(root / "dist", ignore_errors=True)
 
 
+def _verify_wheel_contents(wheel: Path) -> None:
+    with zipfile.ZipFile(wheel) as archive:
+        names = archive.namelist()
+        if not any(name.endswith(".dist-info/licenses/LICENSE") for name in names):
+            raise RuntimeError(f"License missing from {wheel.name}")
+        if "rude_clean_code/__init__.py" not in names:
+            raise RuntimeError(f"Package initializer missing from {wheel.name}")
+
+
 def check_packages(
     root: Path = ROOT,
     sources: Sequence[Path] | None = None,
@@ -98,31 +109,22 @@ def check_packages(
     shutil.rmtree(outputs, ignore_errors=True)
     outputs.mkdir(parents=True, exist_ok=True)
     for source in package_sources:
-        _run_isolated(
-            [
-                sys.executable,
-                "-m",
-                "build",
-                str(source),
-                "--outdir",
-                str(outputs),
-            ],
-            cwd=root,
-        )
+        build_cmd = [
+            sys.executable,
+            "-m",
+            "build",
+            str(source),
+            "--outdir",
+            str(outputs),
+        ]
+        _run_isolated(build_cmd, cwd=root)
     files = sorted(outputs.iterdir())
     if len(files) != 2 * len(package_sources):
         raise RuntimeError("Expected one wheel and one sdist per distribution")
-    _run_isolated(
-        [sys.executable, "-m", "twine", "check", *(str(path) for path in files)],
-        cwd=root,
-    )
+    twine_cmd = [sys.executable, "-m", "twine", "check", *(str(p) for p in files)]
+    _run_isolated(twine_cmd, cwd=root)
     for wheel in sorted(outputs.glob("*.whl")):
-        with zipfile.ZipFile(wheel) as archive:
-            names = archive.namelist()
-            if not any(name.endswith(".dist-info/licenses/LICENSE") for name in names):
-                raise RuntimeError(f"License missing from {wheel.name}")
-            if "rude_clean_code/__init__.py" not in names:
-                raise RuntimeError(f"Package initializer missing from {wheel.name}")
+        _verify_wheel_contents(wheel)
 
 
 def build_release(ref_name: str = "", root: Path = ROOT) -> None:
@@ -168,38 +170,40 @@ def install_hooks(root: Path = ROOT) -> None:
     print("Lefthook hooks installed.")
 
 
+def _resolve_commit_base(root: Path, base: str) -> str:
+    if base and base != ZERO_SHA:
+        return base
+    if _git_is_commit(root, "HEAD^"):
+        return subprocess.run(
+            ["git", "rev-parse", "HEAD^"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    roots = subprocess.run(
+        ["git", "rev-list", "--max-parents=0", "HEAD"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    ).stdout.splitlines()
+    return roots[0].strip() if roots else ""
+
+
 def check_commit_messages(
     base: str = "",
     head: str = "",
     root: Path = ROOT,
 ) -> None:
     """Validate incoming commit messages in base..head with convco."""
-    event_base = base
-    resolved_base = base
-    if not resolved_base or resolved_base == ZERO_SHA:
-        if _git_is_commit(root, "HEAD^"):
-            resolved_base = subprocess.run(
-                ["git", "rev-parse", "HEAD^"],
-                cwd=root,
-                capture_output=True,
-                text=True,
-                check=True,
-            ).stdout.strip()
-        else:
-            roots = subprocess.run(
-                ["git", "rev-list", "--max-parents=0", "HEAD"],
-                cwd=root,
-                capture_output=True,
-                text=True,
-                check=False,
-            ).stdout.splitlines()
-            resolved_base = roots[0].strip() if roots else ""
+    resolved_base = _resolve_commit_base(root, base)
     if not head or not _git_is_commit(root, head):
         print(f"No valid head ('{head or 'empty'}'); skipping commit-message check.")
         return
     if not resolved_base or not _git_is_commit(root, resolved_base):
         print(
-            f"No valid base ref available (event base: '{event_base or 'empty'}'); "
+            f"No valid base ref available (event base: '{base or 'empty'}'); "
             "skipping commit-message check."
         )
         return
@@ -209,6 +213,42 @@ def check_commit_messages(
         cwd=root,
         check=True,
     )
+
+
+def _parse_rude_diagnostics(stdout: str) -> list[dict[str, Any]]:
+    return [json.loads(line) for line in stdout.splitlines() if line.strip()]
+
+
+def dogfood_rude(
+    root: Path = ROOT,
+    paths: Sequence[str] | None = None,
+) -> None:
+    """Run Rude with this repository's Basic CC profile and fail on any diagnostic."""
+    resolved = tuple(paths) if paths is not None else DOGFOOD_TARGETS
+    cmd = [
+        sys.executable,
+        "-m",
+        "rude",
+        "check",
+        "--config",
+        str(root / PACKAGE_DIR / "pyproject.toml"),
+        "--format",
+        "json",
+        *resolved,
+    ]
+    result = subprocess.run(cmd, cwd=root, capture_output=True, text=True, check=False)
+    diagnostics = _parse_rude_diagnostics(result.stdout)
+    if diagnostics:
+        details = "\n".join(
+            f"{d['file']}:{d['line']}:{d['column']}: {d['code']} {d['message']}"
+            for d in diagnostics
+        )
+        raise RuntimeError(f"Rude dogfood checks failed:\n{details}")
+    if result.returncode != 0:
+        raise RuntimeError(
+            result.stderr.strip() or f"Rude failed with exit {result.returncode}"
+        )
+    print("Rude dogfood check passed (0 diagnostics).")
 
 
 def task_install_projects() -> dict[str, Any]:
@@ -275,10 +315,20 @@ def task_coverage() -> dict[str, Any]:
     }
 
 
+def task_dogfood() -> dict[str, Any]:
+    """Run Rude using the installed clean-code plugin across repository Python sources."""
+    return {
+        "basename": "dogfood",
+        "task_dep": ["install-projects"],
+        "actions": [dogfood_rude],
+    }
+
+
 def task_lint() -> dict[str, Any]:
-    """Lint Python files with ruff."""
+    """Lint Python files with ruff and dogfooded Rude CC rules."""
     return {
         "basename": "lint",
+        "task_dep": ["dogfood"],
         "actions": [["ruff", "check", "."]],
     }
 

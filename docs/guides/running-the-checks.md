@@ -24,14 +24,22 @@ workflow runs separately on changes to the Pixi manifests (see
 pixi run --locked doit coverage
 ```
 
-Installs the local package and runs the BDD tests under
-`rude-clean-code/` with coverage. `.coveragerc` requires at least 91%
-total line coverage (`fail_under`); the current suite sits at 100%.
+Installs the local package and runs the package unit, Hypothesis property,
+integration, and BDD tests under `rude-clean-code/` with coverage. `.coveragerc`
+requires at least 91% total line coverage (`fail_under`).
+
+To dogfood the installed plugin's rules across the entire repository
+(`rude-clean-code`, `automation`, and `scripts`) with the `doit` gate:
+
+```sh
+pixi run --locked doit dogfood
+```
 
 ### `Policy`
 
 ```sh
-pixi run --locked doit lint           # ruff check .
+pixi run --locked doit dogfood        # Rude CC1-CC3 across repo Python files (fails on any diagnostic)
+pixi run --locked doit lint           # dogfood + ruff check .
 pixi run --locked doit format-check   # ruff format --check .
 pixi run --locked doit typecheck      # mypy rude-clean-code/src
 pixi run --locked doit check-packages # build wheels/sdists, twine check, wheel inspection

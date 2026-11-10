@@ -95,52 +95,62 @@ def verify_hook_error(git_state: dict[str, Any], expected: str) -> None:
     assert expected in str(git_state["error"])
 
 
-def _install_git_mock(
+def _mock_git_response(
+    cmd: list[str], git_state: dict[str, Any]
+) -> subprocess.CompletedProcess[str]:
+    if cmd[:3] == ["git", "cat-file", "-e"]:
+        ref = cmd[3].removesuffix("^{commit}")
+        code = 0 if ref in git_state["commits"] else 1
+        return subprocess.CompletedProcess(cmd, code)
+    if cmd[:3] == ["git", "rev-parse", "HEAD^"]:
+        return subprocess.CompletedProcess(cmd, 0, stdout=f"{git_state['parent']}\n")
+    if cmd[:3] == ["git", "rev-list", "--max-parents=0"]:
+        return subprocess.CompletedProcess(
+            cmd, 0, stdout=f"{git_state['root_commit']}\n"
+        )
+    if cmd[:2] == ["convco", "check"]:
+        git_state["convco_calls"].append(cmd)
+        return subprocess.CompletedProcess(cmd, 0)
+    raise AssertionError(f"Unexpected command: {cmd}")
+
+
+@pytest.fixture
+def mocked_git(
     dodo_module: ModuleType,
     monkeypatch: pytest.MonkeyPatch,
     git_state: dict[str, Any],
-) -> None:
-    def fake_run(
-        cmd: list[str],
-        *,
-        cwd: Path,
-        capture_output: bool = False,
-        text: bool = False,
-        check: bool = False,
-    ) -> subprocess.CompletedProcess[str]:
-        if cmd[:3] == ["git", "cat-file", "-e"]:
-            ref = cmd[3].removesuffix("^{commit}")
-            code = 0 if ref in git_state["commits"] else 1
-            return subprocess.CompletedProcess(cmd, code)
-        if cmd[:3] == ["git", "rev-parse", "HEAD^"]:
-            return subprocess.CompletedProcess(
-                cmd, 0, stdout=f"{git_state['parent']}\n"
-            )
-        if cmd[:3] == ["git", "rev-list", "--max-parents=0"]:
-            return subprocess.CompletedProcess(
-                cmd, 0, stdout=f"{git_state['root_commit']}\n"
-            )
-        if cmd[:2] == ["convco", "check"]:
-            git_state["convco_calls"].append(cmd)
-            return subprocess.CompletedProcess(cmd, 0)
-        raise AssertionError(f"Unexpected command: {cmd}")
+) -> dict[str, Any]:
+    def fake_run(cmd: list[str], **_kwargs: Any) -> subprocess.CompletedProcess[str]:
+        return _mock_git_response(cmd, git_state)
 
     monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
+    return git_state
+
+
+@pytest.fixture
+def commit_checker(
+    dodo_module: ModuleType,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    git_state: dict[str, Any],
+) -> Any:
+    def _run(base: str, head: str) -> None:
+        dodo_module.check_commit_messages(base=base, head=head, root=tmp_path)
+        git_state["stdout"] = capsys.readouterr().out
+
+    return _run
 
 
 @given(
     parsers.parse('a git repository with commits "{c1}", "{c2}", and "{c3}"'),
 )
 def repo_with_commits(
-    dodo_module: ModuleType,
-    monkeypatch: pytest.MonkeyPatch,
-    git_state: dict[str, Any],
+    mocked_git: dict[str, Any],
     c1: str,
     c2: str,
     c3: str,
 ) -> None:
-    git_state["commits"] = {c1, c2, c3}
-    _install_git_mock(dodo_module, monkeypatch, git_state)
+    mocked_git["commits"] = {c1, c2, c3}
 
 
 @given(
@@ -149,17 +159,14 @@ def repo_with_commits(
     )
 )
 def repo_with_commits_and_parent(
-    dodo_module: ModuleType,
-    monkeypatch: pytest.MonkeyPatch,
-    git_state: dict[str, Any],
+    mocked_git: dict[str, Any],
     c1: str,
     c2: str,
     c3: str,
     parent: str,
 ) -> None:
-    git_state["commits"] = {c1, c2, c3}
-    git_state["parent"] = parent
-    _install_git_mock(dodo_module, monkeypatch, git_state)
+    mocked_git["commits"] = {c1, c2, c3}
+    mocked_git["parent"] = parent
 
 
 @given(
@@ -168,15 +175,12 @@ def repo_with_commits_and_parent(
     )
 )
 def repo_without_parent(
-    dodo_module: ModuleType,
-    monkeypatch: pytest.MonkeyPatch,
-    git_state: dict[str, Any],
+    mocked_git: dict[str, Any],
     root_sha: str,
     head: str,
 ) -> None:
-    git_state["commits"] = {root_sha, head}
-    git_state["root_commit"] = root_sha
-    _install_git_mock(dodo_module, monkeypatch, git_state)
+    mocked_git["commits"] = {root_sha, head}
+    mocked_git["root_commit"] = root_sha
 
 
 @when(
@@ -185,15 +189,11 @@ def repo_without_parent(
     )
 )
 def check_commits_explicit(
-    dodo_module: ModuleType,
-    tmp_path: Path,
-    capsys: pytest.CaptureFixture[str],
-    git_state: dict[str, Any],
+    commit_checker: Any,
     base: str,
     head: str,
 ) -> None:
-    dodo_module.check_commit_messages(base=base, head=head, root=tmp_path)
-    git_state["stdout"] = capsys.readouterr().out
+    commit_checker(base, head)
 
 
 @when(
@@ -201,15 +201,10 @@ def check_commits_explicit(
 )
 def check_commits_zero_sha(
     dodo_module: ModuleType,
-    tmp_path: Path,
-    capsys: pytest.CaptureFixture[str],
-    git_state: dict[str, Any],
+    commit_checker: Any,
     head: str,
 ) -> None:
-    dodo_module.check_commit_messages(
-        base=dodo_module.ZERO_SHA, head=head, root=tmp_path
-    )
-    git_state["stdout"] = capsys.readouterr().out
+    commit_checker(dodo_module.ZERO_SHA, head)
 
 
 @then(parsers.parse('commit message validation skips with message "{expected}"'))

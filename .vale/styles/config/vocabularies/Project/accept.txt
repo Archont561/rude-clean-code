@@ -38,7 +38,7 @@ PyPI
 (?i:apis)
 (?i:doctests?)
 (?i:docstrings?)
-(?i:dogfood)
+(?i:dogfood(?:ed|ing|s)?)
 (?i:dunders)
 (?i:repo)
 (?i:typecheck)

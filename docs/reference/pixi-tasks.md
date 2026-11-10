@@ -18,11 +18,12 @@ directories of tracked or unignored `pyproject.toml` projects to
 | Task                    | What it runs                                                                       | Purpose                                                       |
 | ----------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | `install-projects`      | `python -m pip install --no-deps --no-build-isolation --force-reinstall ./rude-clean-code` | Install the local wheel without network or build isolation    |
+| `dogfood`               | `dogfood_rude()` in `automation/dodo.py`                                           | Run Rude with `[tool.rude]` (`CC1`–`CC3`) across repo Python sources and fail on any diagnostic (via `install-projects`) |
 | `test`                  | `python -m pytest rude-clean-code/tests`                                           | Run the package BDD tests (via `install-projects`)            |
 | `test-scripts`          | `python -m pytest scripts/tests`                                                   | Run the repository sandbox and script tests                   |
 | `test-automation`       | `python -m pytest automation/tests`                                                | Run the automation BDD tests against `automation/features/`   |
 | `coverage`              | `python -m pytest rude-clean-code/tests --cov=rude-clean-code/src --cov-report=term-missing --cov-report=xml:coverage.xml` | Coverage gate: `.coveragerc` requires ≥ 91% total line coverage |
-| `lint`                  | `ruff check .`                                                                     | Python lint (extends `I`, `PTH`)                              |
+| `lint`                  | `ruff check .` (via `dogfood`)                                                     | Python lint (extends `I`, `PTH`, plus Rude dogfooding)        |
 | `format-check`          | `ruff format --check .`                                                            | Python formatting (diffs fail CI)                             |
 | `typecheck`             | `mypy rude-clean-code/src`                                                         | Static types (`mypy.ini`)                                     |
 | `audit`                 | `pip-audit --local --skip-editable`                                                | Dependency vulnerability scan (not part of CI)                |
@@ -60,7 +61,8 @@ unchanged:
 - **Conda (locked in `pixi.lock`)**: Python (`>=3.11,<3.14`), lefthook,
   bun, convco, actionlint, shellcheck, vale.
 - **PyPI (locked in `pixi.lock`)**: hatchling, alint, pytest, pytest-bdd,
-  pytest-cov, ruff, mypy, build, twine, pip-audit, packaging, tox, doit.
+  pytest-cov, hypothesis, ruff, mypy, rude, build, twine, pip-audit, packaging,
+  tox, doit.
 - **Bun (locked in `bun.lock`)**: backlog.md, markdownlint-cli2, skills,
   `@eugeniughelbur/agents-md`.
 

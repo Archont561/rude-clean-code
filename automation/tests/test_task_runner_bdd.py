@@ -41,6 +41,7 @@ def verify_doit_config(
 def verify_expected_tasks(runner_state: dict[str, Any]) -> None:
     expected = {
         "install-projects",
+        "dogfood",
         "test",
         "test-scripts",
         "test-automation",
@@ -163,3 +164,63 @@ def verify_cli_listed_tasks(
     runner_state: dict[str, Any], first: str, second: str
 ) -> None:
     assert {first, second}.issubset(runner_state["cli_tasks"])
+
+
+@given("a temporary workspace configured for Rude dogfooding")
+def setup_dogfood_workspace(tmp_path: Path, runner_state: dict[str, Any]) -> None:
+    pkg_dir = tmp_path / "rude-clean-code"
+    pkg_dir.mkdir()
+    (pkg_dir / "pyproject.toml").write_text(
+        '[tool.rude]\nselect = ["CC1", "CC2", "CC3"]\n', encoding="utf-8"
+    )
+    runner_state["workspace"] = tmp_path
+
+
+@when("dogfood_rude runs with clean Rude output")
+def run_dogfood_clean(
+    dodo_module: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    runner_state: dict[str, Any],
+) -> None:
+    def fake_run(cmd: list[str], **_kwargs: Any) -> subprocess.CompletedProcess[str]:
+        runner_state["cmd"] = cmd
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
+    dodo_module.dogfood_rude(root=runner_state["workspace"])
+    runner_state["stdout"] = capsys.readouterr().out
+
+
+@then(parsers.parse('dogfood_rude succeeds and prints "{expected}"'))
+def verify_dogfood_success(runner_state: dict[str, Any], expected: str) -> None:
+    assert expected in runner_state["stdout"]
+
+
+@when("dogfood_rude runs and Rude emits a CC diagnostic")
+def run_dogfood_violation(
+    dodo_module: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+    runner_state: dict[str, Any],
+) -> None:
+    payload = (
+        '{"file": "sample.py", "line": 1, "column": 0, '
+        '"code": "CC101", "message": "Function too long", '
+        '"severity": "warning", "fixable": false}\n'
+    )
+
+    def fake_run(cmd: list[str], **_kwargs: Any) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(cmd, 0, stdout=payload, stderr="")
+
+    monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
+    try:
+        dodo_module.dogfood_rude(root=runner_state["workspace"])
+    except RuntimeError as exc:
+        runner_state["error"] = exc
+    else:
+        pytest.fail("Expected dogfood_rude to raise RuntimeError")
+
+
+@then(parsers.parse('dogfood_rude fails with "{expected}"'))
+def verify_dogfood_failure(runner_state: dict[str, Any], expected: str) -> None:
+    assert expected in str(runner_state["error"])
