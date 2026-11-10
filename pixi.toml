@@ -32,6 +32,8 @@ pip-audit = ">=2.9,<3"
 packaging = ">=26,<27"
 tox = ">=4.67.13, <5"
 doit = ">=0.37.0, <0.38"
+rude = ">=0.1a4, <0.2"
+hypothesis = ">=6.170.15, <7"
 
 # Pixi evaluates activation.env in the platform shell. Disable word splitting and
 # globbing inside the substitution so checkout paths containing spaces are safe.

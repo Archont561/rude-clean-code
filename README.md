@@ -12,7 +12,7 @@
   </a>
 </p>
 
-> Early-stage, planned Clean Code / SOLID-inspired plugin for the Rude Python linter. Currently a version-only scaffold: the package exposes VERSION only; no lint rules are implemented yet.
+> Clean Code plugin for the Rude Python linter. Implements the nine deterministic core rules (`CC101`–`CC104`, `CC201`–`CC202`, `CC301`–`CC303`); remaining rule families in the backlog remain planned.
 
 ### 🏠 [Homepage](https://github.com/Archont561/rude-clean-code#readme)
 
@@ -22,34 +22,57 @@ The [`docs/`](docs/README.md) directory is the source of truth for using and
 working on this repository:
 
 - [Documentation index](docs/README.md) — everything, organized by purpose
+- [Rules and Basic profile](docs/reference/rules.md) — implemented `CC101`–`CC303` rules, thresholds, and TOML configuration
 - [Development setup](docs/guides/development-setup.md) — clone, restore the locked developer sandbox, install hooks
 - [Running the checks](docs/guides/running-the-checks.md) — the CI suite locally
 - [Python version compatibility](docs/guides/python-version-compatibility.md) — testing against 3.11–3.13 with tox (local and CI)
 - [Releasing to PyPI](docs/guides/releasing.md) — tag-triggered release workflow with trusted publishing
 - [Pixi and doit tasks](docs/reference/pixi-tasks.md) — the locked task catalogue
 - [Repository layout](docs/reference/repository-layout.md) — what lives where and why
-- [Version-only scaffold](docs/concepts/version-only-scaffold.md) — why the package exposes only `VERSION`
+- [Scaffold history and root namespace](docs/concepts/version-only-scaffold.md) — why `__init__.py` still exports only `VERSION`
 - [Architecture overview](docs/architecture/overview.md) — components and how they fit together
 - [Documentation standard](docs/development/documentation.md) — how documentation is maintained here
 
-The [backlog](backlog/README.md) tracks planned work; the specification
-(`backlog/docs/`) and its decisions (`backlog/decisions/`) describe the
-planned design. Planned capabilities are not implemented capabilities — no
-lint rules exist yet.
+The [backlog](backlog/README.md) tracks remaining planned work; the
+specification (`backlog/docs/`) and decisions (`backlog/decisions/`) describe
+the full roadmap. Unimplemented families (`CC0xx`, `CC4xx`–`CC9xx`) remain
+planned, not shipped.
 
 ## Install
+
+For development in this repository:
 
 ```sh
 pixi install --locked
 ```
 
-## Usage
+For consumers installing the plugin alongside Rude:
 
 ```sh
-pixi run --locked doit test
+pip install rude-clean-code
 ```
 
-To inspect the installed version (read from distribution metadata):
+## Usage
+
+Add the **Basic** profile snippet to your project's `pyproject.toml`:
+
+```toml
+[tool.rude]
+select = ["CC1", "CC2", "CC3"]
+
+[tool.rude.rules.CC101]
+max_lines = 30
+```
+
+Then run Rude (it discovers `rude-clean-code` via the `rude.plugins` entry point):
+
+```sh
+rude check --select CC src/
+```
+
+See [Rules and Basic profile](docs/reference/rules.md) for the full option
+reference. To inspect the installed package version (read from distribution
+metadata):
 
 ```python
 from rude_clean_code import VERSION

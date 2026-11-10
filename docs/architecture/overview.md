@@ -1,39 +1,41 @@
 # Architecture overview
 
-Rude Clean Code is a Python distribution scaffold with a locked developer
-environment and a planning-first workflow. This page explains the components
-and how they compose. It deliberately does not restate the product design —
-that is the backlog specification's job
+Rude Clean Code is a Clean Code plugin for the Rude Python linter with a
+locked developer environment and a planning-first workflow. This page explains
+the components and how they compose. It deliberately does not restate the full
+backlog roadmap — that is the specification's job
 ([doc-1](../../backlog/docs/doc-1%20-%20Rude-Clean-Code-product-and-architecture-specification.md));
 this page describes the repository as built.
 
 ## The moving parts
 
 ```text
-                   rude-clean-code/pyproject.toml (version is the source of truth)
+                   rude-clean-code/pyproject.toml (version, deps, rude.plugins entry point)
                                    │
                                    ▼  hatchling build
                       wheel + sdist (automation/dodo.py check-packages)
                                    │
                                    ▼  pip install --no-deps --no-build-isolation
-                    installed dist-info METADATA (no editable install)
-                                   │
-                                   ▼  importlib.metadata.version("rude-clean-code")
-              rude-clean-code/src/rude_clean_code/__init__.py
-                                   │
-                                   ▼
-                              VERSION (the only export)
+                    installed dist-info METADATA + entry_points.txt
+                         │                                   │
+                         ▼                                   ▼  entry_points(group="rude.plugins")
+        rude_clean_code/__init__.py              rude_clean_code/plugin.py (RULES)
+                         │                                   │
+                         ▼                                   ▼
+             VERSION (lazy, no Rude import)       rules/{functions,classes,complexity}.py + _scope.py
 ```
 
 ### Components
 
 - **The package** (`rude-clean-code/`) is the only distribution and the
-  only product artifact. It is built by hatchling from the `src/` layout
-  and exposes `VERSION`, read from installed distribution metadata at import
-  time. Its BDD contract lives in
-  `rude-clean-code/features/package_version.feature` and its steps in
-  `rude-clean-code/tests/`; the tests inspect a fresh interpreter to avoid
-  leakage from earlier imports.
+  only product artifact. Built by hatchling from the `src/` layout, its root
+  `rude_clean_code/__init__.py` exports only `VERSION` lazily from
+  installed metadata (without importing Rude), while the `rude.plugins`
+  entry point loads `rude_clean_code.plugin:RULES` containing the
+  deterministic rules (`CC101`–`CC104`, `CC201`–`CC202`, `CC301`–`CC303`)
+  backed by shared own-scope AST traversal in `_scope.py` and Rude's
+  `ScopeProvider`. Its Gherkin features (`features/`) and unit, property,
+  integration, and BDD tests (`tests/`) live inside the package.
 - **Task automation and scripts** (`automation/` and `scripts/`) are tooling,
   not product code: [`automation/dodo.py`](../../automation/dodo.py)
   implements the unified `doit` tasks (configured via root
@@ -44,10 +46,10 @@ this page describes the repository as built.
   activation helper (`activate.py` — puts local `src/` directories on
   `PYTHONPATH`), with sandbox and script tests in `scripts/tests/`.
 - **The locked workspace** (`pixi.toml` / `pixi.lock`) pins every tool used
-  locally and in CI: Python and the lint/test/coverage/automation stack
-  (including `doit`) from PyPI, the CLI tools (lefthook, bun, convco,
-  actionlint, vale, shellcheck) from conda-forge. `bun.lock` pins the
-  Bun-side CLIs (backlog.md, markdownlint-cli2, skills).
+  locally and in CI: Python, `rude`, `hypothesis`, and the lint/test/coverage/
+  automation stack (including `doit`) from PyPI, plus CLI tools (lefthook,
+  bun, convco, actionlint, vale, shellcheck) from conda-forge. `bun.lock`
+  pins the Bun-side CLIs (backlog.md, markdownlint-cli2, skills).
 - **CI** (`.github/workflows/ci.yml`) runs on every push and pull
   request: `Package tests` (coverage, with a 91% line gate from
   `.coveragerc`), `Policy` (lint, format-check, typecheck, check-packages,
@@ -101,11 +103,11 @@ user-visible changes carry their documentation impact with them.
 | Decision | Consequence |
 | -------- | -------------------------------------------------------------- |
 | decision-1 | One distribution, one package: `rude-clean-code` |
-| decision-2 | `VERSION` from installed dist metadata; no version literal |
+| decision-2 | `VERSION` from installed dist metadata; no version literal or eager Rude import |
 | decision-3 | Features/tests stay in the owning package |
-| decision-4 | VERSION-only until a task deliberately relaxes it |
-| decision-5 | Flat CC rule codes with explicit severities (planned) |
+| decision-4 | Superseded by `RCC-2` (`m-1`); deterministic rules live in plugin submodules |
+| decision-5 | Flat CC rule codes (`CC101`–`CC303`) with explicit `WARNING` severity |
 
 See [`backlog/decisions/`](../../backlog/decisions/) for the full texts and
-[the version-only scaffold concept](../concepts/version-only-scaffold.md) for
-why the scaffold looks the way it does.
+[the scaffold history concept](../concepts/version-only-scaffold.md) for why
+the package root remains `VERSION`-only.

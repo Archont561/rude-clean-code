@@ -26,11 +26,17 @@ def package_is_installed():
 @when("its root namespace is inspected")
 def inspect_root_namespace(package_state):
     # A fresh interpreter avoids attributes added by earlier submodule imports.
-    script = """import json, rude_clean_code as package
+    script = """import json, sys
+import rude_clean_code as package
 print(json.dumps({
     'public_names': [name for name in vars(package) if not name.startswith('_')],
     'exports': package.__all__,
     'version': package.VERSION,
+    'loaded_extra_modules': sorted(
+        name
+        for name in sys.modules
+        if name == 'rude' or name.startswith('rude.') or name.startswith('rude_clean_code.')
+    ),
 }))
 """
     result = subprocess.run(
@@ -70,12 +76,6 @@ with patch('importlib.metadata.version', return_value='9.8.7') as get_version:
     assert result.returncode == 0, result.stderr
 
 
-@then("the package has no other source files")
-def only_initializer_in_source():
-    source = Path(__file__).resolve().parents[1] / "src" / "rude_clean_code"
-    files = [
-        p.relative_to(source).as_posix()
-        for p in source.rglob("*")
-        if p.is_file() and "__pycache__" not in p.parts
-    ]
-    assert files == ["__init__.py"]
+@then("importing the root namespace does not load rude or plugin submodules")
+def root_import_stays_lazy(package_state):
+    assert package_state["loaded_extra_modules"] == []
