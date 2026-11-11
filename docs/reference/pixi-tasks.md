@@ -38,6 +38,7 @@ directories of tracked or unignored `pyproject.toml` projects to
 | `lint-commit`           | `convco check --from-stdin --strip`                                                | Validate a commit message from stdin                          |
 | `check-commit-messages` | `check_commit_messages()` in [`automation/lib/git_checks.py`](../../automation/lib/git_checks.py) | Validate incoming commit messages in `base..head` with convco |
 | `build-release`         | `build_release()` in [`automation/lib/packaging.py`](../../automation/lib/packaging.py) | Verify optional `GITHUB_REF_NAME` tag, build `dist/`, `twine check` |
+| `github-release`        | `github_release()` in [`automation/lib/packaging.py`](../../automation/lib/packaging.py) | Verify tag, extract `convco` notes, publish GitHub Release with `dist/` |
 | `pre-commit`            | `lint`, `format-check`, `typecheck`, `lint-prose`, `alint`, `actionlint`, `docs-lint` | Composite task invoked by the lefthook `pre-commit` hook    |
 | `policy`                | `lint`, `format-check`, `typecheck`, `check-packages`, `lint-prose`, `alint`, `actionlint` | Composite task matching the local CI `Policy` checks  |
 | `docs`                  | `docs-lint`, `lint-prose`                                                          | Local documentation lint checks                               |

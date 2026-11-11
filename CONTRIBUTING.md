@@ -1,9 +1,10 @@
 # Contributing to Rude Clean Code
 
-Thanks for helping build Rude Clean Code. The plugin currently ships the
-deterministic core rules (`CC101`–`CC104`, `CC201`–`CC202`,
-`CC301`–`CC303`), while heuristic, organization, architecture, and
-documentation rules in the backlog remain planned.
+Thanks for helping build Rude Clean Code. The plugin currently ships 26 Clean
+Code rules (`CC001`–`CC601` across modules, functions, classes, complexity,
+error handling, naming and literals, same-file duplication, and polymorphism
+indicators), while architecture, remaining heuristic/documentation, and
+project-wide rules in the backlog remain planned.
 Please check the [backlog](backlog/README.md) and relevant decisions
 before proposing work, and avoid presenting planned capabilities as
 finished.

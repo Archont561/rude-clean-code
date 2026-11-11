@@ -1,6 +1,6 @@
 <h1 align="center">Welcome to Rude Clean Code 👋</h1>
 <p>
-  <img alt="Version" src="https://img.shields.io/badge/version-0.1.0-blue.svg?cacheSeconds=2592000" />
+  <img alt="Version" src="https://img.shields.io/badge/version-0.2.0-blue.svg?cacheSeconds=2592000" />
   <a href="docs/README.md" target="_blank">
     <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
   </a>
@@ -26,7 +26,7 @@ working on this repository:
 - [Development setup](docs/guides/development-setup.md) — clone, restore the locked developer sandbox, install hooks
 - [Running the checks](docs/guides/running-the-checks.md) — the CI suite locally
 - [Python version compatibility](docs/guides/python-version-compatibility.md) — testing against 3.11–3.13 with tox (local and CI)
-- [Releasing to PyPI](docs/guides/releasing.md) — tag-triggered release workflow with trusted publishing
+- [Releasing to PyPI and GitHub](docs/guides/releasing.md) — tag-triggered PyPI trusted publishing and GitHub Releases
 - [Pixi and doit tasks](docs/reference/pixi-tasks.md) — the locked task catalogue
 - [Repository layout](docs/reference/repository-layout.md) — what lives where and why
 - [Scaffold history and root namespace](docs/concepts/version-only-scaffold.md) — why `__init__.py` still exports only `VERSION`

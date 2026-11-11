@@ -12,6 +12,7 @@ from automation.lib.packaging import (
     clean_coverage,
     clean_dist,
     clean_distributions,
+    github_release,
 )
 from automation.lib.quality import (
     MARKDOWN_TARGETS,
@@ -240,11 +241,29 @@ def task_build_release() -> dict[str, Any]:
                 "type": str,
                 "default": "",
                 "env_var": "GITHUB_REF_NAME",
-                "help": "Git tag name (for example v0.1.0) to check against pyproject.toml.",
+                "help": "Git tag name (for example v0.2.0) to check against pyproject.toml.",
             }
         ],
         "actions": [build_release],
         "clean": [clean_dist],
+    }
+
+
+def task_github_release() -> dict[str, Any]:
+    """Publish a GitHub Release for the tagged version with dist/ artifacts."""
+    return {
+        "basename": "github-release",
+        "params": [
+            {
+                "name": "ref_name",
+                "long": "ref",
+                "type": str,
+                "default": "",
+                "env_var": "GITHUB_REF_NAME",
+                "help": "Git tag name (for example v0.2.0) to publish as a GitHub Release.",
+            }
+        ],
+        "actions": [github_release],
     }
 
 

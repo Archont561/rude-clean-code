@@ -61,6 +61,7 @@ def verify_expected_tasks(runner_state: dict[str, Any]) -> None:
         "lint-commit",
         "check-commit-messages",
         "build-release",
+        "github-release",
         "pre-commit",
         "policy",
         "docs",

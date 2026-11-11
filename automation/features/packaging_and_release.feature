@@ -38,3 +38,24 @@ Feature: Package validation and release distribution builds
     Given a temporary project workspace with version "0.1.0"
     When build_release produces only a wheel without an sdist
     Then the release build fails with "Expected one wheel and one sdist"
+
+  Scenario: Reject GitHub Release creation without a release tag
+    Given a temporary project workspace with version "0.2.0"
+    When github_release runs without a tag
+    Then the GitHub release fails with "release tag" before running subprocesses
+
+  Scenario: Reject GitHub Release creation when tag mismatches pyproject version
+    Given a temporary project workspace with version "0.2.0"
+    When github_release runs for tag "v0.3.0"
+    Then the GitHub release fails with "does not match package version" before running subprocesses
+
+  Scenario: Create a GitHub Release using convco changelog notes
+    Given a temporary project workspace with version "0.2.0", built dist artifacts, and leaked PYTHONPATH
+    When github_release runs for tag "v0.2.0" with convco section output
+    Then convco and gh release create run without PYTHONPATH using the extracted release notes
+
+  Scenario: Create a GitHub Release with generated notes when convco has no section
+    Given a temporary project workspace with version "0.2.0", built dist artifacts, and leaked PYTHONPATH
+    When github_release runs for tag "v0.2.0" with empty convco output
+    Then gh release create runs with --generate-notes and both distributions
+
