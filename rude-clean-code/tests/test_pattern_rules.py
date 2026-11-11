@@ -93,12 +93,10 @@ def test_cc803_checks_strategy_inheritance_and_method_on_fixture() -> None:
     )
     results = _run_rule_on_fixture(rule)
     assert len(results) == 2
-    assert all(
-        path.relative_to(FIXTURE_APP).as_posix() == "strategies/broken.py"
-        and diag.code == "CC803"  # type: ignore[attr-defined]
-        and diag.severity == Severity.WARNING  # type: ignore[attr-defined]
-        for path, diag in results
-    )
+    for path, diag in results:
+        assert path.relative_to(FIXTURE_APP).as_posix() == "strategies/broken.py"
+        assert diag.code == "CC803"  # type: ignore[attr-defined]
+        assert diag.severity == Severity.WARNING  # type: ignore[attr-defined]
     messages = "\n".join(d.message for _, d in results)  # type: ignore[attr-defined]
     assert "UnboundStrategy" in messages
     assert "IncompleteStrategy" in messages
