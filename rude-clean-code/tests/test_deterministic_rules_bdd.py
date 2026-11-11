@@ -39,6 +39,14 @@ EXPECTED_SEVERITIES: dict[str, Severity] = {
     "CC403": Severity.WARNING,
     "CC501": Severity.WARNING,
     "CC601": Severity.INFO,
+    "CC701": Severity.WARNING,
+    "CC702": Severity.WARNING,
+    "CC704": Severity.WARNING,
+    "CC801": Severity.WARNING,
+    "CC802": Severity.WARNING,
+    "CC803": Severity.WARNING,
+    "CC804": Severity.WARNING,
+    "CC805": Severity.INFO,
 }
 
 BASIC_PROFILE_TOML = """
@@ -130,6 +138,8 @@ def select_filters_rules() -> None:
         "CC4": {"CC401", "CC402", "CC403"},
         "CC5": {"CC501"},
         "CC6": {"CC601"},
+        "CC7": {"CC701", "CC702", "CC704"},
+        "CC8": {"CC801", "CC802", "CC803", "CC804", "CC805"},
         "CC302": {"CC302"},
     }
     for prefix, expected in expected_groups.items():
