@@ -51,4 +51,10 @@ include = [
 ]
 
 [tool.rude]
-select = ["CC1", "CC2", "CC3"]
+select = ["CC0", "CC1", "CC2", "CC3"]
+
+[tool.rude.rules.CC001]
+exclude_paths = ["automation/dodo.py"]
+
+[tool.rude.rules.CC002]
+allowed_names = ["VERSION"]

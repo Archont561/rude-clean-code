@@ -1,31 +1,30 @@
-"""Deterministic Clean Code rules for classes (CC201-CC202)."""
+"""Deterministic Clean Code rules for classes (CC201-CC202, CC207)."""
 
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from rude.core.node_types import NodeType
+from rude.core.rule import Rule
+from rude.core.types import Diagnostic, Severity
 
-from rude_clean_code._scope import ThresholdRule, definition_name
+from rude_clean_code._scope import (
+    ThresholdRule,
+    definition_name,
+    is_dunder,
+    parse_nonneg_int,
+    parse_str_list_option,
+    unwrap_decorated,
+)
 
 if TYPE_CHECKING:
     from rude.core.node import Node
-    from rude.core.types import Diagnostic
-
-
-def _is_dunder(name: str) -> bool:
-    return len(name) > 4 and name.startswith("__") and name.endswith("__")
 
 
 def _direct_method_node(child: Node) -> Node | None:
-    if child.type == "function_definition":
-        return child
-    if child.type == "decorated_definition":
-        definition = child.child_by_field("definition")
-        if definition is not None and definition.type == "function_definition":
-            return definition
-    return None
+    target = unwrap_decorated(child)
+    return target if target.type == "function_definition" else None
 
 
 def _count_direct_methods(body: Node) -> tuple[int, int]:
@@ -36,9 +35,21 @@ def _count_direct_methods(body: Node) -> tuple[int, int]:
         if method is None:
             continue
         total += 1
-        if _is_dunder(definition_name(method)):
+        if is_dunder(definition_name(method)):
             dunders += 1
     return total, dunders
+
+
+def _base_candidate_names(base: Node) -> tuple[str, ...]:
+    target = base.child_by_field("value") if base.type == "subscript" else base
+    if target is None:
+        return ()
+    text = target.text
+    if not text:
+        return ()
+    if "." in text:
+        return (text, text.rsplit(".", maxsplit=1)[-1])
+    return (text,)
 
 
 class ClassTooLarge(ThresholdRule):
@@ -104,13 +115,61 @@ class TooManyMethods(ThresholdRule):
         yield from self.emit_if_exceeds(node, total, msg)
 
 
-CLASS_RULES: list[type[ThresholdRule]] = [
+class TooManyBaseClasses(Rule):
+    """CC207: Class inherits from too many direct base classes (excluding typing bases)."""
+
+    code: ClassVar[str] = "CC207"
+    message: ClassVar[str] = "Class inherits from too many direct base classes"
+    severity: ClassVar[Severity | None] = Severity.WARNING
+    node_types: ClassVar[set[NodeType] | None] = {NodeType.CLASS_DEFINITION}
+
+    max_bases: int = 3
+    ignore_bases: tuple[str, ...] = ("Generic", "Protocol")
+
+    def __init__(self) -> None:
+        self.max_bases = 3
+        self.ignore_bases = ("Generic", "Protocol")
+
+    def configure(self, options: dict[str, Any]) -> None:
+        """Configure direct-base limit and exempt typing base names."""
+        if "max_bases" in options:
+            self.max_bases = parse_nonneg_int(
+                self.code, "max_bases", options["max_bases"]
+            )
+        if "ignore_bases" in options:
+            self.ignore_bases = parse_str_list_option(
+                self.code, "ignore_bases", options["ignore_bases"]
+            )
+
+    def check(self, node: Node) -> Iterator[Diagnostic]:
+        """Flag classes with more non-ignored direct bases than ``max_bases``."""
+        ignored = frozenset(self.ignore_bases)
+        count = 0
+        for base in node.bases:
+            if base.type == "keyword_argument":
+                continue
+            if any(candidate in ignored for candidate in _base_candidate_names(base)):
+                continue
+            count += 1
+        if count > self.max_bases:
+            name = definition_name(node)
+            yield self.diagnostic(
+                node,
+                f"Class '{name}' inherits from too many direct base classes "
+                f"({count} > {self.max_bases}); prefer composition over deep "
+                "mixin inheritance",
+            )
+
+
+CLASS_RULES: list[type[Rule]] = [
     ClassTooLarge,
     TooManyMethods,
+    TooManyBaseClasses,
 ]
 
 __all__ = [
     "CLASS_RULES",
     "ClassTooLarge",
+    "TooManyBaseClasses",
     "TooManyMethods",
 ]

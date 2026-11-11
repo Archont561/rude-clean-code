@@ -14,17 +14,35 @@ from rude.core.types import Severity
 from rude_clean_code._scope import ThresholdRule
 from rude_clean_code.plugin import RULES
 
-EXPECTED_CODES = {
-    "CC101",
-    "CC102",
-    "CC103",
-    "CC104",
-    "CC201",
-    "CC202",
-    "CC301",
-    "CC302",
-    "CC303",
+EXPECTED_SEVERITIES: dict[str, Severity] = {
+    "CC001": Severity.WARNING,
+    "CC002": Severity.INFO,
+    "CC003": Severity.WARNING,
+    "CC004": Severity.WARNING,
+    "CC005": Severity.WARNING,
+    "CC101": Severity.WARNING,
+    "CC102": Severity.WARNING,
+    "CC103": Severity.WARNING,
+    "CC104": Severity.WARNING,
+    "CC107": Severity.WARNING,
+    "CC201": Severity.WARNING,
+    "CC202": Severity.WARNING,
+    "CC207": Severity.WARNING,
+    "CC301": Severity.WARNING,
+    "CC302": Severity.WARNING,
+    "CC303": Severity.WARNING,
+    "CC306": Severity.WARNING,
+    "CC308": Severity.WARNING,
+    "CC309": Severity.WARNING,
+    "CC310": Severity.WARNING,
+    "CC311": Severity.WARNING,
+    "CC401": Severity.INFO,
+    "CC402": Severity.INFO,
+    "CC403": Severity.WARNING,
+    "CC501": Severity.WARNING,
+    "CC601": Severity.INFO,
 }
+EXPECTED_CODES = set(EXPECTED_SEVERITIES)
 
 
 def test_entry_point_exposes_expected_rules() -> None:
@@ -40,7 +58,7 @@ def test_entry_point_exposes_expected_rules() -> None:
 def test_every_registered_rule_satisfies_plugin_contract() -> None:
     for rule_cls in RULES:
         assert issubclass(rule_cls, Rule)
-        assert rule_cls.severity == Severity.WARNING
+        assert rule_cls.severity == EXPECTED_SEVERITIES[rule_cls.code]
         assert rule_cls.node_types is not None
         assert rule_cls.node_types <= VALID_NODE_TYPES
         assert rule_cls.message
@@ -53,11 +71,27 @@ def test_every_registered_rule_satisfies_plugin_contract() -> None:
     ("select", "expected"),
     [
         (["CC"], EXPECTED_CODES),
-        (["CC1"], {"CC101", "CC102", "CC103", "CC104"}),
-        (["CC2"], {"CC201", "CC202"}),
-        (["CC3"], {"CC301", "CC302", "CC303"}),
+        (["CC0"], {"CC001", "CC002", "CC003", "CC004", "CC005"}),
+        (["CC1"], {"CC101", "CC102", "CC103", "CC104", "CC107"}),
+        (["CC2"], {"CC201", "CC202", "CC207"}),
+        (
+            ["CC3"],
+            {
+                "CC301",
+                "CC302",
+                "CC303",
+                "CC306",
+                "CC308",
+                "CC309",
+                "CC310",
+                "CC311",
+            },
+        ),
+        (["CC4"], {"CC401", "CC402", "CC403"}),
+        (["CC5"], {"CC501"}),
+        (["CC6"], {"CC601"}),
         (["CC101"], {"CC101"}),
-        (["CC202", "CC302"], {"CC202", "CC302"}),
+        (["CC002", "CC202", "CC302"], {"CC002", "CC202", "CC302"}),
     ],
 )
 def test_rude_select_discovers_rules_by_prefix_and_code(
@@ -99,7 +133,8 @@ def test_configured_rules_preserve_limits_under_multiprocess_checking(
 def test_threshold_rules_reject_invalid_option_values(bad_value: object) -> None:
     for rule_cls in RULES:
         rule = rule_cls()
-        assert isinstance(rule, ThresholdRule)
+        if not isinstance(rule, ThresholdRule):
+            continue
         with pytest.raises(ValueError, match=rule.option_name):
             rule.configure({rule.option_name: bad_value})
 

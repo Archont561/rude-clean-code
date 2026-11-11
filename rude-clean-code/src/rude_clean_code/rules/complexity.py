@@ -1,22 +1,27 @@
-"""Deterministic Clean Code rules for control complexity (CC301-CC303)."""
+"""Deterministic Clean Code rules for control complexity (CC301-CC303, CC306, CC308)."""
 
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from rude.core.node_types import NodeType
+from rude.core.rule import Rule
+from rude.core.types import Diagnostic, Severity
 
 from rude_clean_code._scope import (
+    SCOPE_BOUNDARY_TYPES,
     ThresholdRule,
     definition_name,
+    is_test_context,
     iter_own_scope,
     max_own_scope_depth,
+    parse_bool_option,
 )
 
 if TYPE_CHECKING:
     from rude.core.node import Node
-    from rude.core.types import Diagnostic
+    from rude.core.types import FileContext
 
 NESTING_NODE_TYPES: frozenset[str] = frozenset(
     {
@@ -56,6 +61,32 @@ def _count_boolean_operands(node: Node) -> int:
             else:
                 count += 1
     return count
+
+
+def _has_enclosing_conditional(node: Node) -> bool:
+    parent = node.parent
+    while parent is not None:
+        if parent.type in SCOPE_BOUNDARY_TYPES:
+            return False
+        if parent.type == "conditional_expression":
+            return True
+        parent = parent.parent
+    return False
+
+
+def _own_scope_ternary_depth(root: Node) -> int:
+    best = 1
+    stack: list[tuple[Node, int]] = [
+        (child, 1) for child in reversed(root.named_children)
+    ]
+    while stack:
+        current, depth = stack.pop()
+        if current.type in SCOPE_BOUNDARY_TYPES:
+            continue
+        next_depth = depth + 1 if current.type == "conditional_expression" else depth
+        best = max(best, next_depth)
+        stack.extend((child, next_depth) for child in reversed(current.named_children))
+    return best
 
 
 class ExcessiveNesting(ThresholdRule):
@@ -156,10 +187,69 @@ class ExcessiveBranching(ThresholdRule):
         yield from self.emit_if_exceeds(node, branches, msg)
 
 
-COMPLEXITY_RULES: list[type[ThresholdRule]] = [
+class NestedTernary(Rule):
+    """CC306: Ternary conditional expression is nested inside another ternary."""
+
+    code: ClassVar[str] = "CC306"
+    message: ClassVar[str] = "Nested ternary expression reduces readability"
+    severity: ClassVar[Severity | None] = Severity.WARNING
+    node_types: ClassVar[set[NodeType] | None] = {NodeType.CONDITIONAL_EXPRESSION}
+
+    def check(self, node: Node) -> Iterator[Diagnostic]:
+        """Flag outermost own-scope nested ternary expressions."""
+        if _has_enclosing_conditional(node):
+            return
+        depth = _own_scope_ternary_depth(node)
+        if depth > 1:
+            yield self.diagnostic(
+                node,
+                f"Nested ternary expression (depth {depth} > 1); replace with an "
+                "explicit if/else statement or helper function",
+            )
+
+
+class GlobalStatement(Rule):
+    """CC308: ``global`` statement mutates module-level state."""
+
+    code: ClassVar[str] = "CC308"
+    message: ClassVar[str] = "Global statement mutates module-level state"
+    severity: ClassVar[Severity | None] = Severity.WARNING
+    node_types: ClassVar[set[NodeType] | None] = {NodeType.GLOBAL_STATEMENT}
+
+    exclude_tests: bool = True
+
+    def __init__(self) -> None:
+        self.exclude_tests = True
+
+    def should_check_file(self, context: FileContext) -> bool:
+        """Skip test files unless ``exclude_tests`` is disabled."""
+        return not (self.exclude_tests and is_test_context(context))
+
+    def configure(self, options: dict[str, Any]) -> None:
+        """Configure test-file exclusion."""
+        if "exclude_tests" in options:
+            self.exclude_tests = parse_bool_option(
+                self.code, "exclude_tests", options["exclude_tests"]
+            )
+
+    def check(self, node: Node) -> Iterator[Diagnostic]:
+        """Flag ``global`` statements and suggest explicit state passing."""
+        names = ", ".join(
+            child.text for child in node.named_children if child.type == "identifier"
+        )
+        yield self.diagnostic(
+            node,
+            f"Global statement mutates module state ({names}); pass state "
+            "explicitly as parameters or encapsulate it in a class",
+        )
+
+
+COMPLEXITY_RULES: list[type[Rule]] = [
     ExcessiveNesting,
     ExcessiveBooleanOperands,
     ExcessiveBranching,
+    NestedTernary,
+    GlobalStatement,
 ]
 
 __all__ = [
@@ -167,4 +257,6 @@ __all__ = [
     "ExcessiveBooleanOperands",
     "ExcessiveBranching",
     "ExcessiveNesting",
+    "GlobalStatement",
+    "NestedTernary",
 ]

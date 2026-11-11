@@ -1,18 +1,30 @@
-"""Deterministic Clean Code rules for functions (CC101-CC104)."""
+"""Deterministic Clean Code rules for functions (CC101-CC104, CC107)."""
 
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from rude.core.node_types import NodeType
+from rude.core.rule import Rule
+from rude.core.types import Diagnostic, Severity
 from rude.providers import NO_SCOPE, Binding, ScopeProvider
 
-from rude_clean_code._scope import ThresholdRule, definition_name, iter_own_scope
+from rude_clean_code._scope import (
+    ThresholdRule,
+    definition_name,
+    is_dunder,
+    iter_own_scope,
+    node_decorators,
+    parse_str_list_option,
+    unwrap_decorated,
+)
 
 if TYPE_CHECKING:
     from rude.core.node import Node
-    from rude.core.types import Diagnostic
+    from rude.providers.semantic import SemanticModel
+
+_DEF_TYPES = frozenset({"function_definition", "class_definition"})
 
 
 def _is_local_binding(binding: Binding) -> bool:
@@ -30,6 +42,17 @@ def _count_own_scope_locals(node: Node) -> int:
         for binding_id in scope.bindings.values()
         if _is_local_binding(model.bindings[binding_id])
     )
+
+
+def _iter_module_defs(module_node: Node) -> Iterator[Node]:
+    stack = list(reversed(module_node.named_children))
+    while stack:
+        current = stack.pop()
+        target = unwrap_decorated(current)
+        if target.type in _DEF_TYPES:
+            yield target
+            continue
+        stack.extend(reversed(current.named_children))
 
 
 class FunctionTooLong(ThresholdRule):
@@ -155,11 +178,99 @@ class TooManyLocals(ThresholdRule):
         yield from self.emit_if_exceeds(node, locals_count, msg)
 
 
-FUNCTION_RULES: list[type[ThresholdRule]] = [
+def _collect_module_used_names(model: SemanticModel) -> set[str]:
+    module_id = model.module_scope
+    used: set[str] = set()
+    for scope_id, scope in enumerate(model.scopes):
+        for use in scope.uses:
+            if scope_id == module_id or not _is_shadowed(scope_id, use.name, model):
+                used.add(use.name)
+    return used
+
+
+def _is_shadowed(scope_id: int, name: str, model: SemanticModel) -> bool:
+    current = scope_id
+    module_id = model.module_scope
+    while (
+        current != NO_SCOPE
+        and current != module_id
+        and 0 <= current < len(model.scopes)
+    ):
+        scope = model.scopes[current]
+        if name in scope.bindings:
+            binding = model.bindings[scope.bindings[name]]
+            if not binding.is_global:
+                return True
+        current = scope.parent if scope.parent is not None else NO_SCOPE
+    return False
+
+
+class UnusedPrivateHelper(Rule):
+    """CC107: Private module-level function or class is never referenced."""
+
+    code: ClassVar[str] = "CC107"
+    message: ClassVar[str] = "Private module-level helper is unused"
+    severity: ClassVar[Severity | None] = Severity.WARNING
+    node_types: ClassVar[set[NodeType] | None] = {NodeType.MODULE}
+    metadata_dependencies: ClassVar[set[type]] = {ScopeProvider}
+
+    ignore_decorators: tuple[str, ...] = ()
+
+    def __init__(self) -> None:
+        self.ignore_decorators = ()
+
+    def configure(self, options: dict[str, Any]) -> None:
+        """Configure decorator names exempt from unused-private-helper reports."""
+        if "ignore_decorators" in options:
+            self.ignore_decorators = parse_str_list_option(
+                self.code, "ignore_decorators", options["ignore_decorators"]
+            )
+
+    def _is_unused_private(
+        self,
+        defn: Node,
+        model: SemanticModel,
+        used_names: set[str],
+        seen_bindings: set[int],
+    ) -> bool:
+        name = defn.name or ""
+        if not name.startswith("_") or is_dunder(name):
+            return False
+        module_scope = model.scopes[model.module_scope]
+        binding_id = module_scope.bindings.get(name)
+        if binding_id is None or binding_id in seen_bindings:
+            return False
+        seen_bindings.add(binding_id)
+        binding = model.bindings[binding_id]
+        return not (binding.is_import or binding.is_used or name in used_names)
+
+    def check(self, node: Node) -> Iterator[Diagnostic]:
+        """Flag top-level ``_``-prefixed functions and classes unused in module scope."""
+        model = node.get_metadata(ScopeProvider).model
+        if model.module_scope == NO_SCOPE or model.module_scope >= len(model.scopes):
+            return
+        used_names = _collect_module_used_names(model)
+        ignored = frozenset(self.ignore_decorators)
+        seen_bindings: set[int] = set()
+        for defn in _iter_module_defs(node):
+            if not self._is_unused_private(defn, model, used_names, seen_bindings):
+                continue
+            if any(dec in ignored for dec in node_decorators(defn)):
+                continue
+            kind = "class" if defn.type == "class_definition" else "function"
+            yield self.diagnostic(
+                defn,
+                f"Private {kind} '{defn.name}' is never used in this module; "
+                "remove dead code or export it without a leading underscore",
+            )
+
+
+FUNCTION_RULES: list[type[Rule]] = [
     FunctionTooLong,
     TooManyParameters,
     TooManyReturns,
     TooManyLocals,
+    UnusedPrivateHelper,
 ]
 
 __all__ = [
@@ -168,4 +279,5 @@ __all__ = [
     "TooManyLocals",
     "TooManyParameters",
     "TooManyReturns",
+    "UnusedPrivateHelper",
 ]

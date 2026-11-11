@@ -12,21 +12,73 @@ from pytest_bdd import given, parsers, scenarios, then, when
 from rude.core import discover_rules
 from rude.core.types import Severity
 
-EXPECTED_CODES = {
-    "CC101",
-    "CC102",
-    "CC103",
-    "CC104",
-    "CC201",
-    "CC202",
-    "CC301",
-    "CC302",
-    "CC303",
+EXPECTED_SEVERITIES: dict[str, Severity] = {
+    "CC001": Severity.WARNING,
+    "CC002": Severity.INFO,
+    "CC003": Severity.WARNING,
+    "CC004": Severity.WARNING,
+    "CC005": Severity.WARNING,
+    "CC101": Severity.WARNING,
+    "CC102": Severity.WARNING,
+    "CC103": Severity.WARNING,
+    "CC104": Severity.WARNING,
+    "CC107": Severity.WARNING,
+    "CC201": Severity.WARNING,
+    "CC202": Severity.WARNING,
+    "CC207": Severity.WARNING,
+    "CC301": Severity.WARNING,
+    "CC302": Severity.WARNING,
+    "CC303": Severity.WARNING,
+    "CC306": Severity.WARNING,
+    "CC308": Severity.WARNING,
+    "CC309": Severity.WARNING,
+    "CC310": Severity.WARNING,
+    "CC311": Severity.WARNING,
+    "CC401": Severity.INFO,
+    "CC402": Severity.INFO,
+    "CC403": Severity.WARNING,
+    "CC501": Severity.WARNING,
+    "CC601": Severity.INFO,
 }
 
 BASIC_PROFILE_TOML = """
 [tool.rude]
 select = ["CC1", "CC2", "CC3"]
+"""
+
+STRICT_PROFILE_TOML = """
+[tool.rude]
+select = ["CC0", "CC1", "CC2", "CC3", "CC4", "CC5", "CC6"]
+"""
+
+STRICT_SAMPLE_SOURCE = """
+def do_stuff(item):
+    temp: int = 42
+    a = temp + 42
+    b = a + 42
+    if isinstance(item, int):
+        return a
+    if isinstance(item, float):
+        return b
+    if isinstance(item, str):
+        return len(item)
+    return 0
+
+
+def copy_one(x):
+    step1 = x + 10
+    step2 = step1 * 2
+    step3 = step2 - 3
+    step4 = step3 + 4
+    return step4
+
+
+def copy_two(x):
+    step1 = x + 10
+    step2 = step1 * 2
+    step3 = step2 - 3
+    step4 = step3 + 4
+    return step4
 """
 
 scenarios(
@@ -51,29 +103,37 @@ def discover_plugin_rules(cli_state: dict[str, object]) -> None:
     cli_state["cc_rules"] = discover_rules(select=["CC"])
 
 
-@then("all nine deterministic CC rules are available with WARNING severity")
-def all_nine_rules_available(cli_state: dict[str, object]) -> None:
+@then("all registered CC rules are available with their documented severities")
+def all_rules_available(cli_state: dict[str, object]) -> None:
     rules = cli_state["cc_rules"]
     assert isinstance(rules, list)
-    assert {rule.code for rule in rules} == EXPECTED_CODES
-    assert all(rule.severity == Severity.WARNING for rule in rules)
+    actual = {rule.code: rule.severity for rule in rules}
+    assert actual == EXPECTED_SEVERITIES
 
 
 @then("selecting by CC, family prefix, or exact code filters the matching rules")
 def select_filters_rules() -> None:
-    assert {r.code for r in discover_rules(select=["CC1"])} == {
-        "CC101",
-        "CC102",
-        "CC103",
-        "CC104",
+    expected_groups = {
+        "CC0": {"CC001", "CC002", "CC003", "CC004", "CC005"},
+        "CC1": {"CC101", "CC102", "CC103", "CC104", "CC107"},
+        "CC2": {"CC201", "CC202", "CC207"},
+        "CC3": {
+            "CC301",
+            "CC302",
+            "CC303",
+            "CC306",
+            "CC308",
+            "CC309",
+            "CC310",
+            "CC311",
+        },
+        "CC4": {"CC401", "CC402", "CC403"},
+        "CC5": {"CC501"},
+        "CC6": {"CC601"},
+        "CC302": {"CC302"},
     }
-    assert {r.code for r in discover_rules(select=["CC2"])} == {"CC201", "CC202"}
-    assert {r.code for r in discover_rules(select=["CC3"])} == {
-        "CC301",
-        "CC302",
-        "CC303",
-    }
-    assert [r.code for r in discover_rules(select=["CC302"])] == ["CC302"]
+    for prefix, expected in expected_groups.items():
+        assert {r.code for r in discover_rules(select=[prefix])} == expected
 
 
 @given("a temporary project configured with the Basic profile")
@@ -191,20 +251,20 @@ def rude_reports_configured_cc101(
     assert f"{measured} > {limit}" in diags[0]["message"]
 
 
-@when("Rude checks the package source directory with CC selected")
+@when("Rude checks the package source directory with the project Basic profile")
 def run_rude_dogfood_on_package_src(cli_state: dict[str, object]) -> None:
-    src_dir = Path(__file__).resolve().parents[1] / "src"
+    pkg_dir = Path(__file__).resolve().parents[1]
     result = subprocess.run(
         [
             sys.executable,
             "-m",
             "rude",
             "check",
-            "--select",
-            "CC",
+            "--config",
+            str(pkg_dir / "pyproject.toml"),
             "--format",
             "json",
-            str(src_dir),
+            str(pkg_dir / "src"),
         ],
         capture_output=True,
         text=True,
@@ -221,3 +281,31 @@ def run_rude_dogfood_on_package_src(cli_state: dict[str, object]) -> None:
 def no_cc_diagnostics_emitted(cli_state: dict[str, object]) -> None:
     assert cli_state["returncode"] == 0, cli_state["stderr"]
     assert cli_state["diagnostics"] == []
+
+
+@given("a temporary project configured with the Strict profile")
+def configure_strict_profile(cli_state: dict[str, object]) -> None:
+    root = cli_state["root"]
+    assert isinstance(root, Path)
+    (root / "pyproject.toml").write_text(STRICT_PROFILE_TOML, encoding="utf-8")
+
+
+@given("a Python file violating heuristic CC rules")
+def write_strict_heuristic_sample(cli_state: dict[str, object]) -> None:
+    root = cli_state["root"]
+    assert isinstance(root, Path)
+    (root / "sample.py").write_text(STRICT_SAMPLE_SOURCE, encoding="utf-8")
+
+
+@then("Strict heuristic diagnostics carry expected severities and same-file guidance")
+def verify_strict_heuristic_diagnostics(cli_state: dict[str, object]) -> None:
+    diags = cli_state["diagnostics"]
+    assert isinstance(diags, list)
+    by_code = {diag["code"]: diag for diag in diags}
+    assert {"CC401", "CC402", "CC403", "CC501", "CC601"} <= by_code.keys()
+    assert by_code["CC401"]["severity"] == "info"
+    assert by_code["CC402"]["severity"] == "info"
+    assert by_code["CC601"]["severity"] == "info"
+    assert by_code["CC403"]["severity"] == "warning"
+    assert by_code["CC501"]["severity"] == "warning"
+    assert "same-file" in by_code["CC501"]["message"].lower()
