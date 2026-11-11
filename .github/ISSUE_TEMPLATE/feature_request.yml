@@ -5,11 +5,10 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the idea. Deterministic core rules (`CC101`–`CC104`,
-        `CC201`–`CC202`, `CC301`–`CC303`) are implemented; remaining rule
-        families in the catalogue are planned. Rule proposals are most likely
-        to advance if they reference the product specification in
-        `backlog/docs/doc-1` and the proposed catalogue in
+        Thanks for the idea. 26 Clean Code rules (`CC001`–`CC601`) are
+        implemented; remaining rule families in the catalogue are planned.
+        Rule proposals are most likely to advance if they reference the product
+        specification in `backlog/docs/doc-1` and the proposed catalogue in
         `backlog/docs/doc-2`.
   - type: textarea
     id: problem

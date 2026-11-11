@@ -4,9 +4,8 @@ Rude Clean Code began as a deliberate **version-only scaffold** (`RCC-1` /
 [decision-4](../../backlog/decisions/decision-4%20-%20Keep-the-package-a-version-only-scaffold.md))
 until the first deterministic rules were implemented and verified against Rude
 in `RCC-2` (`m-1`). `decision-4` is now deliberately superseded by `RCC-2`:
-the package implements the deterministic core rules (`CC101`–`CC104`,
-`CC201`–`CC202`, `CC301`–`CC303`), while keeping the lazy `VERSION`-only root
-initializer from
+the package implements 26 Clean Code rules (`CC001`–`CC601`), while keeping
+the lazy `VERSION`-only root initializer from
 [decision-2](../../backlog/decisions/decision-2%20-%20Expose-only-VERSION-from-package-initializers.md).
 
 The full roadmap and remaining planned rule families live in the backlog:

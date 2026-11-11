@@ -32,8 +32,9 @@ treat it as a defect and fix it.
   [architecture overview](architecture/overview.md) and the
   [scaffold history concept](concepts/version-only-scaffold.md) to understand
   both what ships today and why `rude_clean_code` exports only `VERSION`.
-- **Cutting a release?** See [Releasing to PyPI](guides/releasing.md) —
-  the release workflow, trusted publishing, and the tag/version guard.
+- **Cutting a release?** See [Releasing to PyPI and GitHub](guides/releasing.md) —
+  the release workflow, PyPI trusted publishing, GitHub Releases, and the
+  tag/version guard.
 - **Changing code or workflows?** The [documentation standard](development/documentation.md)
   defines what "done" means for documentation impact.
 - **Checking Python 3.11–3.13 compatibility?** See
