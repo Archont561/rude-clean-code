@@ -2,41 +2,24 @@
 
 from __future__ import annotations
 
-import json
-import os
-import shutil
-import subprocess
 import sys
-import tomllib
-import zipfile
-from collections.abc import Sequence
-from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
-PACKAGE_DIR = "rude-clean-code"
-DOGFOOD_TARGETS = (PACKAGE_DIR, "automation", "scripts")
-ZERO_SHA = "0" * 40
-
-VALE_TARGETS = (
-    "README.md",
-    "rude-clean-code/README.md",
-    "AGENTS.md",
-    "CONTRIBUTING.md",
-    "CHANGELOG.md",
-    ".github/PULL_REQUEST_TEMPLATE.md",
-    "backlog",
-    "docs",
+from automation.lib.git_checks import check_commit_messages, install_hooks
+from automation.lib.packaging import (
+    build_release,
+    check_packages,
+    clean_coverage,
+    clean_dist,
+    clean_distributions,
 )
-
-MARKDOWN_TARGETS = (
-    "README.md",
-    "rude-clean-code/README.md",
-    "AGENTS.md",
-    "CONTRIBUTING.md",
-    "CHANGELOG.md",
-    ".github/PULL_REQUEST_TEMPLATE.md",
-    "docs/**/*.md",
+from automation.lib.quality import (
+    MARKDOWN_TARGETS,
+    PACKAGE_DIR,
+    ROOT,
+    VALE_TARGETS,
+    dogfood_rude,
+    workflow_files,
 )
 
 DOIT_CONFIG: dict[str, Any] = {
@@ -45,210 +28,6 @@ DOIT_CONFIG: dict[str, Any] = {
     "backend": "sqlite3",
     "dep_file": str(ROOT / ".doit.db"),
 }
-
-
-def _clean_env() -> dict[str, str]:
-    env = os.environ.copy()
-    env.pop("PYTHONPATH", None)
-    return env
-
-
-def _run_isolated(args: Sequence[str], *, cwd: Path = ROOT) -> None:
-    subprocess.run(list(args), cwd=cwd, env=_clean_env(), check=True)
-
-
-def _git_is_commit(root: Path, ref: str) -> bool:
-    if not ref:
-        return False
-    result = subprocess.run(
-        ["git", "cat-file", "-e", f"{ref}^{{commit}}"],
-        cwd=root,
-        capture_output=True,
-        check=False,
-    )
-    return result.returncode == 0
-
-
-def _workflow_files(root: Path = ROOT) -> list[str]:
-    workflows_dir = root / ".github" / "workflows"
-    return sorted(str(path.relative_to(root)) for path in workflows_dir.glob("*.yml"))
-
-
-def clean_coverage(root: Path = ROOT) -> None:
-    """Remove generated coverage report artifacts."""
-    (root / "coverage.xml").unlink(missing_ok=True)
-    (root / ".coverage").unlink(missing_ok=True)
-
-
-def clean_distributions(root: Path = ROOT) -> None:
-    """Remove local distribution check artifacts."""
-    shutil.rmtree(root / "distributions", ignore_errors=True)
-
-
-def clean_dist(root: Path = ROOT) -> None:
-    """Remove release distribution artifacts."""
-    shutil.rmtree(root / "dist", ignore_errors=True)
-
-
-def _verify_wheel_contents(wheel: Path) -> None:
-    with zipfile.ZipFile(wheel) as archive:
-        names = archive.namelist()
-        if not any(name.endswith(".dist-info/licenses/LICENSE") for name in names):
-            raise RuntimeError(f"License missing from {wheel.name}")
-        if "rude_clean_code/__init__.py" not in names:
-            raise RuntimeError(f"Package initializer missing from {wheel.name}")
-
-
-def check_packages(
-    root: Path = ROOT,
-    sources: Sequence[Path] | None = None,
-) -> None:
-    """Build wheel and sdist into distributions/, run twine check, and inspect wheels."""
-    package_sources = tuple(sources) if sources is not None else (root / PACKAGE_DIR,)
-    outputs = root / "distributions"
-    shutil.rmtree(outputs, ignore_errors=True)
-    outputs.mkdir(parents=True, exist_ok=True)
-    for source in package_sources:
-        build_cmd = [
-            sys.executable,
-            "-m",
-            "build",
-            str(source),
-            "--outdir",
-            str(outputs),
-        ]
-        _run_isolated(build_cmd, cwd=root)
-    files = sorted(outputs.iterdir())
-    if len(files) != 2 * len(package_sources):
-        raise RuntimeError("Expected one wheel and one sdist per distribution")
-    twine_cmd = [sys.executable, "-m", "twine", "check", *(str(p) for p in files)]
-    _run_isolated(twine_cmd, cwd=root)
-    for wheel in sorted(outputs.glob("*.whl")):
-        _verify_wheel_contents(wheel)
-
-
-def build_release(ref_name: str = "", root: Path = ROOT) -> None:
-    """Verify an optional release tag matches pyproject.toml, build dist/, and run twine check."""
-    package_root = root / PACKAGE_DIR
-    if ref_name:
-        tag = ref_name.removeprefix("v")
-        manifest = tomllib.loads(
-            (package_root / "pyproject.toml").read_text(encoding="utf-8")
-        )
-        package_version = manifest["project"]["version"]
-        if tag != package_version:
-            raise RuntimeError(
-                f"Tag '{ref_name}' does not match package version '{package_version}'."
-            )
-    dist_dir = root / "dist"
-    shutil.rmtree(dist_dir, ignore_errors=True)
-    _run_isolated(
-        [sys.executable, "-m", "build", "--outdir", str(dist_dir), str(package_root)],
-        cwd=root,
-    )
-    files = sorted(dist_dir.iterdir())
-    if len(files) != 2:
-        raise RuntimeError(
-            f"Expected one wheel and one sdist in {dist_dir}, found {len(files)}."
-        )
-    _run_isolated(
-        [sys.executable, "-m", "twine", "check", *(str(path) for path in files)],
-        cwd=root,
-    )
-
-
-def install_hooks(root: Path = ROOT) -> None:
-    """Install or verify Lefthook git hooks."""
-    check = subprocess.run(["lefthook", "check-install"], cwd=root, check=False)
-    if check.returncode == 0:
-        print("Lefthook hooks are already installed.")
-        return
-    if check.returncode != 1:
-        raise RuntimeError(f"Unable to check Lefthook hooks (exit {check.returncode}).")
-    subprocess.run(["lefthook", "install"], cwd=root, check=True)
-    subprocess.run(["lefthook", "check-install"], cwd=root, check=True)
-    print("Lefthook hooks installed.")
-
-
-def _resolve_commit_base(root: Path, base: str) -> str:
-    if base and base != ZERO_SHA:
-        return base
-    if _git_is_commit(root, "HEAD^"):
-        return subprocess.run(
-            ["git", "rev-parse", "HEAD^"],
-            cwd=root,
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.strip()
-    roots = subprocess.run(
-        ["git", "rev-list", "--max-parents=0", "HEAD"],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        check=False,
-    ).stdout.splitlines()
-    return roots[0].strip() if roots else ""
-
-
-def check_commit_messages(
-    base: str = "",
-    head: str = "",
-    root: Path = ROOT,
-) -> None:
-    """Validate incoming commit messages in base..head with convco."""
-    resolved_base = _resolve_commit_base(root, base)
-    if not head or not _git_is_commit(root, head):
-        print(f"No valid head ('{head or 'empty'}'); skipping commit-message check.")
-        return
-    if not resolved_base or not _git_is_commit(root, resolved_base):
-        print(
-            f"No valid base ref available (event base: '{base or 'empty'}'); "
-            "skipping commit-message check."
-        )
-        return
-    print(f"Checking commits {resolved_base}..{head}")
-    subprocess.run(
-        ["convco", "check", f"{resolved_base}..{head}"],
-        cwd=root,
-        check=True,
-    )
-
-
-def _parse_rude_diagnostics(stdout: str) -> list[dict[str, Any]]:
-    return [json.loads(line) for line in stdout.splitlines() if line.strip()]
-
-
-def dogfood_rude(
-    root: Path = ROOT,
-    paths: Sequence[str] | None = None,
-) -> None:
-    """Run Rude with this repository's Basic CC profile and fail on any diagnostic."""
-    resolved = tuple(paths) if paths is not None else DOGFOOD_TARGETS
-    cmd = [
-        sys.executable,
-        "-m",
-        "rude",
-        "check",
-        "--config",
-        str(root / PACKAGE_DIR / "pyproject.toml"),
-        "--format",
-        "json",
-        *resolved,
-    ]
-    result = subprocess.run(cmd, cwd=root, capture_output=True, text=True, check=False)
-    diagnostics = _parse_rude_diagnostics(result.stdout)
-    if diagnostics:
-        details = "\n".join(
-            f"{d['file']}:{d['line']}:{d['column']}: {d['code']} {d['message']}"
-            for d in diagnostics
-        )
-        raise RuntimeError(f"Rude dogfood checks failed:\n{details}")
-    if result.returncode != 0:
-        raise RuntimeError(
-            result.stderr.strip() or f"Rude failed with exit {result.returncode}"
-        )
-    print("Rude dogfood check passed (0 diagnostics).")
 
 
 def task_install_projects() -> dict[str, Any]:
@@ -279,16 +58,8 @@ def task_test() -> dict[str, Any]:
     }
 
 
-def task_test_scripts() -> dict[str, Any]:
-    """Run the repository script tests."""
-    return {
-        "basename": "test-scripts",
-        "actions": [[sys.executable, "-m", "pytest", "scripts/tests"]],
-    }
-
-
 def task_test_automation() -> dict[str, Any]:
-    """Run the automation BDD and unit tests."""
+    """Run the automation BDD, sandbox, and library tests."""
     return {
         "basename": "test-automation",
         "actions": [[sys.executable, "-m", "pytest", "automation/tests"]],
@@ -412,7 +183,7 @@ def task_actionlint() -> dict[str, Any]:
     """Lint GitHub Actions workflow files with actionlint."""
     return {
         "basename": "actionlint",
-        "actions": [["actionlint", *_workflow_files()]],
+        "actions": [["actionlint", *workflow_files()]],
     }
 
 
@@ -527,7 +298,6 @@ def task_ci() -> dict[str, Any]:
         "task_dep": [
             "policy",
             "docs-lint",
-            "test-scripts",
             "test-automation",
             "coverage",
         ],

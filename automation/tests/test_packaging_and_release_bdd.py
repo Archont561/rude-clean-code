@@ -4,11 +4,12 @@ import subprocess
 import sys
 from collections.abc import Callable
 from pathlib import Path
-from types import ModuleType
 from typing import Any
 
 import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
+
+from automation.lib import packaging
 
 scenarios(
     str(
@@ -46,7 +47,6 @@ def workspace_with_stale_distributions(
 
 @when("check_packages runs against a valid distribution build")
 def run_check_packages_valid(
-    dodo_module: ModuleType,
     monkeypatch: pytest.MonkeyPatch,
     write_wheel: Callable[[Path, list[str]], None],
     pkg_state: dict[str, Any],
@@ -72,8 +72,8 @@ def run_check_packages_valid(
             )
         return subprocess.CompletedProcess(cmd, 0)
 
-    monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
-    dodo_module.check_packages(root=workspace)
+    monkeypatch.setattr(packaging.subprocess, "run", fake_run)
+    packaging.check_packages(root=workspace)
 
 
 @then("stale distribution artifacts are removed")
@@ -102,7 +102,6 @@ def bare_validation_workspace(tmp_path: Path, pkg_state: dict[str, Any]) -> None
 
 @pytest.fixture
 def inspect_invalid_package(
-    dodo_module: ModuleType,
     monkeypatch: pytest.MonkeyPatch,
     write_wheel: Callable[[Path, list[str]], None],
     pkg_state: dict[str, Any],
@@ -121,9 +120,9 @@ def inspect_invalid_package(
                 write_wheel(outdir / "pkg-0.1.0-py3-none-any.whl", wheel_entries)
             return subprocess.CompletedProcess(cmd, 0)
 
-        monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
+        monkeypatch.setattr(packaging.subprocess, "run", fake_run)
         try:
-            dodo_module.check_packages(root=pkg_state["workspace"])
+            packaging.check_packages(root=pkg_state["workspace"])
         except RuntimeError as exc:
             pkg_state["error"] = exc
         else:
@@ -191,7 +190,6 @@ def workspace_with_version_and_stale_dist(
 
 @when(parsers.parse('build_release runs for tag "{tag}"'))
 def run_build_release(
-    dodo_module: ModuleType,
     monkeypatch: pytest.MonkeyPatch,
     pkg_state: dict[str, Any],
     tag: str,
@@ -211,9 +209,9 @@ def run_build_release(
             (outdir / "pkg-0.1.0-py3-none-any.whl").write_bytes(b"whl")
         return subprocess.CompletedProcess(cmd, 0)
 
-    monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
+    monkeypatch.setattr(packaging.subprocess, "run", fake_run)
     try:
-        dodo_module.build_release(ref_name=tag, root=workspace)
+        packaging.build_release(ref_name=tag, root=workspace)
     except RuntimeError as exc:
         pkg_state["error"] = exc
 
@@ -231,16 +229,14 @@ def verify_release_mismatch(pkg_state: dict[str, Any], expected: str) -> None:
 
 @when("build_release runs without a tag")
 def run_build_release_dry_run(
-    dodo_module: ModuleType,
     monkeypatch: pytest.MonkeyPatch,
     pkg_state: dict[str, Any],
 ) -> None:
-    run_build_release(dodo_module, monkeypatch, pkg_state, tag="")
+    run_build_release(monkeypatch, pkg_state, tag="")
 
 
 @when("build_release produces only a wheel without an sdist")
 def run_build_release_incomplete_dist(
-    dodo_module: ModuleType,
     monkeypatch: pytest.MonkeyPatch,
     pkg_state: dict[str, Any],
 ) -> None:
@@ -255,9 +251,9 @@ def run_build_release_incomplete_dist(
             (outdir / "pkg-0.1.0-py3-none-any.whl").write_bytes(b"whl")
         return subprocess.CompletedProcess(cmd, 0)
 
-    monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
+    monkeypatch.setattr(packaging.subprocess, "run", fake_run)
     try:
-        dodo_module.build_release(ref_name="", root=workspace)
+        packaging.build_release(ref_name="", root=workspace)
     except RuntimeError as exc:
         pkg_state["error"] = exc
     else:

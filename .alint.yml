@@ -27,11 +27,124 @@ rules:
     paths: scripts/restore.sh
     level: error
     message: Required scripts/restore.sh is missing.
+  - id: scripts-only-restore-file
+    kind: file_absent
+    paths:
+      - 'scripts/**'
+      - '!scripts/restore.sh'
+    level: error
+    message: Only scripts/restore.sh may exist under scripts/.
+  - id: scripts-dir-only-restore
+    kind: dir_only_contains
+    select: scripts
+    allow:
+      - restore.sh
+    level: error
+    message: Directory scripts/ may only contain restore.sh.
+  - id: scripts-no-subdirs
+    kind: dir_absent
+    paths: 'scripts/*'
+    level: error
+    message: Subdirectories are not allowed under scripts/.
   - id: require-dodo-file
     kind: file_exists
     paths: automation/dodo.py
     level: error
     message: Required automation/dodo.py task file is missing.
+  - id: automation-subdirs-exist
+    kind: dir_exists
+    paths:
+      - automation/lib
+      - automation/features
+      - automation/tests
+    level: error
+    message: automation/ must contain tests/, features/, and lib/ directories.
+  - id: automation-only-dodo-file
+    kind: dir_only_contains
+    select: automation
+    allow:
+      - dodo.py
+    level: error
+    message: automation/ top level may only contain dodo.py alongside tests/, features/, and lib/.
+  - id: automation-no-extra-subdirs
+    kind: dir_absent
+    paths:
+      - 'automation/*'
+      - '!automation/lib'
+      - '!automation/features'
+      - '!automation/tests'
+    level: error
+    message: 'Unexpected subdirectory under automation/ (allowed: tests/, features/, lib/).'
+  - id: automation-lib-has-python
+    kind: dir_contains
+    select: automation/lib
+    require:
+      - activate.py
+      - '*.py'
+    level: error
+    message: automation/lib/ must contain Python modules including activate.py.
+  - id: automation-lib-python-only
+    kind: dir_only_contains
+    select: automation/lib
+    allow:
+      - '*.py'
+    level: error
+    message: automation/lib/ may only contain Python modules.
+  - id: automation-features-has-gherkin
+    kind: dir_contains
+    select: automation/features
+    require:
+      - '*.feature'
+    level: error
+    message: automation/features/ must contain .feature files.
+  - id: automation-features-only
+    kind: dir_only_contains
+    select: automation/features
+    allow:
+      - '*.feature'
+    level: error
+    message: automation/features/ may only contain .feature files.
+  - id: automation-tests-has-tests
+    kind: dir_contains
+    select: automation/tests
+    require:
+      - 'test_*.py'
+    level: error
+    message: automation/tests/ must contain test_*.py files.
+  - id: automation-tests-only
+    kind: dir_only_contains
+    select: automation/tests
+    allow:
+      - conftest.py
+      - 'test_*.py'
+    level: error
+    message: automation/tests/ may only contain conftest.py and test_*.py files.
+  - id: automation-dodo-imports-lib
+    kind: file_content_matches
+    paths: automation/dodo.py
+    pattern: '(?m)^from (?:automation\.)?lib[.\s]'
+    level: error
+    message: automation/dodo.py must import task helpers from automation/lib/.
+  - id: automation-tests-exercise-lib
+    kind: file_content_matches
+    paths: 'automation/tests/test_*.py'
+    pattern: '(?:automation\.)?lib\b'
+    level: error
+    message: Tests in automation/tests/ must import or exercise automation/lib/.
+  - id: pixi-tools-runs-doit
+    kind: toml_path_equals
+    paths: pixi.toml
+    path: $.tasks.tools
+    equals: doit
+    level: error
+    message: pixi.toml must define [tasks] tools = "doit" so `pixi run tools <cmd>` invokes doit.
+  - id: pixi-activation-uses-automation-lib
+    kind: toml_path_matches
+    paths: pixi.toml
+    path: $.activation.env.PYTHONPATH
+    matches: 'automation/lib/activate\.py'
+    level: error
+    message: pixi.toml activation PYTHONPATH must invoke automation/lib/activate.py.
   - id: require-doit-config
     kind: file_exists
     paths: doit.cfg
@@ -187,7 +300,7 @@ rules:
     path: $.jobs[*].steps[*].run
     matches: '^[^\n]+$'
     level: error
-    message: Workflow run steps must be a single line — move logic into automation/dodo.py (or scripts/ for pre-Pixi bootstrap) and call it instead.
+    message: Workflow run steps must be a single line — move logic into automation/dodo.py (or scripts/restore.sh for pre-Pixi bootstrap) and call it instead.
   - id: require-release-workflow
     kind: file_exists
     paths: .github/workflows/release.yml
