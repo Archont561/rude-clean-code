@@ -51,19 +51,78 @@ include = [
 ]
 
 [tool.rude]
-select = ["CC0", "CC1", "CC2", "CC3"]
-# Basic profile excludes INFO-grade heuristic indicators in CC1-CC3 (enable via Strict):
+select = ["CC0", "CC1", "CC2", "CC3", "CC4", "CC5", "CC6", "CC7", "CC9"]
+# Exclude rules that emit expected idiom noise on test fixtures / AST visitors:
+# - CC108: shared pytest-bdd step fixture signatures and uniform option helpers
+# - CC403: repeated rule option keys and test assertion literals
+# - CC601: compact AST node-type dispatch checks in rule visitors
 ignore = [
-  "CC105",
-  "CC106",
   "CC108",
-  "CC204",
-  "CC205",
-  "CC206",
-  "CC304",
-  "CC305",
-  "CC307",
+  "CC403",
+  "CC601",
 ]
 
 [tool.rude.rules.CC002]
 allowed_names = ["VERSION"]
+
+[tool.rude.rules.CC906]
+require_reason_for = ["CC"]
+
+# Prevent plugin source from instantiating Rude's Linter directly:
+[tool.rude.rules.CC702]
+concrete_classes = ["Linter"]
+only_paths = ["rude-clean-code/src/"]
+
+# Enforce decision-2 (lazy VERSION-only root __init__), internal module layering,
+# and strict isolation between rude-clean-code/, automation/, and tests:
+[[tool.rude.rules.CC704.forbidden]]
+from_paths = ["src/rude_clean_code/__init__.py"]
+forbidden_modules = ["rude", "rude_clean_code"]
+
+[[tool.rude.rules.CC704.forbidden]]
+from_paths = ["src/rude_clean_code/_scope.py"]
+forbidden_modules = ["rude_clean_code.rules", "rude_clean_code.plugin"]
+
+[[tool.rude.rules.CC704.forbidden]]
+from_paths = ["src/rude_clean_code/rules/_*.py"]
+forbidden_modules = [
+  "rude_clean_code.plugin",
+  "rude_clean_code.rules.class_heuristics",
+  "rude_clean_code.rules.classes",
+  "rude_clean_code.rules.comments",
+  "rude_clean_code.rules.complexity",
+  "rude_clean_code.rules.complexity_heuristics",
+  "rude_clean_code.rules.coupling_heuristics",
+  "rude_clean_code.rules.dependencies",
+  "rude_clean_code.rules.documentation",
+  "rude_clean_code.rules.dry",
+  "rude_clean_code.rules.dry_heuristics",
+  "rude_clean_code.rules.errors",
+  "rude_clean_code.rules.function_heuristics",
+  "rude_clean_code.rules.functions",
+  "rude_clean_code.rules.heuristics",
+  "rude_clean_code.rules.modules",
+  "rude_clean_code.rules.naming",
+  "rude_clean_code.rules.patterns",
+  "rude_clean_code.rules.solid_heuristics",
+]
+
+[[tool.rude.rules.CC704.forbidden]]
+from_paths = ["src/rude_clean_code/rules/"]
+forbidden_modules = ["rude_clean_code.plugin"]
+
+[[tool.rude.rules.CC704.forbidden]]
+from_paths = ["rude-clean-code/src/"]
+forbidden_modules = ["automation", "doit", "pytest"]
+
+[[tool.rude.rules.CC704.forbidden]]
+from_paths = ["automation/lib/"]
+forbidden_modules = ["automation.dodo", "doit", "pytest", "rude_clean_code"]
+
+[[tool.rude.rules.CC704.forbidden]]
+from_paths = ["automation/dodo.py"]
+forbidden_modules = ["automation.tests", "pytest"]
+
+[[tool.rude.rules.CC704.forbidden]]
+from_paths = ["automation/"]
+forbidden_modules = ["rude_clean_code"]

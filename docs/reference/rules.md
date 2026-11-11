@@ -148,11 +148,13 @@ emit `WARNING` severity; `CC002`, `CC805`, `CC902`, `CC904` (experimental),
 `CC909`, and all heuristic/indicator rules (`CC105`–`CC106`, `CC108`,
 `CC204`–`CC206`, `CC304`–`CC305`, `CC307`, `CC401`–`CC402`, `CC503`,
 `CC601`–`CC605`) emit `INFO`. Warnings and info diagnostics do not fail
-`rude check` with a non-zero exit code. This repository itself dogfoods the
-**Basic** profile in [`rude-clean-code/pyproject.toml`](../../rude-clean-code/pyproject.toml),
+`rude check` with a non-zero exit code. This repository dogfoods `CC0`–`CC7`
+and `CC9` in [`rude-clean-code/pyproject.toml`](../../rude-clean-code/pyproject.toml)
+(enforcing `CC906` suppression reasons and `CC702`/`CC704` layered-architecture
+and package-isolation boundaries while ignoring `CC108`, `CC403`, and `CC601`),
 and `pixi run --locked doit dogfood` (enforced via `doit lint`, `pre-commit`,
-and `ci`) inspects JSON diagnostics and fails on any warning or error across
-`rude-clean-code` and `automation`.
+and `ci`) inspects JSON diagnostics and fails on any warning, info, or error
+across `rude-clean-code` and `automation`.
 
 ## Implemented rules
 
