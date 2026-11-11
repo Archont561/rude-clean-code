@@ -23,9 +23,9 @@ treat it as a defect and fix it.
 ## Where to start
 
 - **Configuring the plugin?** See
-  [Rules and configuration profiles](reference/rules.md) for the **Basic**
-  and **Strict** profile TOML snippets and the 26 implemented `CC001`–`CC601`
-  rules.
+  [Rules and configuration profiles](reference/rules.md) for the **Basic**,
+  **Strict**, and **Architecture** profile TOML snippets and the 34
+  implemented `CC001`–`CC805` rules.
 - **New here?** Read the [development setup guide](guides/development-setup.md),
   then [running the checks](guides/running-the-checks.md).
 - **Evaluating the project?** Read the
@@ -44,7 +44,8 @@ treat it as a defect and fix it.
 ## Reference
 
 - [Rules and configuration profiles](reference/rules.md) — implemented
-  `CC001`–`CC601` rules, default options, and the Basic/Strict profiles.
+  `CC001`–`CC805` rules, default options, and the Basic/Strict/Architecture
+  profiles.
 - [Pixi and doit tasks](reference/pixi-tasks.md) — the locked task catalogue
   used by local development and CI.
 - [Repository layout](reference/repository-layout.md) — what lives where and

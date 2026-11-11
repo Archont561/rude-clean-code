@@ -37,7 +37,8 @@ rude-clean-code/
 ├── README.md                            # package README for PyPI
 ├── pyproject.toml                       # version, rude dependency, rude.plugins entry point
 ├── features/
-│   ├── deterministic_rules.feature      # Gherkin contract for CC001-CC601 discovery & CLI
+│   ├── architecture_and_patterns.feature # Gherkin contract for CC7xx-CC8xx config & boundaries
+│   ├── deterministic_rules.feature      # Gherkin contract for CC001-CC805 discovery & CLI
 │   ├── module_rules.feature             # Gherkin contract for CC001-CC005 module rules
 │   └── package_version.feature          # Gherkin contract for lazy VERSION-only __init__.py
 ├── src/rude_clean_code/
@@ -47,24 +48,32 @@ rude-clean-code/
 │   ├── py.typed                         # PEP 561 typed-package marker
 │   └── rules/
 │       ├── __init__.py                  # rule package marker
+│       ├── _architecture.py             # shared config layer & import matching helpers
 │       ├── _module_analysis.py          # shared module-level import/side-effect AST helpers
+│       ├── _symbol_matching.py          # shared call, scope, method, and decorator matchers
 │       ├── classes.py                   # CC201-CC202, CC207
 │       ├── complexity.py                # CC301-CC303, CC306, CC308
+│       ├── dependencies.py              # CC701, CC702, CC704
 │       ├── dry.py                       # CC501 (same-file body duplication)
 │       ├── errors.py                    # CC309-CC311
 │       ├── functions.py                 # CC101-CC104, CC107
 │       ├── heuristics.py                # CC601
 │       ├── modules.py                   # CC001-CC005
-│       └── naming.py                    # CC401-CC403
+│       ├── naming.py                    # CC401-CC403
+│       └── patterns.py                  # CC801-CC805
 └── tests/
+    ├── fixtures/consumer_app/           # consumer-shaped fixture layout for CC7xx-CC8xx
+    ├── test_architecture_and_patterns_bdd.py # pytest-bdd steps for architecture_and_patterns.feature
     ├── test_class_rules.py              # unit & Hypothesis tests for CC201-CC202
     ├── test_complexity_rules.py         # unit & Hypothesis tests for CC301-CC303
+    ├── test_dependency_rules.py         # unit, CLI, & fixture tests for CC701, CC702, CC704
     ├── test_deterministic_rules_bdd.py  # pytest-bdd steps for deterministic_rules.feature
     ├── test_function_rules.py           # unit & Hypothesis tests for CC101-CC104
     ├── test_heuristic_rules.py          # unit & false-positive tests for CC401-CC403, CC501, CC601
     ├── test_module_rules.py             # unit & Hypothesis tests for CC001-CC005
     ├── test_module_rules_bdd.py         # pytest-bdd steps for module_rules.feature
     ├── test_package_version_bdd.py      # pytest-bdd steps for package_version.feature
+    ├── test_pattern_rules.py            # unit & fixture tests for CC801-CC805
     ├── test_plugin_discovery.py         # entry-point, prefix select/ignore, & worker config tests
     ├── test_scope_traversal.py          # unit & syntax-recovery tests for shared scope helpers
     └── test_structural_and_error_rules.py # unit tests for CC107, CC207, CC306, CC308-CC311

@@ -12,7 +12,7 @@
   </a>
 </p>
 
-> Clean Code plugin for the Rude Python linter. Implements 26 rules across modules, functions, classes, complexity, error handling, naming/literals, same-file DRY, and polymorphism indicators (`CC001`–`CC601`); remaining rule families (`CC502`, `CC7xx`–`CC9xx`) remain planned.
+> Clean Code plugin for the Rude Python linter. Implements 34 rules across modules, functions, classes, complexity, error handling, naming/literals, same-file DRY, polymorphism indicators, and config-driven architecture and pattern boundaries (`CC001`–`CC805`); remaining rule families (`CC203`, `CC502`, `CC703`, `CC9xx`) remain planned.
 
 ### 🏠 [Homepage](https://github.com/Archont561/rude-clean-code#readme)
 
@@ -22,7 +22,7 @@ The [`docs/`](docs/README.md) directory is the source of truth for using and
 working on this repository:
 
 - [Documentation index](docs/README.md) — everything, organized by purpose
-- [Rules and configuration profiles](docs/reference/rules.md) — implemented `CC001`–`CC601` rules, Basic/Strict profiles, options, and TOML configuration
+- [Rules and configuration profiles](docs/reference/rules.md) — implemented `CC001`–`CC805` rules, Basic/Strict/Architecture profiles, options, and TOML configuration
 - [Development setup](docs/guides/development-setup.md) — clone, restore the locked developer sandbox, install hooks
 - [Running the checks](docs/guides/running-the-checks.md) — the CI suite locally
 - [Python version compatibility](docs/guides/python-version-compatibility.md) — testing against 3.11–3.13 with tox (local and CI)
@@ -35,8 +35,8 @@ working on this repository:
 
 The [backlog](backlog/README.md) tracks remaining planned work; the
 specification (`backlog/docs/`) and decisions (`backlog/decisions/`) describe
-the full roadmap. Unimplemented families (`CC502`, `CC7xx`–`CC9xx`) remain
-planned, not shipped.
+the full roadmap. Remaining heuristic, documentation, and project-wide rules
+(`CC203`, `CC502`, `CC703`, `CC9xx`) remain planned, not shipped.
 
 ## Install
 
@@ -55,8 +55,8 @@ pip install rude-clean-code
 ## Usage
 
 Add the **Basic** profile snippet (`CC0`–`CC3`) to your project's
-`pyproject.toml` (or add `"CC4"`, `"CC5"`, `"CC6"` for the **Strict** profile
-with heuristic indicators):
+`pyproject.toml` (add `"CC4"`–`"CC6"` for the **Strict** profile, and `"CC7"`–`"CC8"`
+with project-specific config for the **Architecture** profile):
 
 ```toml
 [tool.rude]
