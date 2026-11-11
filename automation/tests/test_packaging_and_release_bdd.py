@@ -278,3 +278,136 @@ def verify_release_subprocesses(pkg_state: dict[str, Any]) -> None:
     assert len(calls) == 2
     assert all("PYTHONPATH" not in env for _, env in calls)
     assert calls[1][0][:4] == [sys.executable, "-m", "twine", "check"]
+
+
+@given(
+    parsers.parse(
+        'a temporary project workspace with version "{version}", built dist artifacts, and leaked PYTHONPATH'
+    )
+)
+def workspace_with_built_dist(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    pkg_state: dict[str, Any],
+    version: str,
+) -> None:
+    pkg_dir = tmp_path / "rude-clean-code"
+    pkg_dir.mkdir(parents=True, exist_ok=True)
+    (pkg_dir / "pyproject.toml").write_text(
+        f'[project]\nname = "rude-clean-code"\nversion = "{version}"\n',
+        encoding="utf-8",
+    )
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    (dist_dir / f"rude_clean_code-{version}.tar.gz").write_bytes(b"sdist")
+    (dist_dir / f"rude_clean_code-{version}-py3-none-any.whl").write_bytes(b"whl")
+    monkeypatch.setenv("PYTHONPATH", "/tmp/leaked-src")
+    pkg_state["workspace"] = tmp_path
+
+
+@when("github_release runs without a tag")
+def run_github_release_no_tag(
+    monkeypatch: pytest.MonkeyPatch, pkg_state: dict[str, Any]
+) -> None:
+    _invoke_github_release(monkeypatch, pkg_state, tag="", convco_stdout="")
+
+
+@when(parsers.parse('github_release runs for tag "{tag}"'))
+def run_github_release_for_tag(
+    monkeypatch: pytest.MonkeyPatch, pkg_state: dict[str, Any], tag: str
+) -> None:
+    _invoke_github_release(monkeypatch, pkg_state, tag=tag, convco_stdout="")
+
+
+@when(parsers.parse('github_release runs for tag "{tag}" with convco section output'))
+def run_github_release_with_convco(
+    monkeypatch: pytest.MonkeyPatch, pkg_state: dict[str, Any], tag: str
+) -> None:
+    sample = (
+        "# Changelog\n\n"
+        "All notable changes to rude-clean-code are documented here.\n\n"
+        f"## [{tag}](https://example.com/compare/v0.1.0...{tag}) (2026-11-11)\n\n"
+        "### Features\n\n"
+        "* **rules:** add rules\n"
+    )
+    _invoke_github_release(monkeypatch, pkg_state, tag=tag, convco_stdout=sample)
+
+
+@when(parsers.parse('github_release runs for tag "{tag}" with empty convco output'))
+def run_github_release_empty_convco(
+    monkeypatch: pytest.MonkeyPatch, pkg_state: dict[str, Any], tag: str
+) -> None:
+    sample = (
+        "# Changelog\n\nAll notable changes to rude-clean-code are documented here.\n"
+    )
+    _invoke_github_release(monkeypatch, pkg_state, tag=tag, convco_stdout=sample)
+
+
+def _invoke_github_release(
+    monkeypatch: pytest.MonkeyPatch,
+    pkg_state: dict[str, Any],
+    *,
+    tag: str,
+    convco_stdout: str,
+) -> None:
+    workspace = pkg_state["workspace"]
+    calls: list[tuple[list[str], dict[str, str]]] = pkg_state["calls"]
+
+    def fake_run(
+        cmd: list[str], *, cwd: Path, env: dict[str, str], **kwargs: Any
+    ) -> subprocess.CompletedProcess[str]:
+        assert cwd == workspace
+        calls.append((cmd, env))
+        if cmd[0] == "convco":
+            return subprocess.CompletedProcess(cmd, 0, stdout=convco_stdout, stderr="")
+        if "--notes-file" in cmd:
+            notes_path = Path(cmd[cmd.index("--notes-file") + 1])
+            pkg_state["captured_notes"] = notes_path.read_text(encoding="utf-8")
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(packaging.subprocess, "run", fake_run)
+    try:
+        packaging.github_release(ref_name=tag, root=workspace)
+    except RuntimeError as exc:
+        pkg_state["error"] = exc
+
+
+@then(
+    parsers.parse(
+        'the GitHub release fails with "{expected}" before running subprocesses'
+    )
+)
+def verify_github_release_error(pkg_state: dict[str, Any], expected: str) -> None:
+    assert "error" in pkg_state
+    assert expected in str(pkg_state["error"])
+    assert pkg_state["calls"] == []
+
+
+@then(
+    "convco and gh release create run without PYTHONPATH using the extracted release notes"
+)
+def verify_github_release_with_notes(pkg_state: dict[str, Any]) -> None:
+    assert "error" not in pkg_state
+    calls = pkg_state["calls"]
+    assert len(calls) == 2
+    assert calls[0][0][:4] == ["convco", "changelog", "--max-versions", "1"]
+    assert calls[1][0][:4] == ["gh", "release", "create", "v0.2.0"]
+    assert "--notes-file" in calls[1][0]
+    assert "--verify-tag" in calls[1][0]
+    assert all("PYTHONPATH" not in env for _, env in calls)
+    assert pkg_state["captured_notes"].startswith("## [v0.2.0]")
+    assert "### Features" in pkg_state["captured_notes"]
+
+
+@then("gh release create runs with --generate-notes and both distributions")
+def verify_github_release_generated_notes(pkg_state: dict[str, Any]) -> None:
+    assert "error" not in pkg_state
+    calls = pkg_state["calls"]
+    assert len(calls) == 2
+    gh_cmd = calls[1][0]
+    assert gh_cmd[:4] == ["gh", "release", "create", "v0.2.0"]
+    assert "--generate-notes" in gh_cmd
+    assert "--verify-tag" in gh_cmd
+    assert any(arg.endswith(".whl") for arg in gh_cmd)
+    assert any(arg.endswith(".tar.gz") for arg in gh_cmd)
+    assert all("PYTHONPATH" not in env for _, env in calls)

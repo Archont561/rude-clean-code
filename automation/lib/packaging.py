@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import tomllib
 import zipfile
 from collections.abc import Sequence
@@ -22,6 +23,55 @@ def _clean_env() -> dict[str, str]:
 
 def _run_isolated(args: Sequence[str], *, cwd: Path = ROOT) -> None:
     subprocess.run(list(args), cwd=cwd, env=_clean_env(), check=True)
+
+
+def _verify_matching_tag(ref_name: str, package_root: Path) -> None:
+    tag = ref_name.removeprefix("v")
+    manifest = tomllib.loads(
+        (package_root / "pyproject.toml").read_text(encoding="utf-8")
+    )
+    package_version = manifest["project"]["version"]
+    if tag != package_version:
+        raise RuntimeError(
+            f"Tag '{ref_name}' does not match package version '{package_version}'."
+        )
+
+
+def _collect_release_files(dist_dir: Path) -> list[Path]:
+    if not dist_dir.is_dir():
+        raise RuntimeError(f"Release directory {dist_dir} does not exist.")
+    wheels = sorted(dist_dir.glob("*.whl"))
+    sdists = sorted(dist_dir.glob("*.tar.gz"))
+    files = sorted(dist_dir.iterdir())
+    if len(wheels) != 1 or len(sdists) != 1 or len(files) != 2:
+        raise RuntimeError(
+            f"Expected one wheel and one sdist in {dist_dir}, found {len(files)}."
+        )
+    return [*wheels, *sdists]
+
+
+def _extract_release_notes(ref_name: str, root: Path) -> str:
+    result = subprocess.run(
+        ["convco", "changelog", "--max-versions", "1", ref_name],
+        cwd=root,
+        env=_clean_env(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return ""
+    lines = result.stdout.splitlines()
+    heading_index = next(
+        (idx for idx, line in enumerate(lines) if line.startswith("## ")),
+        None,
+    )
+    if heading_index is None:
+        return ""
+    section_lines = lines[heading_index:]
+    if not any(line.startswith("### ") for line in section_lines):
+        return ""
+    return "\n".join(section_lines).strip() + "\n"
 
 
 def clean_coverage(root: Path = ROOT) -> None:
@@ -81,27 +131,41 @@ def build_release(ref_name: str = "", root: Path = ROOT) -> None:
     """Verify an optional release tag matches pyproject.toml, build dist/, and run twine check."""
     package_root = root / PACKAGE_DIR
     if ref_name:
-        tag = ref_name.removeprefix("v")
-        manifest = tomllib.loads(
-            (package_root / "pyproject.toml").read_text(encoding="utf-8")
-        )
-        package_version = manifest["project"]["version"]
-        if tag != package_version:
-            raise RuntimeError(
-                f"Tag '{ref_name}' does not match package version '{package_version}'."
-            )
+        _verify_matching_tag(ref_name, package_root)
     dist_dir = root / "dist"
     shutil.rmtree(dist_dir, ignore_errors=True)
     _run_isolated(
         [sys.executable, "-m", "build", "--outdir", str(dist_dir), str(package_root)],
         cwd=root,
     )
-    files = sorted(dist_dir.iterdir())
-    if len(files) != 2:
-        raise RuntimeError(
-            f"Expected one wheel and one sdist in {dist_dir}, found {len(files)}."
-        )
+    files = _collect_release_files(dist_dir)
     _run_isolated(
         [sys.executable, "-m", "twine", "check", *(str(path) for path in files)],
         cwd=root,
     )
+
+
+def github_release(ref_name: str = "", root: Path = ROOT) -> None:
+    """Create a GitHub Release for a matching tag with built distributions and notes."""
+    if not ref_name:
+        raise RuntimeError("A release tag (for example v0.2.0) is required.")
+    _verify_matching_tag(ref_name, root / PACKAGE_DIR)
+    files = _collect_release_files(root / "dist")
+    notes = _extract_release_notes(ref_name, root)
+    base_cmd = [
+        "gh",
+        "release",
+        "create",
+        ref_name,
+        *(str(path) for path in files),
+        "--verify-tag",
+        "--title",
+        ref_name,
+    ]
+    if not notes:
+        _run_isolated([*base_cmd, "--generate-notes"], cwd=root)
+        return
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        notes_file = Path(tmp_dir) / "release-notes.md"
+        notes_file.write_text(notes, encoding="utf-8")
+        _run_isolated([*base_cmd, "--notes-file", str(notes_file)], cwd=root)
