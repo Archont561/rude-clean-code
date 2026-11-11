@@ -1,8 +1,8 @@
 Feature: Deterministic Clean Code core rules
-  Scenario: Rude discovers deterministic Clean Code rules via entry point
+  Scenario: Rude discovers Clean Code rules via entry point
     Given the rude-clean-code plugin is installed
     When Rude discovers plugin rules
-    Then all nine deterministic CC rules are available with WARNING severity
+    Then all registered CC rules are available with their documented severities
     And selecting by CC, family prefix, or exact code filters the matching rules
 
   Scenario: Consumer runs Basic profile and configured thresholds on Python code
@@ -18,7 +18,14 @@ Feature: Deterministic Clean Code core rules
     When Rude checks the temporary project
     Then Rude reports CC101 with measured 5 and limit 4
 
-  Scenario: Dogfooding deterministic CC rules on the package source
+  Scenario: Dogfooding Clean Code rules on the package source
     Given the rude-clean-code plugin is installed
-    When Rude checks the package source directory with CC selected
+    When Rude checks the package source directory with the project Basic profile
     Then no CC diagnostics are emitted
+
+  Scenario: Consumer runs Strict profile including in-file heuristics
+    Given a temporary project configured with the Strict profile
+    And a Python file violating heuristic CC rules
+    When Rude checks the temporary project
+    Then Strict heuristic diagnostics carry expected severities and same-file guidance
+    And Rude exits successfully without treating warnings as errors

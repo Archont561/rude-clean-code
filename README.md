@@ -12,7 +12,7 @@
   </a>
 </p>
 
-> Clean Code plugin for the Rude Python linter. Implements the nine deterministic core rules (`CC101`–`CC104`, `CC201`–`CC202`, `CC301`–`CC303`); remaining rule families in the backlog remain planned.
+> Clean Code plugin for the Rude Python linter. Implements 26 rules across modules, functions, classes, complexity, error handling, naming/literals, same-file DRY, and polymorphism indicators (`CC001`–`CC601`); remaining rule families (`CC502`, `CC7xx`–`CC9xx`) remain planned.
 
 ### 🏠 [Homepage](https://github.com/Archont561/rude-clean-code#readme)
 
@@ -22,7 +22,7 @@ The [`docs/`](docs/README.md) directory is the source of truth for using and
 working on this repository:
 
 - [Documentation index](docs/README.md) — everything, organized by purpose
-- [Rules and Basic profile](docs/reference/rules.md) — implemented `CC101`–`CC303` rules, thresholds, and TOML configuration
+- [Rules and configuration profiles](docs/reference/rules.md) — implemented `CC001`–`CC601` rules, Basic/Strict profiles, options, and TOML configuration
 - [Development setup](docs/guides/development-setup.md) — clone, restore the locked developer sandbox, install hooks
 - [Running the checks](docs/guides/running-the-checks.md) — the CI suite locally
 - [Python version compatibility](docs/guides/python-version-compatibility.md) — testing against 3.11–3.13 with tox (local and CI)
@@ -35,7 +35,7 @@ working on this repository:
 
 The [backlog](backlog/README.md) tracks remaining planned work; the
 specification (`backlog/docs/`) and decisions (`backlog/decisions/`) describe
-the full roadmap. Unimplemented families (`CC0xx`, `CC4xx`–`CC9xx`) remain
+the full roadmap. Unimplemented families (`CC502`, `CC7xx`–`CC9xx`) remain
 planned, not shipped.
 
 ## Install
@@ -54,11 +54,13 @@ pip install rude-clean-code
 
 ## Usage
 
-Add the **Basic** profile snippet to your project's `pyproject.toml`:
+Add the **Basic** profile snippet (`CC0`–`CC3`) to your project's
+`pyproject.toml` (or add `"CC4"`, `"CC5"`, `"CC6"` for the **Strict** profile
+with heuristic indicators):
 
 ```toml
 [tool.rude]
-select = ["CC1", "CC2", "CC3"]
+select = ["CC0", "CC1", "CC2", "CC3"]
 
 [tool.rude.rules.CC101]
 max_lines = 30
@@ -67,11 +69,11 @@ max_lines = 30
 Then run Rude (it discovers `rude-clean-code` via the `rude.plugins` entry point):
 
 ```sh
-rude check --select CC src/
+rude check --select CC0,CC1,CC2,CC3 src/
 ```
 
-See [Rules and Basic profile](docs/reference/rules.md) for the full option
-reference. To inspect the installed package version (read from distribution
+See [Rules and configuration profiles](docs/reference/rules.md) for the full
+option reference. To inspect the installed package version (read from distribution
 metadata):
 
 ```python

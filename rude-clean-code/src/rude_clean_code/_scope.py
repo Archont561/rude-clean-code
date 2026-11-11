@@ -1,8 +1,9 @@
-"""Shared own-scope AST traversal and threshold rule base helpers."""
+"""Shared own-scope AST traversal, option parsing, and rule base helpers."""
 
 from __future__ import annotations
 
 from collections.abc import Iterator
+from fnmatch import fnmatch
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from rude.core.rule import Rule
@@ -10,6 +11,7 @@ from rude.core.types import Diagnostic, Severity
 
 if TYPE_CHECKING:
     from rude.core.node import Node
+    from rude.core.types import FileContext
 
 SCOPE_BOUNDARY_TYPES: frozenset[str] = frozenset(
     {
@@ -23,6 +25,105 @@ SCOPE_BOUNDARY_TYPES: frozenset[str] = frozenset(
 def definition_name(node: Node) -> str:
     """Return the readable name of a function or class definition node."""
     return node.name or "<anonymous>"
+
+
+def is_dunder(name: str) -> bool:
+    """Return whether *name* is a double-underscore Python dunder identifier."""
+    return len(name) > 4 and name.startswith("__") and name.endswith("__")
+
+
+def unwrap_decorated(node: Node) -> Node:
+    """Return the underlying definition when *node* is a ``decorated_definition``."""
+    if node.type != "decorated_definition":
+        return node
+    inner = node.child_by_field("definition")
+    if inner is not None:
+        return inner
+    for child in node.named_children:
+        if child.type != "decorator":
+            return child
+    return node
+
+
+def _decorator_target_names(decorator: Node) -> Iterator[str]:
+    for child in decorator.named_children:
+        target = child.child_by_field("function") if child.type == "call" else child
+        if target is None:
+            continue
+        text = target.text
+        if text:
+            yield text
+            if "." in text:
+                yield text.rsplit(".", maxsplit=1)[-1]
+
+
+def node_decorators(node: Node) -> list[str]:
+    """Return normalized decorator names attached to *node*'s ``decorated_definition``."""
+    parent = node.parent
+    if parent is None or parent.type != "decorated_definition":
+        return []
+    names: list[str] = []
+    for child in parent.named_children:
+        if child.type == "decorator":
+            names.extend(_decorator_target_names(child))
+    return names
+
+
+def is_test_context(context: FileContext) -> bool:
+    """Return whether *context* points to a test module or file inside a test folder."""
+    if context.is_test_file() or context.path.stem == "conftest":
+        return True
+    parent_parts = set(context.path.parts[:-1])
+    return "tests" in parent_parts or "test" in parent_parts
+
+
+def matches_exclude_paths(
+    context: FileContext,
+    patterns: tuple[str, ...],
+) -> bool:
+    """Return whether *context* matches any configured path fragment or glob."""
+    if not patterns:
+        return False
+    posix = context.path.as_posix()
+    return context.is_in_path(*patterns) or any(
+        fnmatch(posix, pattern) for pattern in patterns
+    )
+
+
+def _option_error(
+    code: str,
+    option_name: str,
+    expected: str,
+    raw: object,
+) -> ValueError:
+    return ValueError(f"{code} option '{option_name}' must be {expected}, got {raw!r}")
+
+
+def parse_nonneg_int(code: str, option_name: str, raw: object) -> int:
+    """Validate a non-negative integer rule option."""
+    if isinstance(raw, bool) or not isinstance(raw, int) or raw < 0:
+        raise _option_error(code, option_name, "a non-negative integer", raw)
+    return raw
+
+
+def parse_bool_option(code: str, option_name: str, raw: object) -> bool:
+    """Validate a boolean rule option."""
+    if not isinstance(raw, bool):
+        raise _option_error(code, option_name, "a boolean", raw)
+    return raw
+
+
+def parse_str_list_option(
+    code: str,
+    option_name: str,
+    raw: object,
+) -> tuple[str, ...]:
+    """Validate a list/tuple-of-strings rule option and freeze it into a tuple."""
+    if not isinstance(raw, (list, tuple)) or any(
+        not isinstance(item, str) for item in raw
+    ):
+        raise _option_error(code, option_name, "a list of strings", raw)
+    return tuple(raw)
 
 
 def iter_own_scope(root: Node) -> Iterator[Node]:
@@ -71,14 +172,8 @@ class ThresholdRule(Rule):
         """Validate and apply the configured threshold from ``[tool.rude.rules.<CODE>]``."""
         if self.option_name not in options:
             return
-        raw = options[self.option_name]
-        if isinstance(raw, bool) or not isinstance(raw, int) or raw < 0:
-            msg = (
-                f"{self.code} option '{self.option_name}' must be a "
-                f"non-negative integer, got {raw!r}"
-            )
-            raise ValueError(msg)
-        setattr(self, self.option_name, raw)
+        value = parse_nonneg_int(self.code, self.option_name, options[self.option_name])
+        setattr(self, self.option_name, value)
 
     def emit_if_exceeds(
         self,

@@ -92,5 +92,10 @@ def test_rules_tolerate_incomplete_syntax_without_crashing() -> None:
     )
     for source in incomplete_sources:
         for rule_cls in RULES:
-            diagnostics = check_source(rule_cls, source)
+            filename = (
+                "pkg/__init__.py"
+                if rule_cls.code in {"CC002", "CC003"}
+                else "pkg/sample.py"
+            )
+            diagnostics = check_source(rule_cls, source, filename=filename)
             assert any(diag.code == "E999" for diag in diagnostics)
