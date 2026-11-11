@@ -22,14 +22,23 @@ EXPECTED_SEVERITIES: dict[str, Severity] = {
     "CC102": Severity.WARNING,
     "CC103": Severity.WARNING,
     "CC104": Severity.WARNING,
+    "CC105": Severity.INFO,
+    "CC106": Severity.INFO,
     "CC107": Severity.WARNING,
+    "CC108": Severity.INFO,
     "CC201": Severity.WARNING,
     "CC202": Severity.WARNING,
+    "CC204": Severity.INFO,
+    "CC205": Severity.INFO,
+    "CC206": Severity.INFO,
     "CC207": Severity.WARNING,
     "CC301": Severity.WARNING,
     "CC302": Severity.WARNING,
     "CC303": Severity.WARNING,
+    "CC304": Severity.INFO,
+    "CC305": Severity.INFO,
     "CC306": Severity.WARNING,
+    "CC307": Severity.INFO,
     "CC308": Severity.WARNING,
     "CC309": Severity.WARNING,
     "CC310": Severity.WARNING,
@@ -38,7 +47,13 @@ EXPECTED_SEVERITIES: dict[str, Severity] = {
     "CC402": Severity.INFO,
     "CC403": Severity.WARNING,
     "CC501": Severity.WARNING,
+    "CC503": Severity.INFO,
+    "CC504": Severity.WARNING,
     "CC601": Severity.INFO,
+    "CC602": Severity.INFO,
+    "CC603": Severity.INFO,
+    "CC604": Severity.INFO,
+    "CC605": Severity.INFO,
     "CC701": Severity.WARNING,
     "CC702": Severity.WARNING,
     "CC704": Severity.WARNING,
@@ -47,11 +62,22 @@ EXPECTED_SEVERITIES: dict[str, Severity] = {
     "CC803": Severity.WARNING,
     "CC804": Severity.WARNING,
     "CC805": Severity.INFO,
+    "CC901": Severity.WARNING,
+    "CC902": Severity.INFO,
+    "CC903": Severity.WARNING,
+    "CC904": Severity.INFO,
+    "CC905": Severity.WARNING,
+    "CC906": Severity.WARNING,
+    "CC907": Severity.WARNING,
+    "CC908": Severity.WARNING,
+    "CC909": Severity.INFO,
+    "CC910": Severity.WARNING,
 }
 
 BASIC_PROFILE_TOML = """
 [tool.rude]
 select = ["CC1", "CC2", "CC3"]
+ignore = ["CC105", "CC106", "CC108", "CC204", "CC205", "CC206", "CC304", "CC305", "CC307"]
 """
 
 STRICT_PROFILE_TOML = """
@@ -119,30 +145,47 @@ def all_rules_available(cli_state: dict[str, object]) -> None:
     assert actual == EXPECTED_SEVERITIES
 
 
+EXPECTED_FAMILY_GROUPS: dict[str, set[str]] = {
+    "CC0": {"CC001", "CC002", "CC003", "CC004", "CC005"},
+    "CC1": {"CC101", "CC102", "CC103", "CC104", "CC105", "CC106", "CC107", "CC108"},
+    "CC2": {"CC201", "CC202", "CC204", "CC205", "CC206", "CC207"},
+    "CC3": {
+        "CC301",
+        "CC302",
+        "CC303",
+        "CC304",
+        "CC305",
+        "CC306",
+        "CC307",
+        "CC308",
+        "CC309",
+        "CC310",
+        "CC311",
+    },
+    "CC4": {"CC401", "CC402", "CC403"},
+    "CC5": {"CC501", "CC503", "CC504"},
+    "CC6": {"CC601", "CC602", "CC603", "CC604", "CC605"},
+    "CC7": {"CC701", "CC702", "CC704"},
+    "CC8": {"CC801", "CC802", "CC803", "CC804", "CC805"},
+    "CC9": {
+        "CC901",
+        "CC902",
+        "CC903",
+        "CC904",
+        "CC905",
+        "CC906",
+        "CC907",
+        "CC908",
+        "CC909",
+        "CC910",
+    },
+    "CC302": {"CC302"},
+}
+
+
 @then("selecting by CC, family prefix, or exact code filters the matching rules")
 def select_filters_rules() -> None:
-    expected_groups = {
-        "CC0": {"CC001", "CC002", "CC003", "CC004", "CC005"},
-        "CC1": {"CC101", "CC102", "CC103", "CC104", "CC107"},
-        "CC2": {"CC201", "CC202", "CC207"},
-        "CC3": {
-            "CC301",
-            "CC302",
-            "CC303",
-            "CC306",
-            "CC308",
-            "CC309",
-            "CC310",
-            "CC311",
-        },
-        "CC4": {"CC401", "CC402", "CC403"},
-        "CC5": {"CC501"},
-        "CC6": {"CC601"},
-        "CC7": {"CC701", "CC702", "CC704"},
-        "CC8": {"CC801", "CC802", "CC803", "CC804", "CC805"},
-        "CC302": {"CC302"},
-    }
-    for prefix, expected in expected_groups.items():
+    for prefix, expected in EXPECTED_FAMILY_GROUPS.items():
         assert {r.code for r in discover_rules(select=[prefix])} == expected
 
 

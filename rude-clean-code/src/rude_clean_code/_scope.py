@@ -127,26 +127,34 @@ def matches_exclude_paths(
     return matches_path_patterns(context, patterns)
 
 
-def _option_error(
+def option_error(
     code: str,
     option_name: str,
     expected: str,
     raw: object,
 ) -> ValueError:
+    """Build a consistent configuration ``ValueError`` message."""
     return ValueError(f"{code} option '{option_name}' must be {expected}, got {raw!r}")
 
 
 def parse_nonneg_int(code: str, option_name: str, raw: object) -> int:
     """Validate a non-negative integer rule option."""
     if isinstance(raw, bool) or not isinstance(raw, int) or raw < 0:
-        raise _option_error(code, option_name, "a non-negative integer", raw)
+        raise option_error(code, option_name, "a non-negative integer", raw)
+    return raw
+
+
+def parse_min_int(code: str, option_name: str, raw: object, minimum: int) -> int:
+    """Validate an integer rule option bounded below by *minimum*."""
+    if isinstance(raw, bool) or not isinstance(raw, int) or raw < minimum:
+        raise option_error(code, option_name, f"an integer >= {minimum}", raw)
     return raw
 
 
 def parse_bool_option(code: str, option_name: str, raw: object) -> bool:
     """Validate a boolean rule option."""
     if not isinstance(raw, bool):
-        raise _option_error(code, option_name, "a boolean", raw)
+        raise option_error(code, option_name, "a boolean", raw)
     return raw
 
 
@@ -159,7 +167,7 @@ def parse_str_list_option(
     if not isinstance(raw, (list, tuple)) or any(
         not isinstance(item, str) for item in raw
     ):
-        raise _option_error(code, option_name, "a list of strings", raw)
+        raise option_error(code, option_name, "a list of strings", raw)
     return tuple(raw)
 
 
