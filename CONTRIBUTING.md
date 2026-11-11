@@ -34,10 +34,11 @@ at the start of every session.
 2. Keep product code, tests, and Gherkin features in the owning package
    (`rude-clean-code/src/`, `rude-clean-code/features/`,
    `rude-clean-code/tests/`, with `rude-clean-code/pyproject.toml`).
-   Put repository automation tasks in `automation/dodo.py` with their
-   behavior specifications in `automation/features/` and tests in
-   `automation/tests/`, and keep pre-Pixi bootstrap/activation helpers in
-   `scripts/` with sandbox and script tests under `scripts/tests/`. For
+   Put repository automation tasks in `automation/dodo.py` with helper
+   functions in `automation/lib/`, behavior specifications in
+   `automation/features/`, and tests in `automation/tests/`. Keep
+   `scripts/` strictly to the pre-Pixi sandbox bootstrap (`restore.sh`),
+   enforced by `.alint.yml`. For
    user-visible behavior, add a scenario and a failing test first when
    practical.
 3. Update the relevant documentation and report any behavior or checks

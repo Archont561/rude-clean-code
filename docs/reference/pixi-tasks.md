@@ -2,54 +2,56 @@
 
 The locked Pixi workspace (`pixi.toml` + `pixi.lock`) is the environment of
 record, and [`automation/dodo.py`](../../automation/dodo.py) (configured via
-root [`doit.cfg`](../../doit.cfg)) defines the unified `doit` task CLI.
-Run automation tasks with `pixi run --locked doit <task>` (or
-`pixi run --locked do <task>`); running `pixi run --locked doit` with no
-arguments executes the default `ci` task. This page is a reference — update
-it in the same change that edits `pixi.toml` or `automation/dodo.py` (see
+root [`doit.cfg`](../../doit.cfg)) defines the unified `doit` task CLI,
+importing helper functions from [`automation/lib/`](../../automation/lib/quality.py).
+Run automation tasks with `pixi run --locked tools <task>` (or
+`pixi run --locked doit <task>` / `pixi run --locked do <task>`); running
+`pixi run --locked tools` with no arguments executes the default `ci` task.
+This page is a reference — update it in the same change that edits
+`pixi.toml` or `automation/dodo.py` (see
 [the documentation standard](../development/documentation.md)).
 
 The workspace targets `linux-64` only. Activation prepends the `src/`
 directories of tracked or unignored `pyproject.toml` projects to
-`PYTHONPATH` ([`scripts/activate.py`](../../scripts/activate.py)).
+`PYTHONPATH` ([`automation/lib/activate.py`](../../automation/lib/activate.py)).
 
 ## `doit` tasks (`automation/dodo.py`)
 
 | Task                    | What it runs                                                                       | Purpose                                                       |
 | ----------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | `install-projects`      | `python -m pip install --no-deps --no-build-isolation --force-reinstall ./rude-clean-code` | Install the local wheel without network or build isolation    |
-| `dogfood`               | `dogfood_rude()` in `automation/dodo.py`                                           | Run Rude with `[tool.rude]` (`CC1`–`CC3`) across repo Python sources and fail on any diagnostic (via `install-projects`) |
+| `dogfood`               | `dogfood_rude()` in [`automation/lib/quality.py`](../../automation/lib/quality.py) | Run Rude with `[tool.rude]` (`CC0`–`CC3`) across repo Python sources and fail on any diagnostic (via `install-projects`) |
 | `test`                  | `python -m pytest rude-clean-code/tests`                                           | Run the package BDD tests (via `install-projects`)            |
-| `test-scripts`          | `python -m pytest scripts/tests`                                                   | Run the repository sandbox and script tests                   |
-| `test-automation`       | `python -m pytest automation/tests`                                                | Run the automation BDD tests against `automation/features/`   |
+| `test-automation`       | `python -m pytest automation/tests`                                                | Run automation BDD, library, and sandbox tests (`automation/tests/`) |
 | `coverage`              | `python -m pytest rude-clean-code/tests --cov=rude-clean-code/src --cov-report=term-missing --cov-report=xml:coverage.xml` | Coverage gate: `.coveragerc` requires ≥ 91% total line coverage |
 | `lint`                  | `ruff check .` (via `dogfood`)                                                     | Python lint (extends `I`, `PTH`, plus Rude dogfooding)        |
 | `format-check`          | `ruff format --check .`                                                            | Python formatting (diffs fail CI)                             |
 | `typecheck`             | `mypy rude-clean-code/src`                                                         | Static types (`mypy.ini`)                                     |
 | `audit`                 | `pip-audit --local --skip-editable`                                                | Dependency vulnerability scan (not part of CI)                |
-| `check-packages`        | `check_packages()` in `automation/dodo.py`                                         | Build wheel + sdist into `distributions/`, `twine check`, inspect wheel |
+| `check-packages`        | `check_packages()` in [`automation/lib/packaging.py`](../../automation/lib/packaging.py) | Build wheel + sdist into `distributions/`, `twine check`, inspect wheel |
 | `alint`                 | `alint check`                                                                      | Repository structure rules from `.alint.yml`                  |
 | `lint-prose`            | `vale --no-global README.md rude-clean-code/README.md AGENTS.md CONTRIBUTING.md CHANGELOG.md .github/PULL_REQUEST_TEMPLATE.md backlog docs` | Vale prose lint; `docs/`, PR template, backlog, README guides |
 | `bun-install`           | `bun install --frozen-lockfile`                                                    | Install frozen Bun developer CLIs from `bun.lock`             |
 | `docs-lint`             | `bun x --bun --no-install markdownlint-cli2 ...` (via `bun-install`)               | markdownlint-cli2 over maintained markdown (`.markdownlint-cli2.jsonc`) |
 | `actionlint`            | `actionlint .github/workflows/*.yml`                                               | GitHub Actions workflow lint                                  |
-| `install-hooks`         | `install_hooks()` in `automation/dodo.py`                                          | Install (or verify) lefthook git hooks                        |
+| `install-hooks`         | `install_hooks()` in [`automation/lib/git_checks.py`](../../automation/lib/git_checks.py) | Install (or verify) lefthook git hooks                        |
 | `lint-commit`           | `convco check --from-stdin --strip`                                                | Validate a commit message from stdin                          |
-| `check-commit-messages` | `check_commit_messages()` in `automation/dodo.py`                                  | Validate incoming commit messages in `base..head` with convco |
-| `build-release`         | `build_release()` in `automation/dodo.py`                                          | Verify optional `GITHUB_REF_NAME` tag, build `dist/`, `twine check` |
+| `check-commit-messages` | `check_commit_messages()` in [`automation/lib/git_checks.py`](../../automation/lib/git_checks.py) | Validate incoming commit messages in `base..head` with convco |
+| `build-release`         | `build_release()` in [`automation/lib/packaging.py`](../../automation/lib/packaging.py) | Verify optional `GITHUB_REF_NAME` tag, build `dist/`, `twine check` |
 | `pre-commit`            | `lint`, `format-check`, `typecheck`, `lint-prose`, `alint`, `actionlint`, `docs-lint` | Composite task invoked by the lefthook `pre-commit` hook    |
 | `policy`                | `lint`, `format-check`, `typecheck`, `check-packages`, `lint-prose`, `alint`, `actionlint` | Composite task matching the local CI `Policy` checks  |
 | `docs`                  | `docs-lint`, `lint-prose`                                                          | Local documentation lint checks                               |
-| `ci`                    | `policy`, `docs-lint`, `test-scripts`, `test-automation`, `coverage`               | Default `doit` task running the full local CI suite           |
+| `ci`                    | `policy`, `docs-lint`, `test-automation`, `coverage`                               | Default `doit` task running the full local CI suite           |
 
 ## Direct Pixi tasks (`pixi.toml`)
 
-Pixi exposes the unified runner alias alongside direct pass-through tasks for
-the Bun developer CLIs so arbitrary CLI flags (such as `--help`) forward
+Pixi exposes the unified runner aliases alongside direct pass-through tasks
+for the Bun developer CLIs so arbitrary CLI flags (such as `--help`) forward
 unchanged:
 
 | Task          | What it runs                                  | Purpose                                                     |
 | ------------- | --------------------------------------------- | ----------------------------------------------------------- |
+| `tools`       | `doit`                                        | Run `automation/dodo.py` tasks (`pixi run --locked tools <cmd>`) |
 | `do`          | `doit`                                        | Alias for running `automation/dodo.py` tasks (`pixi run --locked do`) |
 | `bun-install` | `bun install --frozen-lockfile`               | Install developer tooling from `bun.lock`                   |
 | `agents-md`   | `bun x --bun --no-install agents-md`          | Refresh marked sections of `AGENTS.md` (via `bun-install`)  |

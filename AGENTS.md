@@ -63,18 +63,18 @@ mark unfinished or unverified work complete.
 - Keep product features and tests in the package that owns the behavior
   (decision-3): the package lives under `rude-clean-code/`
   (`{src,features,tests}`, `pyproject.toml`, `README.md`, and `LICENSE`).
-  Unified repository automation tasks (`automation/dodo.py`), Gherkin
-  specs (`automation/features/`), and automation BDD tests
-  (`automation/tests/`) live under `automation/` (configured via root
-  `doit.cfg`); pre-Pixi bootstrap and Pixi environment activation scripts
-  live under root `scripts/`, with sandbox and script tests under
-  `scripts/tests/`.
+  Unified repository automation tasks (`automation/dodo.py`), helper
+  modules (`automation/lib/`), Gherkin specs (`automation/features/`), and
+  automation/sandbox tests (`automation/tests/`) live under `automation/`
+  (configured via root `doit.cfg`); `scripts/` holds only `restore.sh`
+  (enforced by `.alint.yml`).
 - For user-visible features, write a Gherkin scenario and a failing test
   in the owning package before implementation when practical.
 - The environment of record is the locked Pixi workspace:
-  `pixi install --locked`, then `pixi run --locked doit <task>` (or
-  `pixi run --locked do <task>`; developer CLIs such as `backlog`, `skills`,
-  and `agents-md` also remain direct Pixi tasks). The root `package.json` is
+  `pixi install --locked`, then `pixi run --locked tools <task>` (or
+  `pixi run --locked doit <task>` / `pixi run --locked do <task>`;
+  developer CLIs such as `backlog`, `skills`, and `agents-md` also remain
+  direct Pixi tasks). The root `package.json` is
   the private developer-tooling manifest (the `agents-md` tool reads it);
   installing or running there only fronts the developer CLIs, it does not
   provision the product environment.
@@ -107,12 +107,10 @@ and [docs/reference/pixi-tasks.md](docs/reference/pixi-tasks.md).
   `rude-clean-code/tests/`).
 - `pixi run --locked doit coverage` — the same suite with the `.coveragerc`
   gate (at least 91% total line coverage; currently 100%).
-- `pixi run --locked doit test-scripts` — repository sandbox and script tests
-  (`scripts/tests/`).
-- `pixi run --locked doit test-automation` — repository automation BDD
-  suite (`pytest-bdd` against `automation/features/`; steps in
-  `automation/tests/`).
-- `pixi run --locked doit` (or `pixi run --locked doit ci`) — full local CI
+- `pixi run --locked doit test-automation` — repository automation BDD,
+  library, and sandbox suite (`pytest-bdd` against `automation/features/`
+  and tests in `automation/tests/`).
+- `pixi run --locked doit` (or `pixi run --locked tools ci`) — full local CI
   check suite.
 - A change is done when the full CI suite passes: `Package tests`,
   `Policy`, `Documentation`, and `Python compatibility` jobs in
