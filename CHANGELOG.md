@@ -2,7 +2,25 @@
 
 All notable changes to rude-clean-code are documented here.
 
-## [v0.2.0](https://github.com/Archont561/rude-clean-code/compare/v0.1.0...607a099c2295671e344219817f50203836259dda) (2026-11-11)
+## [v0.3.0](https://github.com/Archont561/rude-clean-code/compare/v0.2.0...12de1c57eefc8d187b5feb4cbb1a925fabfa17f5) (2026-11-11)
+
+### Features
+
+* **rules:** implement maturing heuristics and documentation rules
+([8398719](https://github.com/Archont561/rude-clean-code/commit/8398719dd51926b67d441f5125f2af898aa34a5f))
+* **rules:** add config-driven dependency and pattern boundary rules
+([672e371](https://github.com/Archont561/rude-clean-code/commit/672e371e197d21ecc17f6049df2284d0ba2f2448))
+
+### Documentation
+
+* **rules:** update catalogue and backlog for 59 shipped rules
+([12de1c5](https://github.com/Archont561/rude-clean-code/commit/12de1c57eefc8d187b5feb4cbb1a925fabfa17f5))
+* **rules:** showcase rule working principles and quickstart in README
+([8011fc9](https://github.com/Archont561/rude-clean-code/commit/8011fc9ff0be749e92b7ff073f9f1aa869fdc00a))
+* **rules:** publish Architecture profile and pattern rule preconditions
+([b0b9d1e](https://github.com/Archont561/rude-clean-code/commit/b0b9d1e871df41f78d9d06ff93ce6bad0d16df68))
+
+## [v0.2.0](https://github.com/Archont561/rude-clean-code/compare/v0.1.0...v0.2.0) (2026-11-11)
 
 ### Features
 
