@@ -1,26 +1,42 @@
 # Rules and configuration profiles
 
-`rude-clean-code` registers 34 Clean Code rules with Rude through the
+`rude-clean-code` registers 59 Clean Code rules with Rude through the
 `rude.plugins` entry point (`rude_clean_code.plugin`): 21 deterministic and
-structural rules (`CC0xx`–`CC3xx`), 3 naming and literal heuristics
-(`CC401`–`CC403`), 1 in-file duplication rule (`CC501`), 1 in-file
-polymorphism indicator (`CC601`), 3 config-driven architecture dependency
-rules (`CC701`, `CC702`, `CC704`), and 5 config-driven design-pattern
-boundary rules (`CC801`–`CC805`). Remaining heuristic, documentation, and
-project-wide rules (`CC203`, `CC502`, `CC703`, `CC9xx`) in the
+structural rules (`CC001`–`CC005`, `CC101`–`CC104`, `CC107`, `CC201`–`CC202`,
+`CC207`, `CC301`–`CC303`, `CC306`, `CC308`–`CC311`), 15 in-file heuristic and
+indicator rules (`CC105`–`CC106`, `CC108`, `CC204`–`CC206`, `CC304`–`CC305`,
+`CC307`, `CC401`–`CC403`, `CC501`, `CC503`–`CC504`, `CC601`–`CC605` — note
+`CC403`, `CC501`, and `CC504` emit `WARNING`), 3 config-driven architecture
+dependency rules (`CC701`, `CC702`, `CC704`), 5 config-driven design-pattern
+boundary rules (`CC801`–`CC805`), and 10 documentation and comment hygiene
+rules (`CC901`–`CC910`). Only the three project-wide rules (`CC203`, `CC502`,
+`CC703`) in the
 [rule catalogue](../../backlog/docs/doc-2%20-%20Proposed-rule-catalogue-and-detection-contracts.md)
 remain planned.
 
 ## Configuration profiles
 
-Rude 0.1a4 has no built-in preset flag, so copy the **Basic**, **Strict**, or
-**Architecture** profile snippet into your project's `pyproject.toml`.
+Rude 0.1a4 has no built-in preset flag, so copy the **Basic**, **Strict**,
+**Architecture**, or **Documentation** profile snippet into your project's
+`pyproject.toml`.
 
 ### Basic profile (low-noise deterministic & structural checks)
 
 ```toml
 [tool.rude]
 select = ["CC0", "CC1", "CC2", "CC3"]
+# Exclude INFO-grade indicator heuristics inside CC1-CC3 (enabled in Strict):
+ignore = [
+  "CC105",
+  "CC106",
+  "CC108",
+  "CC204",
+  "CC205",
+  "CC206",
+  "CC304",
+  "CC305",
+  "CC307",
+]
 
 # Optional per-rule overrides (examples shown with their defaults):
 [tool.rude.rules.CC101]
@@ -35,12 +51,31 @@ exclude_tests = true
 
 ### Strict profile (includes in-file heuristic indicators)
 
-Add `"CC4"`, `"CC5"`, and `"CC6"` to enable naming/magic-literal checks,
-same-file duplicate body detection, and repeated type-switch indicators:
+Remove the `ignore` list and add `"CC4"`, `"CC5"`, and `"CC6"` to enable
+parameter, cohesion, expression, naming, magic-literal, duplication, SOLID,
+and coupling indicators:
 
 ```toml
 [tool.rude]
 select = ["CC0", "CC1", "CC2", "CC3", "CC4", "CC5", "CC6"]
+```
+
+### Documentation and comments profile (`CC9`)
+
+Add `"CC9"` to check public docstrings, stale docstring parameters, dangling
+body string literals, commented-out code, unreferenced/expired `TODO` comments,
+and blanket or unexplained suppressions:
+
+```toml
+[tool.rude]
+select = ["CC0", "CC1", "CC2", "CC3", "CC9"]
+
+[tool.rude.rules.CC903]
+keywords = ["TODO", "FIXME", "XXX"]
+reference_pattern = '(?:#\d+|[A-Z][A-Z0-9]+-\d+|https?://\S+|@[A-Za-z0-9_.-]+)'
+
+[tool.rude.rules.CC906]
+require_reason_for = ["CC6"]
 ```
 
 ### Architecture profile (opt-in dependency and pattern boundaries)
@@ -107,12 +142,14 @@ rules from the command line:
 rude check --select CC0,CC1,CC2,CC3 src/
 ```
 
-All `CC0xx`–`CC3xx`, `CC7xx`, and `CC801`–`CC804` rules (except `CC002` at
-`INFO`), plus `CC403` and `CC501`, report `WARNING` severity, while `CC002`,
-`CC805`, and subjective indicator rules (`CC401`, `CC402`, `CC601`) report
-`INFO`. Warnings and info diagnostics do not fail `rude check` with a non-zero
-exit code. This repository itself dogfoods the **Basic** profile in
-[`rude-clean-code/pyproject.toml`](../../rude-clean-code/pyproject.toml),
+Deterministic/structural rules, boundary rules (`CC7xx`, `CC801`–`CC804`),
+`CC403`, `CC501`, `CC504`, `CC901`, `CC903`, `CC905`–`CC908`, and `CC910`
+emit `WARNING` severity; `CC002`, `CC805`, `CC902`, `CC904` (experimental),
+`CC909`, and all heuristic/indicator rules (`CC105`–`CC106`, `CC108`,
+`CC204`–`CC206`, `CC304`–`CC305`, `CC307`, `CC401`–`CC402`, `CC503`,
+`CC601`–`CC605`) emit `INFO`. Warnings and info diagnostics do not fail
+`rude check` with a non-zero exit code. This repository itself dogfoods the
+**Basic** profile in [`rude-clean-code/pyproject.toml`](../../rude-clean-code/pyproject.toml),
 and `pixi run --locked doit dogfood` (enforced via `doit lint`, `pre-commit`,
 and `ci`) inspects JSON diagnostics and fails on any warning or error across
 `rude-clean-code` and `automation`.
@@ -137,7 +174,10 @@ and `ci`) inspects JSON diagnostics and fails on any warning or error across
 | `CC102` | Too many parameters | `WARNING` | `max_parameters = 5` | Parameter count in function signature (`self`/`cls`, `*args`, `**kwargs` included; `/` and `*` separators excluded). |
 | `CC103` | Too many return statements | `WARNING` | `max_returns = 5` | `return` statements in the function's own scope only. |
 | `CC104` | Too many local variables | `WARNING` | `max_locals = 10` | Distinct non-parameter, non-`global`, non-`nonlocal` bindings in the function's own scope via `ScopeProvider`. |
+| `CC105` | Boolean flag parameter | `INFO` | `flag_names = []` (extends built-ins) | Parameters annotated `bool` or defaulted to `True`/`False` whose names match mode-switch words (`dry_run`, `validate`, `force`, `recursive`, etc.); `flag_names` extends the default vocabulary. |
+| `CC106` | Unused function parameter | `INFO` | `ignore_prefixes = ["_"]`, `exclude_tests = true` | Unused parameters via `ScopeProvider` (exempts `self`/`cls`, `*args`/`**kwargs`, `nonlocal` bindings, `pass`/`...`/`NotImplementedError` stubs, `@override`/`@abstractmethod`/`@overload`, and test files). |
 | `CC107` | Unused private helper | `WARNING` | `exclude_tests = true`, `ignore_decorators = []` | Module-level private helpers (`_name`, excluding dunders and `@overload`) that have no references anywhere in the module, including forward references. |
+| `CC108` | Data clump in signatures | `INFO` | `min_params = 3`, `min_functions = 3` | Maximal shared parameter groups of `>= min_params` non-variadic names recurring across `>= min_functions` signatures in one module. |
 
 ### Classes (`CC2xx`)
 
@@ -145,7 +185,10 @@ and `ci`) inspects JSON diagnostics and fails on any warning or error across
 | --- | --- | --- | --- | --- |
 | `CC201` | Class too large | `WARNING` | `max_lines = 200` | Lines from `class` to the end of the class body (decorators excluded). |
 | `CC202` | Too many methods | `WARNING` | `max_methods = 15` | Direct methods (including decorated methods) in the class body; dunder methods are counted and reported separately in the message. |
-| `CC207` | Too many base classes | `WARNING` | `max_bases = 3`, `ignore_bases = ["Generic", "Protocol"]` | Direct base classes on a `class` header (excluding `metaclass=...` keywords and configured abstract/protocol markers). |
+| `CC204` | Excessive constructor dependencies | `INFO` | `max_dependencies = 5` | Type-annotated `__init__` parameters beyond `max_dependencies` (empirical measurement showed 76% of real-world hits on typed data containers, so `CC204` ships as `INFO` rather than `WARNING`). |
+| `CC205` | Likely multiple responsibilities | `INFO` | `max_clusters = 2`, `min_methods = 5` | Disconnected instance-method/`self` attribute clusters on classes with `>= min_methods` instance methods; emits indicator guidance, never claiming an SRP defect as fact. |
+| `CC206` | Oversized interface surface | `INFO` | `max_public_methods = 10` | Non-private direct methods on a class or protocol exceeding `max_public_methods` (per-file ISP indicator only; call-site client usage is project scope). |
+| `CC207` | Excessive direct base classes | `WARNING` | `max_bases = 3`, `ignore_bases = ["Generic", "Protocol"]` | Direct base classes on a `class` header (excluding `metaclass=...` keywords and configured abstract/protocol markers). |
 
 ### Complexity and error handling (`CC3xx`)
 
@@ -154,16 +197,20 @@ and `ci`) inspects JSON diagnostics and fails on any warning or error across
 | `CC301` | Excessive nesting | `WARNING` | `max_depth = 4` | Deepest `if`/`for`/`while`/`try`/`with`/`match` nesting in the function's own scope. |
 | `CC302` | Excessive boolean operands | `WARNING` | `max_operands = 3` | Operands in the outermost `boolean_operator` chain of an expression; parenthesized inner chains are judged separately. |
 | `CC303` | Excessive branching | `WARNING` | `max_branches = 10` | Own-scope decision points (`if`, `elif`, `for`, `while`, `and`/`or`, ternary `x if c else y`, and `match` `case` clauses). |
+| `CC304` | Unnecessarily complex expression | `INFO` | `max_operators = 8` | Expressions in statements exceeding `max_operators` operators/calls/comprehensions and spanning `>= 3` construct kinds (plain data literals and sign-only `-1` excluded). |
+| `CC305` | Unnecessary abstraction | `INFO` | `min_consumers = 2` | `ABC`/`Protocol` classes visible in the same file with a single in-file subclass and fewer than `min_consumers` other references (stays silent when zero in-file subclasses exist). |
 | `CC306` | Nested ternary | `WARNING` | — | A conditional expression (`x if cond else y`) nested inside another conditional expression (reported once per outer ternary). |
+| `CC307` | Inverted conditional with `else` branch | `INFO` | — | Top-level `if not ...` or `if x != y` statements that include an `else:` branch (guard clauses without `else`, `elif` chains, and `is not None` checks are exempt). |
 | `CC308` | Global statement | `WARNING` | `exclude_tests = true` | Any `global` statement, anywhere in non-test files. |
 | `CC309` | Broad exception swallowed | `WARNING` | `exclude_tests = true` | `except Exception` / `except BaseException` / bare `except:` whose handler has no `raise`, logging/warning call, or structured fallback value (`pass`/`...` or unconditional constant/literal return). |
 | `CC310` | Missing exception chaining | `WARNING` | — | `raise SomeError(...)` inside an `except` handler (not in a nested function/class) without `from err` or `from None` (bare `raise` is exempt). |
 | `CC311` | Oversized try block | `WARNING` | `max_lines = 20` | Line span of a `try` suite (excluding `except`, `else`, and `finally` clauses, and excluding nested definitions). |
 
-### In-file heuristics (`CC4xx`, `CC5xx`, `CC6xx`)
+### Naming, magic literals, DRY, and SOLID heuristics (`CC4xx`–`CC6xx`)
 
-Heuristic rules live in the **Strict** profile (`CC4`, `CC5`, `CC6`). They
-surface maintainability indicators rather than hard defects:
+Heuristic rules live in the **Strict** profile (`CC4`, `CC5`, `CC6`, plus the
+`INFO` indicators in `CC1`–`CC3`). Rules whose base/interface lives outside
+the file (`CC305`, `CC602`, `CC603`) stay silent rather than guessing from names:
 
 | Code | Name | Severity | Option (default) | What it detects & limitations |
 | --- | --- | --- | --- | --- |
@@ -171,7 +218,13 @@ surface maintainability indicators rather than hard defects:
 | `CC402` | Unclear class or variable name | `INFO` | `vague_names = [...]`, `max_short_scope = 5` | Vague class names, module constants, or type-annotated locals in functions longer than `max_short_scope` lines (unannotated locals and short-function locals are exempt). |
 | `CC403` | Repeated magic literal | `WARNING` | `min_occurrences = 3` | Numeric or non-empty string literals repeated in one file (exempts `0`, `1`, `-1`, `""`, docstrings, f-strings, `Literal[...]`/`Annotated[...]`/`cast(...)` types). Intentional test fixtures and DSL dictionary keys (e.g. `doit` task specs) are known false-positive shapes. |
 | `CC501` | Duplicate function body | `WARNING` | `min_lines = 5` | Normalized function/method body lines (excluding comments, docstrings, whitespace, and `pass`/`...` stubs) duplicated inside the **same file**. Cross-file duplication is out of scope (`CC502` planned). |
+| `CC503` | Repeated validation logic | `INFO` | `min_functions = 3` | Parameter-normalized leading guard-clause sequences (`if ...: raise/return`, at least two guards or a compound boolean guard) shared across `>= min_functions` functions in one file. |
+| `CC504` | Repeated constant definitions | `WARNING` | `min_occurrences = 3` | File-scope subset: distinct module-level `UPPER_CASE` constants assigned the same non-trivial literal inside one file (cross-module constant duplication remains deferred). |
 | `CC601` | Repeated type switch | `INFO` | `min_isinstance = 3` | Functions with `>= N` own-scope `isinstance(...)` calls or `if`/`elif` chains comparing the same attribute across `>= N` branches (AST/dispatch visitors may trigger as benign indicators). |
+| `CC602` | Suspicious overridden method | `INFO` | — | Subclass overrides of visible in-file concrete base methods that raise `NotImplementedError`, strip base defaults, or return `None` where the base returns a value (silent when the base is external). |
+| `CC603` | Interface segregation indicator | `INFO` | `max_unimplemented = 2` | Subclasses leaving `> max_unimplemented` methods inherited from a visible in-file base raising `NotImplementedError` (silent when the base is external). |
+| `CC604` | Chained attribute or call access | `INFO` | `max_chain_depth = 3`, `allowed_prefixes = ["self."]`, `ignore_multiline = true` | Single-line `attribute`/`call` expression chains exceeding `max_chain_depth` hops outside `allowed_prefixes` (Law of Demeter indicator). |
+| `CC605` | External access to private member | `INFO` | `exclude_tests = true`, `allowed_members = ["_asdict", "_replace", "_make"]` | Reading or writing single-underscore `_name` attributes on receivers other than `self`, `cls`, or `super()`. |
 
 ### Architecture and dependencies (`CC7xx`, opt-in config)
 
@@ -190,8 +243,8 @@ one layer.
 ### Design-pattern boundaries (`CC8xx`, opt-in config)
 
 Every `CC8xx` rule is **inert until configured**. No `CC8xx` rule requires a
-project to adopt any design pattern — "missing pattern" indicators remain the
-province of `CC601` (and planned `CC204`/`CC305`) at `INFO`.
+project to adopt any design pattern — pattern-absence indicators live in
+`CC601`, `CC204`, and `CC305` at `INFO`.
 
 #### `CC801`: Data access outside the repository layer
 
@@ -264,6 +317,21 @@ restricts direct service instantiation to composition roots; otherwise leave
   instantiated outside `exclude_paths` (excluding self-construction inside the
   service class itself), suggesting constructor injection and wiring at a
   composition root.
+
+### Documentation and comment hygiene (`CC9xx`)
+
+| Code | Name | Severity | Option (default) | What it checks |
+| --- | --- | --- | --- | --- |
+| `CC901` | Public API missing docstring | `WARNING` | `check_modules = true`, `check_classes = true` | Public modules, classes, and functions/methods missing a leading docstring (exempts `_`-prefixed definitions, `@overload`, `@x.setter`/`deleter`, and test files; never judges docstring quality). |
+| `CC902` | Commented-out code | `INFO` | `min_lines = 2` | Consecutive comment blocks conservatively parsing as valid Python statements; never flags shebangs, encodings, `noqa`/`type:` directives, doctests, banners, or prose. |
+| `CC903` | TODO or FIXME without a reference | `WARNING` | `reference_pattern` (ticket `#123`, `JIRA-1`, URL, or `@owner`), `keywords = ["TODO", "FIXME", "XXX"]`, `expiry_pattern = none`, `reference_date = none`, `forbidden_markers = []`, `exclude_tests = true` | Marker comments missing a reference, dated tags past `reference_date` (or UTC today), or forbidden marker tokens outside test files. Intentionally overlaps Rude's example `META001` so plugin users need one rule pack. |
+| `CC904` | Comment restating the code *(experimental)* | `INFO` | `max_overlap = 0.8` | Standalone single-line comments whose normalized words overlap at least `max_overlap` of identifiers on the immediately following statement line (rationale comments containing `why`/`because`/etc. are exempt). |
+| `CC905` | Empty or description-less TODO | `WARNING` | `keywords = ["TODO", "FIXME", "XXX"]`, `min_description_chars = 3` | Marker comments lacking descriptive text once keyword, bracketed owner/tag, and ticket references are stripped. |
+| `CC906` | Blanket or unexplained suppression comment | `WARNING` | `require_reason_for = []` | Blanket `# noqa` or `# type: ignore` without explicit codes (mirrors Rude `META002`/`META003`), plus targeted suppressions matching `require_reason_for` prefixes without a trailing `-- <reason>`. |
+| `CC907` | Empty or placeholder docstring | `WARNING` | `check_modules = true`, `check_classes = true` | Public API docstrings whose stripped text is blank, punctuation-only (`...`), or starts with a `TODO`/`FIXME` placeholder. |
+| `CC908` | Docstring parameter drift | `WARNING` | `report_missing = false` | Phantom parameter names in Google `Args:`, NumPy `Parameters`, or Sphinx `:param:` sections absent from the function signature (exempts `**kwargs` forwarders); set `report_missing = true` to also flag undocumented non-variadic signature parameters. |
+| `CC909` | Docstring return or yield mismatch | `INFO` | — | Function docstrings declaring `Returns:`/`:returns:` on a generator function (suggests `Yields:`) or a `None`-only function outside stubs/non-`None` annotated interfaces. |
+| `CC910` | Dangling string literal in body | `WARNING` | — | Standalone body string literal statements that are neither definition docstrings nor PEP 258 attribute docstrings following an assignment. |
 
 ## Own-scope isolation and Rude's `C901`
 

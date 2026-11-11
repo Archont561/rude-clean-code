@@ -1,11 +1,11 @@
 # Contributing to Rude Clean Code
 
-Thanks for helping build Rude Clean Code. The plugin currently ships 34 Clean
-Code rules (`CC001`–`CC805` across modules, functions, classes, complexity,
-error handling, naming and literals, same-file duplication, polymorphism
-indicators, and config-driven architecture and pattern boundaries), while
-remaining heuristic, documentation, and project-wide rules in the backlog
-remain planned.
+Thanks for helping build Rude Clean Code. The plugin currently ships 59 Clean
+Code rules (`CC001`–`CC910` across modules, functions, classes, complexity,
+error handling, naming and literals, same-file DRY, SOLID/coupling indicators,
+config-driven architecture and pattern boundaries, and documentation/comment
+hygiene), while the three project-wide rules (`CC203`, `CC502`, `CC703`) in
+the backlog remain planned.
 Please check the [backlog](backlog/README.md) and relevant decisions
 before proposing work, and avoid presenting planned capabilities as
 finished.

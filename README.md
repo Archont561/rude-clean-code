@@ -12,7 +12,7 @@
   </a>
 </p>
 
-> Clean Code plugin for the Rude Python linter. Implements 34 rules across modules, functions, classes, complexity, error handling, naming/literals, same-file DRY, polymorphism indicators, and config-driven architecture and pattern boundaries (`CC001`–`CC805`); remaining heuristic, documentation, and project-wide rules (`CC203`, `CC502`, `CC703`, `CC9xx`) remain planned.
+> Clean Code plugin for the Rude Python linter. Implements 59 rules across modules, functions, classes, complexity, error handling, naming/literals, same-file DRY, SOLID/coupling indicators, config-driven architecture and pattern boundaries, and documentation/comment hygiene (`CC001`–`CC910`); only the three project-wide rules (`CC203`, `CC502`, `CC703`) remain planned.
 
 ### 🏠 [Homepage](https://github.com/Archont561/rude-clean-code#readme)
 
@@ -29,14 +29,15 @@ Rude discovers the `rude.plugins` entry point automatically once installed.
 ### 2. Configure `pyproject.toml`
 
 Rude has no built-in preset flag, so select rule families explicitly under
-`[tool.rude]`. Start with the **Basic** profile (`CC0`–`CC3`), optionally add
-**Strict** heuristics (`CC4`–`CC6`), and configure **Architecture** boundaries
+`[tool.rude]`. Start with the **Basic** profile (`CC0`–`CC3` deterministic
+rules), optionally enable **Strict** heuristics (`CC105`–`CC605`),
+**Documentation** (`CC9`), or configure **Architecture** boundaries
 (`CC7`–`CC8`) using your own modules, classes, and paths:
 
 ```toml
 [tool.rude]
-# Basic (CC0-CC3) + Strict (CC4-CC6) + Architecture (CC7-CC8)
-select = ["CC0", "CC1", "CC2", "CC3", "CC4", "CC5", "CC6", "CC7", "CC8"]
+# Basic (CC0-CC3 deterministic) + Strict heuristics (CC4-CC6) + Architecture (CC7-CC8) + Docs (CC9)
+select = ["CC0", "CC1", "CC2", "CC3", "CC4", "CC5", "CC6", "CC7", "CC8", "CC9"]
 
 # Tune deterministic limits (examples show defaults):
 [tool.rude.rules.CC101]
@@ -79,9 +80,10 @@ unsafe autofixes, and falls into one of three working principles:
 
 | Profile | Families | Severity | Working principle |
 | --- | --- | --- | --- |
-| **Basic** | `CC0xx`–`CC3xx` | `WARNING` (`CC002` is `INFO`) | Deterministic size, structure, and fail-fast checks scoped strictly to one function or class (`max_*` options) |
-| **Strict** | `CC4xx`–`CC6xx` | `INFO` (`CC403`, `CC501` are `WARNING`) | In-file maintainability smells: vague names, magic literals, same-file body clones, and type-switch chains |
+| **Basic** | Deterministic `CC0xx`–`CC3xx` | `WARNING` (`CC002` is `INFO`) | Size, structure, and fail-fast checks scoped strictly to one function or class (`max_*` options) |
+| **Strict** | `CC4xx`–`CC6xx` + heuristic `CC1xx`–`CC3xx` | `INFO` (`CC403`, `CC501`, `CC504` are `WARNING`) | In-file maintainability smells: flags, clumps, cohesion, expressions, names, clones, and SOLID/coupling indicators |
 | **Architecture** | `CC7xx`–`CC8xx` | `WARNING` (`CC805` is `INFO`) | **Inert until configured**: enforces layer and pattern boundaries only for modules, classes, and paths you declare |
+| **Documentation** | `CC9xx` | `WARNING` (`CC902`, `CC904`, `CC909` are `INFO`) | Public API docstrings, parameter/return drift, dangling strings, commented-out code, tracked `TODO` comments, and suppressions |
 
 ### Representative rule examples
 
@@ -170,8 +172,9 @@ src/myapp/domain/orders.py:1:0: CC704 Forbidden import 'sqlalchemy.orm' (matches
 src/myapp/domain/orders.py:1:0: CC801 Data access import 'sqlalchemy.orm' (matches 'sqlalchemy') outside configured repository paths; encapsulate persistence inside a repository
 ```
 
-See [Rules and configuration profiles](docs/reference/rules.md) for all 34
-rules, option defaults, and the full Architecture profile TOML template.
+See [Rules and configuration profiles](docs/reference/rules.md) for all 59
+rules, option defaults, and the full Basic, Strict, Documentation, and
+Architecture profile TOML templates.
 
 ## Documentation
 
@@ -179,7 +182,7 @@ The [`docs/`](docs/README.md) directory is the source of truth for using and
 working on this repository:
 
 - [Documentation index](docs/README.md) — everything, organized by purpose
-- [Rules and configuration profiles](docs/reference/rules.md) — implemented `CC001`–`CC805` rules, Basic/Strict/Architecture profiles, options, and TOML configuration
+- [Rules and configuration profiles](docs/reference/rules.md) — implemented `CC001`–`CC910` rules, Basic/Strict/Documentation/Architecture profiles, options, and TOML configuration
 - [Development setup](docs/guides/development-setup.md) — clone, restore the locked developer sandbox, install hooks
 - [Running the checks](docs/guides/running-the-checks.md) — the CI suite locally
 - [Python version compatibility](docs/guides/python-version-compatibility.md) — testing against 3.11–3.13 with tox (local and CI)
@@ -192,8 +195,8 @@ working on this repository:
 
 The [backlog](backlog/README.md) tracks remaining planned work; the
 specification (`backlog/docs/`) and decisions (`backlog/decisions/`) describe
-the full roadmap. Remaining heuristic, documentation, and project-wide rules
-(`CC203`, `CC502`, `CC703`, `CC9xx`) remain planned, not shipped.
+the full roadmap. Only the three project-wide rules (`CC203`, `CC502`,
+`CC703`) remain planned, not shipped.
 
 ## Development & tests
 
