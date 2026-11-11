@@ -1,4 +1,4 @@
-"""BDD tests for the unified doit task runner."""
+"""BDD tests for the unified doit task runner and automation lib."""
 
 import configparser
 import subprocess
@@ -10,6 +10,8 @@ from typing import Any
 import pytest
 from doit.loader import load_tasks
 from pytest_bdd import given, parsers, scenarios, then, when
+
+from automation.lib import packaging, quality
 
 scenarios(str(Path(__file__).resolve().parents[1] / "features" / "task_runner.feature"))
 
@@ -43,7 +45,6 @@ def verify_expected_tasks(runner_state: dict[str, Any]) -> None:
         "install-projects",
         "dogfood",
         "test",
-        "test-scripts",
         "test-automation",
         "coverage",
         "lint",
@@ -129,11 +130,11 @@ def populate_temp_artifacts(tmp_path: Path, runner_state: dict[str, Any]) -> Non
 
 
 @when("the automation clean helpers run")
-def run_clean_helpers(dodo_module: ModuleType, runner_state: dict[str, Any]) -> None:
+def run_clean_helpers(runner_state: dict[str, Any]) -> None:
     workspace = runner_state["workspace"]
-    dodo_module.clean_coverage(root=workspace)
-    dodo_module.clean_distributions(root=workspace)
-    dodo_module.clean_dist(root=workspace)
+    packaging.clean_coverage(root=workspace)
+    packaging.clean_distributions(root=workspace)
+    packaging.clean_dist(root=workspace)
 
 
 @then("generated coverage and distribution artifacts are removed")
@@ -178,7 +179,6 @@ def setup_dogfood_workspace(tmp_path: Path, runner_state: dict[str, Any]) -> Non
 
 @when("dogfood_rude runs with clean Rude output")
 def run_dogfood_clean(
-    dodo_module: ModuleType,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
     runner_state: dict[str, Any],
@@ -187,8 +187,8 @@ def run_dogfood_clean(
         runner_state["cmd"] = cmd
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
-    monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
-    dodo_module.dogfood_rude(root=runner_state["workspace"])
+    monkeypatch.setattr(quality.subprocess, "run", fake_run)
+    quality.dogfood_rude(root=runner_state["workspace"])
     runner_state["stdout"] = capsys.readouterr().out
 
 
@@ -199,7 +199,6 @@ def verify_dogfood_success(runner_state: dict[str, Any], expected: str) -> None:
 
 @when("dogfood_rude runs and Rude emits a CC diagnostic")
 def run_dogfood_violation(
-    dodo_module: ModuleType,
     monkeypatch: pytest.MonkeyPatch,
     runner_state: dict[str, Any],
 ) -> None:
@@ -212,9 +211,9 @@ def run_dogfood_violation(
     def fake_run(cmd: list[str], **_kwargs: Any) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(cmd, 0, stdout=payload, stderr="")
 
-    monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
+    monkeypatch.setattr(quality.subprocess, "run", fake_run)
     try:
-        dodo_module.dogfood_rude(root=runner_state["workspace"])
+        quality.dogfood_rude(root=runner_state["workspace"])
     except RuntimeError as exc:
         runner_state["error"] = exc
     else:

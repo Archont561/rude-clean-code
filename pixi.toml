@@ -38,10 +38,11 @@ hypothesis = ">=6.170.15, <7"
 # Pixi evaluates activation.env in the platform shell. Disable word splitting and
 # globbing inside the substitution so checkout paths containing spaces are safe.
 [activation.env]
-PYTHONPATH = '$(IFS=; set -f; python ${PIXI_PROJECT_ROOT}/scripts/activate.py)'
+PYTHONPATH = '$(IFS=; set -f; python ${PIXI_PROJECT_ROOT}/automation/lib/activate.py)'
 
 [tasks]
 # Unified automation runner; all check, test, build, hook, and release tasks live in automation/dodo.py.
+tools = "doit"
 do = "doit"
 bun-install = "bun install --frozen-lockfile"
 # Direct Bun developer CLIs so arbitrary flags (for example `--help`) pass through untouched

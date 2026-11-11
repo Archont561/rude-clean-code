@@ -39,15 +39,15 @@ this page describes the repository as built.
   in `_scope.py` and Rude's `ScopeProvider`. Its Gherkin features (`features/`)
   and unit, property, integration, and BDD tests (`tests/`) live inside the
   package.
-- **Task automation and scripts** (`automation/` and `scripts/`) are tooling,
+- **Task automation and bootstrap** (`automation/` and `scripts/`) are tooling,
   not product code: [`automation/dodo.py`](../../automation/dodo.py)
-  implements the unified `doit` tasks (configured via root
-  [`doit.cfg`](../../doit.cfg) for test, coverage, lint, package validation,
-  release build, commit message checking, and hook installation), with its
-  Gherkin specs in `automation/features/` and tests in `automation/tests/`.
-  `scripts/` holds the pre-Pixi sandbox restore (`restore.sh`) and Pixi
-  activation helper (`activate.py` — puts local `src/` directories on
-  `PYTHONPATH`), with sandbox and script tests in `scripts/tests/`.
+  declares the unified `doit` tasks (configured via root
+  [`doit.cfg`](../../doit.cfg) and runnable via `pixi run --locked tools`)
+  importing helpers from `automation/lib/` (packaging, git checks, quality
+  checks, and Pixi `PYTHONPATH` activation in `activate.py`), with Gherkin
+  specs in `automation/features/` and tests in `automation/tests/`.
+  `scripts/` contains only the pre-Pixi sandbox restore bootstrap
+  (`restore.sh`), enforced by `.alint.yml`.
 - **The locked workspace** (`pixi.toml` / `pixi.lock`) pins every tool used
   locally and in CI: Python, `rude`, `hypothesis`, and the lint/test/coverage/
   automation stack (including `doit`) from PyPI, plus CLI tools (lefthook,

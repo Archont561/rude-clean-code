@@ -2,11 +2,12 @@
 
 import subprocess
 from pathlib import Path
-from types import ModuleType
 from typing import Any
 
 import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
+
+from automation.lib import git_checks
 
 scenarios(
     str(Path(__file__).resolve().parents[1] / "features" / "git_automation.feature")
@@ -20,7 +21,7 @@ def git_state() -> dict[str, Any]:
 
 @given("Lefthook hooks are already installed")
 def hooks_already_installed(
-    dodo_module: ModuleType, monkeypatch: pytest.MonkeyPatch, git_state: dict[str, Any]
+    monkeypatch: pytest.MonkeyPatch, git_state: dict[str, Any]
 ) -> None:
     def fake_run(
         cmd: list[str], *, cwd: Path, check: bool
@@ -28,12 +29,12 @@ def hooks_already_installed(
         git_state["invoked"].append(cmd)
         return subprocess.CompletedProcess(cmd, 0)
 
-    monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
+    monkeypatch.setattr(git_checks.subprocess, "run", fake_run)
 
 
 @given("Lefthook hooks are not yet installed")
 def hooks_need_install(
-    dodo_module: ModuleType, monkeypatch: pytest.MonkeyPatch, git_state: dict[str, Any]
+    monkeypatch: pytest.MonkeyPatch, git_state: dict[str, Any]
 ) -> None:
     statuses = iter([1, 0, 0])
 
@@ -43,30 +44,27 @@ def hooks_need_install(
         git_state["invoked"].append(cmd)
         return subprocess.CompletedProcess(cmd, next(statuses))
 
-    monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
+    monkeypatch.setattr(git_checks.subprocess, "run", fake_run)
 
 
 @given(parsers.parse("Lefthook hook verification exits with status {code:d}"))
-def hooks_broken_status(
-    dodo_module: ModuleType, monkeypatch: pytest.MonkeyPatch, code: int
-) -> None:
+def hooks_broken_status(monkeypatch: pytest.MonkeyPatch, code: int) -> None:
     def fake_run(
         cmd: list[str], *, cwd: Path, check: bool
     ) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(cmd, code)
 
-    monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
+    monkeypatch.setattr(git_checks.subprocess, "run", fake_run)
 
 
 @when("install_hooks runs")
 def run_install_hooks(
-    dodo_module: ModuleType,
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
     git_state: dict[str, Any],
 ) -> None:
     try:
-        dodo_module.install_hooks(root=tmp_path)
+        git_checks.install_hooks(root=tmp_path)
     except RuntimeError as exc:
         git_state["error"] = exc
     git_state["stdout"] = capsys.readouterr().out
@@ -116,26 +114,24 @@ def _mock_git_response(
 
 @pytest.fixture
 def mocked_git(
-    dodo_module: ModuleType,
     monkeypatch: pytest.MonkeyPatch,
     git_state: dict[str, Any],
 ) -> dict[str, Any]:
     def fake_run(cmd: list[str], **_kwargs: Any) -> subprocess.CompletedProcess[str]:
         return _mock_git_response(cmd, git_state)
 
-    monkeypatch.setattr(dodo_module.subprocess, "run", fake_run)
+    monkeypatch.setattr(git_checks.subprocess, "run", fake_run)
     return git_state
 
 
 @pytest.fixture
 def commit_checker(
-    dodo_module: ModuleType,
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
     git_state: dict[str, Any],
 ) -> Any:
     def _run(base: str, head: str) -> None:
-        dodo_module.check_commit_messages(base=base, head=head, root=tmp_path)
+        git_checks.check_commit_messages(base=base, head=head, root=tmp_path)
         git_state["stdout"] = capsys.readouterr().out
 
     return _run
@@ -200,11 +196,10 @@ def check_commits_explicit(
     parsers.parse('commit messages are checked for the zero SHA base and head "{head}"')
 )
 def check_commits_zero_sha(
-    dodo_module: ModuleType,
     commit_checker: Any,
     head: str,
 ) -> None:
-    commit_checker(dodo_module.ZERO_SHA, head)
+    commit_checker(git_checks.ZERO_SHA, head)
 
 
 @then(parsers.parse('commit message validation skips with message "{expected}"'))

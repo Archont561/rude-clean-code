@@ -1,5 +1,7 @@
 """Print the Python path for Pixi activation, discovering local src layouts."""
 
+from __future__ import annotations
+
 import os
 import subprocess
 from pathlib import Path
@@ -38,6 +40,7 @@ def python_path(root: Path, current: str) -> str:
 
 
 def main() -> None:
+    """Print computed PYTHONPATH for the active Pixi workspace."""
     root = Path(os.environ["PIXI_PROJECT_ROOT"])
     print(python_path(root, os.environ.get("PYTHONPATH", "")))
 

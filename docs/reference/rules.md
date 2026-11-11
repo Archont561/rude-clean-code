@@ -56,7 +56,7 @@ code. This repository itself dogfoods the **Basic** profile in
 [`rude-clean-code/pyproject.toml`](../../rude-clean-code/pyproject.toml),
 and `pixi run --locked doit dogfood` (enforced via `doit lint`, `pre-commit`,
 and `ci`) inspects JSON diagnostics and fails on any warning or error across
-`rude-clean-code`, `automation`, and `scripts`.
+`rude-clean-code` and `automation`.
 
 ## Implemented rules
 

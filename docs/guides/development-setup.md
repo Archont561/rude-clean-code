@@ -76,7 +76,7 @@ pixi run --locked doit alint
 ## How the setup works
 
 The default environment's activation script
-([`scripts/activate.py`](../../scripts/activate.py)) prepends the `src/`
+([`automation/lib/activate.py`](../../automation/lib/activate.py)) prepends the `src/`
 directories of local, tracked (or unignored) `pyproject.toml` projects to
 `PYTHONPATH`, so `import rude_clean_code` resolves to the current source
 without an editable install. `pixi run --locked doit install-projects`

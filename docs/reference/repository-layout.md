@@ -9,10 +9,9 @@ What lives where, and the invariants the layout enforces. Invariants marked
 | Entry                          | Kind        | Purpose                                                        |
 | ------------------------------ | ----------- | -------------------------------------------------------------- |
 | `rude-clean-code/`             | package     | The only distribution: `rude-clean-code` (`src/`, `features/`, `tests/`, `pyproject.toml`, `README.md`, `LICENSE`) |
-| `automation/`                  | automation  | Unified `doit` tasks (`dodo.py`), Gherkin specs (`features/`), and BDD tests (`tests/`) |
+| `automation/`                  | automation  | Unified `doit` tasks (`dodo.py`), helper modules (`lib/`), Gherkin specs (`features/`), and tests (`tests/`) |
 | `doit.cfg`                     | automation  | Points `doit` at `automation/dodo.py` from the repository root |
-| `scripts/`                     | scripts     | Pre-Pixi sandbox restore (`restore.sh`) and Pixi environment activation (`activate.py`) |
-| `scripts/tests/`               | tests       | Tests for repository sandbox configuration                     |
+| `scripts/`                     | scripts     | Holds only the pre-Pixi sandbox restore bootstrap (`restore.sh`), enforced by `.alint.yml` |
 | `backlog/`                     | workspace   | Backlog.md records: spec, decisions 1-5, milestones m-0..m-5, tasks RCC-1..RCC-12 |
 | `docs/`                        | docs        | This documentation layer (see [`docs/README.md`](../README.md))  |
 | `.agents/skills/`              | vendored    | Upstream agent skills (TDD, BDD, refactor, clean-code)         |
@@ -80,11 +79,10 @@ rude-clean-code/
   `rude_clean_code` and are loaded only when Rude imports the `rude.plugins`
   entry point (`rude_clean_code.plugin`).
 - Package behavior, tests, and Gherkin features live inside the owning
-  package under `rude-clean-code/` (decision-3). Unified automation tasks
-  (`dodo.py`), Gherkin specs (`features/`), and BDD tests (`tests/`) live in
-  `automation/` (configured via root `doit.cfg`), pre-Pixi/activation
-  scripts live in root `scripts/`, and sandbox/script tests live in
-  `scripts/tests/`.
+  package under `rude-clean-code/` (decision-3). Repository automation lives
+  under `automation/` (`dodo.py`, `lib/`, `features/`, and `tests/`,
+  configured via root `doit.cfg`), while `scripts/` holds only
+  `restore.sh` (enforced by `.alint.yml`).
 
 ## The workflows
 

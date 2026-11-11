@@ -5,12 +5,12 @@ pass in CI ([`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)).
 Run them through the locked `doit` runner in [`automation/dodo.py`](../../automation/dodo.py):
 
 ```sh
-pixi run --locked doit <task>
+pixi run --locked tools <task>    # or: pixi run --locked doit <task>
 ```
 
-Running `pixi run --locked doit` (or `pixi run --locked doit ci`) executes
-the full local CI sweep (`policy`, `docs-lint`, `test-scripts`,
-`test-automation`, and `coverage`).
+Running `pixi run --locked tools` (or `pixi run --locked doit ci`) executes
+the full local CI sweep (`policy`, `docs-lint`, `test-automation`, and
+`coverage`).
 
 ## The CI suite
 
@@ -29,7 +29,7 @@ integration, and BDD tests under `rude-clean-code/` with coverage. `.coveragerc`
 requires at least 91% total line coverage (`fail_under`).
 
 To dogfood the installed plugin's rules across the entire repository
-(`rude-clean-code`, `automation`, and `scripts`) with the `doit` gate:
+(`rude-clean-code` and `automation`) with the `doit` gate:
 
 ```sh
 pixi run --locked doit dogfood
@@ -38,7 +38,7 @@ pixi run --locked doit dogfood
 ### `Policy`
 
 ```sh
-pixi run --locked doit dogfood        # Rude CC1-CC3 across repo Python files (fails on any diagnostic)
+pixi run --locked doit dogfood        # Rude CC0-CC3 across repo Python files (fails on any diagnostic)
 pixi run --locked doit lint           # dogfood + ruff check .
 pixi run --locked doit format-check   # ruff format --check .
 pixi run --locked doit typecheck      # mypy rude-clean-code/src
@@ -93,8 +93,7 @@ catalogue.
 
 ```sh
 pixi run --locked doit test            # package tests without coverage
-pixi run --locked doit test-scripts    # sandbox and script tests (scripts/tests/)
-pixi run --locked doit test-automation # automation BDD tests (automation/tests/)
+pixi run --locked doit test-automation # automation BDD, library, and sandbox tests (automation/tests/)
 pixi run --locked doit audit           # pip-audit --local --skip-editable
 ```
 
