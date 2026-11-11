@@ -50,7 +50,7 @@ def dogfood_rude(
     root: Path = ROOT,
     paths: Sequence[str] | None = None,
 ) -> None:
-    """Run Rude with this repository's Basic CC profile and fail on any diagnostic."""
+    """Run Rude with this repository's dogfood CC profile and fail on any diagnostic."""
     resolved = tuple(paths) if paths is not None else DOGFOOD_TARGETS
     cmd = [
         sys.executable,
