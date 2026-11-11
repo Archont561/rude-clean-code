@@ -2,7 +2,25 @@
 
 All notable changes to rude-clean-code are documented here.
 
-## Unreleased (2026-11-10)
+## [v0.2.0](https://github.com/Archont561/rude-clean-code/compare/v0.1.0...607a099c2295671e344219817f50203836259dda) (2026-11-11)
+
+### Features
+
+* **release:** create GitHub Release alongside PyPI publish
+([540114b](https://github.com/Archont561/rude-clean-code/commit/540114bf3eaea97b842468dd69002bc55f9a189e))
+* **rules:** implement module, structural, error, and heuristic CC rules
+([58e1877](https://github.com/Archont561/rude-clean-code/commit/58e187752d6f1738827951037a9953c70e1beeb2))
+
+### Documentation
+
+* **release:** update release guide and rule summaries for v0.2.0
+([607a099](https://github.com/Archont561/rude-clean-code/commit/607a099c2295671e344219817f50203836259dda))
+* **ci:** document automation/lib layout, tools task, and scripts policy
+([1aa6142](https://github.com/Archont561/rude-clean-code/commit/1aa614277f0366ab3628838c0e93feec02832db8))
+* **rules:** document CC001-CC601 rules and Basic/Strict profiles
+([ef97488](https://github.com/Archont561/rude-clean-code/commit/ef97488fc48de5d388bf4c80d15f7d7729a3b3b6))
+
+## v0.1.0 (2026-11-10)
 
 ### Features
 
