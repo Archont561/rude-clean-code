@@ -1,0 +1,63 @@
+{
+  "info": {
+    "subdir": "noarch"
+  },
+  "packages": {},
+  "packages.conda": {
+    "ca-certificates-2026.10.23-hbd8a1cb_0.conda": {
+      "build": "hbd8a1cb_0",
+      "build_number": 0,
+      "depends": [
+        "__unix"
+      ],
+      "license": "ISC",
+      "md5": "3fd02989038a1e1cee627c14c2d73f29",
+      "name": "ca-certificates",
+      "noarch": "generic",
+      "purls": [],
+      "run_exports": {},
+      "sha256": "95619b9c1184be7175392eeb0ee7eeb5ccf25d280951f4225f2d62e725790be3",
+      "size": 130057,
+      "subdir": "noarch",
+      "timestamp": 1792772446739,
+      "version": "2026.10.23"
+    },
+    "python_abi-3.13-9_cp313.conda": {
+      "build": "9_cp313",
+      "build_number": 9,
+      "constrains": [
+        "python 3.13.* *_cp313"
+      ],
+      "depends": [],
+      "license": "BSD-3-Clause",
+      "license_family": "BSD",
+      "md5": "c5abc97af551bc12d71305852392f75c",
+      "name": "python_abi",
+      "noarch": "generic",
+      "purls": [],
+      "run_exports": {},
+      "sha256": "9dc0cb6a20ebc7e9bcd8c6868f2bec083c114b0ba20b7118405c036533d5c522",
+      "size": 6769,
+      "subdir": "noarch",
+      "timestamp": 1788302828005,
+      "version": "3.13"
+    },
+    "tzdata-2026e-h5d301ff_0.conda": {
+      "build": "h5d301ff_0",
+      "build_number": 0,
+      "depends": [],
+      "license": "LicenseRef-Public-Domain",
+      "md5": "abccc3810d2b97e570dee487f2b46e38",
+      "name": "tzdata",
+      "noarch": "generic",
+      "purls": [],
+      "run_exports": {},
+      "sha256": "2b7ca858879f183ce2dcc65b300f48a0133d5430550f35b23d80d405a0788dbf",
+      "size": 119208,
+      "subdir": "noarch",
+      "timestamp": 1792758382821,
+      "version": "2026e"
+    }
+  },
+  "repodata_version": 2
+}
