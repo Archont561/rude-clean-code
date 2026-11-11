@@ -1,10 +1,11 @@
 # Rude Clean Code
 
 Clean Code plugin for the [Rude](https://pypi.org/project/rude/) Python linter,
-exposing 34 Clean Code rules across module structure, functions, classes,
-complexity, error handling, naming/literals, same-file duplication,
-polymorphism indicators, and config-driven architecture and pattern boundaries
-(`CC001`–`CC805`) through Rude's `rude.plugins` entry point.
+exposing 59 Clean Code rules across module structure, functions, classes,
+complexity, error handling, naming/literals, same-file DRY, SOLID/coupling
+indicators, config-driven architecture and pattern boundaries, and
+documentation/comment hygiene (`CC001`–`CC910`) through Rude's `rude.plugins`
+entry point.
 
 ## Quickstart
 
@@ -43,9 +44,11 @@ rude check --select CC0,CC1,CC2,CC3 src/
   classes, or lambdas into an enclosing scope.
 - **No unsafe autofixes:** Rules report measured values, limits, and
   remediation hints rather than rewriting business logic.
-- **Explicit severity split:** Deterministic and boundary rules emit
-  `WARNING` (`CC002` and `CC805` emit `INFO`), while subjective smell
-  indicators (`CC401`, `CC402`, `CC601`, `CC805`) emit `INFO`.
+- **Explicit severity split:** Deterministic, structural, boundary, and doc
+  hygiene rules emit `WARNING` (`CC002` and `CC805` emit `INFO`), while
+  subjective smell and comment indicators (`CC105`–`CC106`, `CC108`,
+  `CC204`–`CC206`, `CC304`–`CC305`, `CC307`, `CC401`–`CC402`, `CC503`,
+  `CC601`–`CC605`, `CC902`, `CC904` experimental, `CC909`) emit `INFO`.
 - **Inert opt-in architecture checks:** `CC7xx` and `CC8xx` emit zero
   diagnostics unless configured with your modules, classes, and layer paths.
 
@@ -57,19 +60,28 @@ rude check --select CC0,CC1,CC2,CC3 src/
   exported in `__all__`)
 - **Functions (`CC1xx`)**: `CC101` (`max_lines = 30`), `CC102`
   (`max_parameters = 5`), `CC103` (`max_returns = 5`), `CC104`
-  (`max_locals = 10`), `CC107` (unused private helper)
+  (`max_locals = 10`), `CC105` (boolean flag parameter, `INFO`), `CC106`
+  (unused parameter, `INFO`), `CC107` (unused private helper), `CC108` (data
+  clump in signatures, `INFO`)
 - **Classes (`CC2xx`)**: `CC201` (`max_lines = 200`), `CC202`
-  (`max_methods = 15`), `CC207` (`max_bases = 3`)
+  (`max_methods = 15`), `CC204` (`max_dependencies = 5`, `INFO`), `CC205`
+  (disjoint responsibility clusters, `INFO`), `CC206` (`max_public_methods = 10`,
+  `INFO`), `CC207` (`max_bases = 3`)
 - **Complexity and error handling (`CC3xx`)**: `CC301` (`max_depth = 4`),
-  `CC302` (`max_operands = 3`), `CC303` (`max_branches = 10`), `CC306`
-  (nested ternary), `CC308` (`global` statement), `CC309` (broad exception
-  swallowed), `CC310` (missing exception chaining), `CC311` (`max_lines = 20`)
+  `CC302` (`max_operands = 3`), `CC303` (`max_branches = 10`), `CC304`
+  (complex expression, `INFO`), `CC305` (single-impl abstraction, `INFO`),
+  `CC306` (nested ternary), `CC307` (inverted conditional with `else`, `INFO`),
+  `CC308` (`global` statement), `CC309` (broad exception swallowed), `CC310`
+  (missing exception chaining), `CC311` (`max_lines = 20`)
 - **In-file heuristics (`CC4xx`–`CC6xx`, Strict profile)**: `CC401`
   (unclear function name), `CC402` (unclear class/variable name), `CC403`
   (repeated magic literal, `min_occurrences = 3`), `CC501` (duplicate function
   body within the **same file**, `min_lines = 5`; cross-file duplication is
-  planned as `CC502`), `CC601` (repeated `isinstance`/attribute switch,
-  `min_isinstance = 3`)
+  planned as `CC502`), `CC503` (repeated validation guards, `INFO`), `CC504`
+  (repeated file-scope constants, `WARNING`), `CC601` (repeated type switch,
+  `INFO`), `CC602` (suspicious override, `INFO`), `CC603` (ISP indicator,
+  `INFO`), `CC604` (chained access, `INFO`), `CC605` (external private member
+  access, `INFO`)
 - **Architecture and dependencies (`CC7xx`, opt-in config)**: `CC701`
   (forbidden concrete imports), `CC702` (concrete instantiation in domain code),
   `CC704` (general forbidden layer dependencies)
@@ -78,6 +90,13 @@ rude check --select CC0,CC1,CC2,CC3 src/
   `CC803` (strategy class violating protocol), `CC804` (handler missing
   registration decorator), `CC805` (concrete service construction bypassing
   dependency injection, `INFO`)
+- **Documentation and comments (`CC9xx`)**: `CC901` (public API missing
+  docstring), `CC902` (commented-out code, `INFO`), `CC903` (TODO/FIXME without
+  reference, expiry, or forbidden markers), `CC904` (comment restating code,
+  experimental `INFO`), `CC905` (empty TODO), `CC906` (blanket or unexplained
+  suppressions), `CC907` (placeholder docstring), `CC908` (docstring parameter
+  drift), `CC909` (docstring return/yield mismatch, `INFO`), `CC910` (dangling
+  body string literal)
 
 The package initializer `rude_clean_code` exposes only `VERSION` (read from
 installed distribution metadata); plugin rules live in `rude_clean_code.plugin`.
