@@ -52,6 +52,18 @@ include = [
 
 [tool.rude]
 select = ["CC0", "CC1", "CC2", "CC3"]
+# Basic profile excludes INFO-grade heuristic indicators in CC1-CC3 (enable via Strict):
+ignore = [
+  "CC105",
+  "CC106",
+  "CC108",
+  "CC204",
+  "CC205",
+  "CC206",
+  "CC304",
+  "CC305",
+  "CC307",
+]
 
 [tool.rude.rules.CC002]
 allowed_names = ["VERSION"]

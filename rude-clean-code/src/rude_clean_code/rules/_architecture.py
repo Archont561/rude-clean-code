@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from rude.core.types import Diagnostic
 
-from rude_clean_code._scope import parse_str_list_option
+from rude_clean_code._scope import option_error, parse_str_list_option
 from rude_clean_code.rules._symbol_matching import file_matches_scope
 
 if TYPE_CHECKING:
@@ -154,15 +154,6 @@ def _parse_dict_layer_spec(
     )
 
 
-def _option_error(
-    code: str,
-    option_name: str,
-    expected: str,
-    raw: object,
-) -> ValueError:
-    return ValueError(f"{code} option '{option_name}' must be {expected}, got {raw!r}")
-
-
 def parse_layer_specs(
     code: str,
     option_name: str,
@@ -170,7 +161,7 @@ def parse_layer_specs(
 ) -> tuple[LayerDependencySpec, ...]:
     """Validate and freeze ``CC704`` layer-to-module dependency rules."""
     if not isinstance(raw, (list, tuple)):
-        raise _option_error(code, option_name, "a list of rule entries", raw)
+        raise option_error(code, option_name, "a list of rule entries", raw)
     specs: list[LayerDependencySpec] = []
     for entry in raw:
         if isinstance(entry, (list, tuple)) and len(entry) == 2:
