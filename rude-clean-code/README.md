@@ -6,27 +6,28 @@ complexity, error handling, naming/literals, same-file duplication,
 polymorphism indicators, and config-driven architecture and pattern boundaries
 (`CC001`–`CC805`) through Rude's `rude.plugins` entry point.
 
-## Installation
+## Quickstart
+
+Install alongside Rude (discovered automatically via `rude.plugins`):
 
 ```sh
 pip install rude-clean-code
 ```
 
-Rude discovers the plugin automatically via `rude.plugins` once installed.
-
-## Configuration profiles
-
-Add the **Basic** profile snippet (`CC0`–`CC3`) to your `pyproject.toml`,
-include `"CC4"`, `"CC5"`, `"CC6"` for the **Strict** profile with heuristic
-indicators, or include `"CC7"`, `"CC8"` for opt-in **Architecture** and
-design-pattern boundary rules (inert until configured):
+Configure profiles and rule options in `pyproject.toml`:
 
 ```toml
 [tool.rude]
+# Basic (CC0-CC3), Strict heuristics (CC4-CC6), and opt-in Architecture (CC7-CC8)
 select = ["CC0", "CC1", "CC2", "CC3"]
 
 [tool.rude.rules.CC101]
 max_lines = 30
+
+# Optional architecture rules remain inert until you declare your own paths:
+[[tool.rude.rules.CC704.forbidden]]
+from_paths = ["src/myapp/domain/"]
+forbidden_modules = ["sqlalchemy", "myapp.infra"]
 ```
 
 Run Rude from the command line:
@@ -35,10 +36,18 @@ Run Rude from the command line:
 rude check --select CC0,CC1,CC2,CC3 src/
 ```
 
-All `CC0xx`–`CC3xx`, `CC7xx`, and `CC801`–`CC804` rules (except `CC002` at
-`INFO`), plus `CC403` and `CC501`, report `WARNING` severity; `CC002`,
-`CC805`, and subjective indicator rules (`CC401`, `CC402`, `CC601`) report
-`INFO`.
+## Working principles
+
+- **Own-scope isolation:** Function and class metrics (`CC101`–`CC104`,
+  `CC202`, `CC301`–`CC303`, `CC310`, `CC601`) never leak nested functions,
+  classes, or lambdas into an enclosing scope.
+- **No unsafe autofixes:** Rules report measured values, limits, and
+  remediation hints rather than rewriting business logic.
+- **Explicit severity split:** Deterministic and boundary rules emit
+  `WARNING` (`CC002` and `CC805` emit `INFO`), while subjective smell
+  indicators (`CC401`, `CC402`, `CC601`, `CC805`) emit `INFO`.
+- **Inert opt-in architecture checks:** `CC7xx` and `CC8xx` emit zero
+  diagnostics unless configured with your modules, classes, and layer paths.
 
 ## Implemented rules
 

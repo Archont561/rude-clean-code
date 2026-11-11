@@ -12,9 +12,166 @@
   </a>
 </p>
 
-> Clean Code plugin for the Rude Python linter. Implements 34 rules across modules, functions, classes, complexity, error handling, naming/literals, same-file DRY, polymorphism indicators, and config-driven architecture and pattern boundaries (`CC001`–`CC805`); remaining rule families (`CC203`, `CC502`, `CC703`, `CC9xx`) remain planned.
+> Clean Code plugin for the Rude Python linter. Implements 34 rules across modules, functions, classes, complexity, error handling, naming/literals, same-file DRY, polymorphism indicators, and config-driven architecture and pattern boundaries (`CC001`–`CC805`); remaining heuristic, documentation, and project-wide rules (`CC203`, `CC502`, `CC703`, `CC9xx`) remain planned.
 
 ### 🏠 [Homepage](https://github.com/Archont561/rude-clean-code#readme)
+
+## Quickstart
+
+### 1. Install
+
+```sh
+pip install rude-clean-code
+```
+
+Rude discovers the `rude.plugins` entry point automatically once installed.
+
+### 2. Configure `pyproject.toml`
+
+Rude has no built-in preset flag, so select rule families explicitly under
+`[tool.rude]`. Start with the **Basic** profile (`CC0`–`CC3`), optionally add
+**Strict** heuristics (`CC4`–`CC6`), and configure **Architecture** boundaries
+(`CC7`–`CC8`) using your own modules, classes, and paths:
+
+```toml
+[tool.rude]
+# Basic (CC0-CC3) + Strict (CC4-CC6) + Architecture (CC7-CC8)
+select = ["CC0", "CC1", "CC2", "CC3", "CC4", "CC5", "CC6", "CC7", "CC8"]
+
+# Tune deterministic limits (examples show defaults):
+[tool.rude.rules.CC101]
+max_lines = 30
+
+[tool.rude.rules.CC103]
+max_returns = 5
+
+# Opt-in layer & pattern boundaries (adapt placeholder names to your repo):
+[[tool.rude.rules.CC704.forbidden]]
+from_paths = ["src/myapp/domain/"]
+forbidden_modules = ["sqlalchemy", "myapp.infra"]
+
+[tool.rude.rules.CC801]
+data_modules = ["sqlalchemy"]
+repository_paths = ["src/myapp/repositories/"]
+
+[tool.rude.rules.CC805]
+service_classes = ["EmailNotifier"]
+exclude_paths = ["src/myapp/composition.py"]
+```
+
+### 3. Run
+
+```sh
+# Basic profile only:
+rude check --select CC0,CC1,CC2,CC3 src/
+
+# All configured rules from pyproject.toml:
+rude check src/
+```
+
+Warnings (`WARNING`) and indicators (`INFO`) report measured values, limits,
+and remediation hints without breaking builds unless you fail on warnings.
+
+## How the rules work
+
+Every rule runs per file on Rude's tree-sitter AST and `ScopeProvider` without
+unsafe autofixes, and falls into one of three working principles:
+
+| Profile | Families | Severity | Working principle |
+| --- | --- | --- | --- |
+| **Basic** | `CC0xx`–`CC3xx` | `WARNING` (`CC002` is `INFO`) | Deterministic size, structure, and fail-fast checks scoped strictly to one function or class (`max_*` options) |
+| **Strict** | `CC4xx`–`CC6xx` | `INFO` (`CC403`, `CC501` are `WARNING`) | In-file maintainability smells: vague names, magic literals, same-file body clones, and type-switch chains |
+| **Architecture** | `CC7xx`–`CC8xx` | `WARNING` (`CC805` is `INFO`) | **Inert until configured**: enforces layer and pattern boundaries only for modules, classes, and paths you declare |
+
+### Representative rule examples
+
+#### 1. Own-scope isolation (`CC103`, `CC301`–`CC303` — Basic)
+
+Counts never leak from nested helper functions, nested classes, or lambdas
+into an enclosing function, so extracting cohesive helpers shrinks complexity
+without false inflation:
+
+```python
+def evaluate(items, flag):        # CC103 counts 3 outer returns (not 5)
+    def classify(value):          # Measured independently as 2 returns
+        if value > 10:
+            return "high"
+        return "low"
+
+    if not items:
+        return "empty"
+    if flag:
+        return "flagged"
+    return classify(len(items))
+```
+
+With `[tool.rude.rules.CC103] max_returns = 2`:
+
+```text
+dispatch.py:1:0: CC103 Function 'evaluate' has too many return statements (3 > 2); simplify control flow or extract helpers
+```
+
+#### 2. Fail-fast error handling (`CC309`, `CC310`, `CC311` — Basic)
+
+Structural rules catch error-handling mistakes from AST shape and semantic
+context, such as swallowed broad `except` blocks (`CC309`), missing
+`raise ... from err` chaining (`CC310`), and oversized `try:` blocks (`CC311`):
+
+```python
+def load_safely(dsn):
+    try:
+        return open_session(dsn)
+    except Exception:
+        pass
+```
+
+```text
+orders.py:4:4: CC309 Broad exception handler (Exception) swallows error via 'pass'; catch specific exceptions, log or re-raise, or use contextlib.suppress
+```
+
+#### 3. In-file maintainability indicators (`CC501`, `CC601` — Strict)
+
+Heuristic rules highlight refactor candidates inside a single file while
+leaving design judgment to you: `CC501` hashes normalized function bodies to
+flag same-file clones, and `CC601` spots repeated `isinstance(...)` or
+attribute-switch dispatch (`INFO`):
+
+```python
+def render(shape):
+    if isinstance(shape, Circle):
+        return shape.radius
+    if isinstance(shape, Square):
+        return shape.side
+    if isinstance(shape, Triangle):
+        return shape.base
+    return 0
+```
+
+```text
+dispatch.py:1:0: CC601 Function 'render' makes 3 (>= 3) isinstance() checks, indicating possible missing polymorphism or strategy dispatch (see also CC803)
+```
+
+#### 4. Opt-in architecture & pattern boundaries (`CC701`–`CC704`, `CC801`–`CC805`)
+
+All `CC7xx` and `CC8xx` rules produce **zero diagnostics** until configured,
+never require adopting a design pattern, and spare legitimate locations
+(`repositories/`, `factories/`, `composition.py`, `create_*` functions):
+
+```python
+# src/myapp/domain/orders.py  -> flagged by CC704 and CC801
+from sqlalchemy.orm import Session
+
+# src/myapp/repositories/sql_repo.py -> clean under CC704 and CC801
+from sqlalchemy.orm import Session
+```
+
+```text
+src/myapp/domain/orders.py:1:0: CC704 Forbidden import 'sqlalchemy.orm' (matches 'sqlalchemy') in paths matching src/myapp/domain/; depend on a domain abstraction or port instead
+src/myapp/domain/orders.py:1:0: CC801 Data access import 'sqlalchemy.orm' (matches 'sqlalchemy') outside configured repository paths; encapsulate persistence inside a repository
+```
+
+See [Rules and configuration profiles](docs/reference/rules.md) for all 34
+rules, option defaults, and the full Architecture profile TOML template.
 
 ## Documentation
 
@@ -38,54 +195,20 @@ specification (`backlog/docs/`) and decisions (`backlog/decisions/`) describe
 the full roadmap. Remaining heuristic, documentation, and project-wide rules
 (`CC203`, `CC502`, `CC703`, `CC9xx`) remain planned, not shipped.
 
-## Install
-
-For development in this repository:
+## Development & tests
 
 ```sh
 pixi install --locked
+pixi run --locked doit test
+pixi run --locked doit ci
 ```
 
-For consumers installing the plugin alongside Rude:
-
-```sh
-pip install rude-clean-code
-```
-
-## Usage
-
-Add the **Basic** profile snippet (`CC0`–`CC3`) to your project's
-`pyproject.toml` (add `"CC4"`–`"CC6"` for the **Strict** profile, and `"CC7"`–`"CC8"`
-with project-specific config for the **Architecture** profile):
-
-```toml
-[tool.rude]
-select = ["CC0", "CC1", "CC2", "CC3"]
-
-[tool.rude.rules.CC101]
-max_lines = 30
-```
-
-Then run Rude (it discovers `rude-clean-code` via the `rude.plugins` entry point):
-
-```sh
-rude check --select CC0,CC1,CC2,CC3 src/
-```
-
-See [Rules and configuration profiles](docs/reference/rules.md) for the full
-option reference. To inspect the installed package version (read from distribution
-metadata):
+To inspect the installed package version (read from distribution metadata):
 
 ```python
 from rude_clean_code import VERSION
 
 print(VERSION)
-```
-
-## Run tests
-
-```sh
-pixi run --locked doit test
 ```
 
 ## Author
