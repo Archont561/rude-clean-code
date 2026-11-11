@@ -22,7 +22,7 @@ this page describes the repository as built.
         rude_clean_code/__init__.py              rude_clean_code/plugin.py (RULES)
                          │                                   │
                          ▼                                   ▼
-             VERSION (lazy, no Rude import)       rules/{modules,functions,classes,complexity,errors,naming,dry,heuristics}.py + _scope.py
+             VERSION (lazy, no Rude import)       rules/{modules,functions,classes,complexity,errors,naming,dry,heuristics,dependencies,patterns}.py + _scope.py
 ```
 
 ### Components
@@ -31,14 +31,16 @@ this page describes the repository as built.
   only product artifact. Built by hatchling from the `src/` layout, its root
   `rude_clean_code/__init__.py` exports only `VERSION` lazily from
   installed metadata (without importing Rude), while the `rude.plugins`
-  entry point loads `rude_clean_code.plugin:RULES` containing 26 Clean Code
+  entry point loads `rude_clean_code.plugin:RULES` containing 34 Clean Code
   rules: 21 deterministic/structural **Basic** rules (`CC001`–`CC005`,
   `CC101`–`CC104`, `CC107`, `CC201`–`CC202`, `CC207`, `CC301`–`CC303`,
-  `CC306`, `CC308`–`CC311`) plus 5 **Strict** in-file heuristic rules
-  (`CC401`–`CC403`, `CC501`, `CC601`) backed by shared own-scope AST traversal
-  in `_scope.py` and Rude's `ScopeProvider`. Its Gherkin features (`features/`)
-  and unit, property, integration, and BDD tests (`tests/`) live inside the
-  package.
+  `CC306`, `CC308`–`CC311`), 5 **Strict** in-file heuristic rules
+  (`CC401`–`CC403`, `CC501`, `CC601`), and 8 config-driven **Architecture**
+  and pattern boundary rules (`CC701`, `CC702`, `CC704`, `CC801`–`CC805`)
+  backed by shared helpers in `_scope.py`, `_architecture.py`, and
+  `_symbol_matching.py` plus Rude's `ScopeProvider`. Its Gherkin features
+  (`features/`) and unit, property, integration, and BDD tests (`tests/`)
+  live inside the package.
 - **Task automation and bootstrap** (`automation/` and `scripts/`) are tooling,
   not product code: [`automation/dodo.py`](../../automation/dodo.py)
   declares the unified `doit` tasks (configured via root
@@ -109,7 +111,7 @@ user-visible changes carry their documentation impact with them.
 | decision-2 | `VERSION` from installed dist metadata; no version literal or eager Rude import |
 | decision-3 | Features/tests stay in the owning package |
 | decision-4 | Superseded by `RCC-2` (`m-1`); deterministic rules live in plugin submodules |
-| decision-5 | Flat CC rule codes (`CC001`–`CC601`) with explicit `WARNING` / `INFO` severities |
+| decision-5 | Flat CC rule codes (`CC001`–`CC805`) with explicit `WARNING` / `INFO` severities |
 
 See [`backlog/decisions/`](../../backlog/decisions/) for the full texts and
 [the scaffold history concept](../concepts/version-only-scaffold.md) for why

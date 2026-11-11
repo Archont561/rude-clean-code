@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the idea. 26 Clean Code rules (`CC001`–`CC601`) are
+        Thanks for the idea. 34 Clean Code rules (`CC001`–`CC805`) are
         implemented; remaining rule families in the catalogue are planned.
         Rule proposals are most likely to advance if they reference the product
         specification in `backlog/docs/doc-1` and the proposed catalogue in
