@@ -2,7 +2,15 @@
 
 All notable changes to rude-clean-code are documented here.
 
-## [v0.3.0](https://github.com/Archont561/rude-clean-code/compare/v0.2.0...12de1c57eefc8d187b5feb4cbb1a925fabfa17f5) (2026-11-11)
+## [v0.3.1](https://github.com/Archont561/rude-clean-code/compare/v0.3.0...14a69c334dc2ff938a38e75da3831814de7967d2) (2026-11-11)
+
+### Fixes
+
+* **rules:** skip multiline string lines in CC902 and simplify CC304
+expressions
+([6f5ec92](https://github.com/Archont561/rude-clean-code/commit/6f5ec92a2c4de27dfc5c43b0c58189d73ea27441))
+
+## [v0.3.0](https://github.com/Archont561/rude-clean-code/compare/v0.2.0...v0.3.0) (2026-11-11)
 
 ### Features
 

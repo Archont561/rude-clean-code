@@ -1,6 +1,6 @@
 <h1 align="center">Welcome to Rude Clean Code 👋</h1>
 <p>
-  <img alt="Version" src="https://img.shields.io/badge/version-0.3.0-blue.svg?cacheSeconds=2592000" />
+  <img alt="Version" src="https://img.shields.io/badge/version-0.3.1-blue.svg?cacheSeconds=2592000" />
   <a href="docs/README.md" target="_blank">
     <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
   </a>
