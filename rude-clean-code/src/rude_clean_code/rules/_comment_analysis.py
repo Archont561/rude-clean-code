@@ -193,11 +193,12 @@ def following_statement_for_comment(comment: Node) -> Node | None:
 def tokenize_identifiers(text: str) -> list[str]:
     """Normalize snake_case and camelCase text into non-stopword lowercase tokens."""
     spaced = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", text.replace("_", " "))
-    return [
-        tok.lower()
-        for tok in re.findall(r"[A-Za-z][A-Za-z0-9]*", spaced)
-        if tok.lower() not in _STOP_WORDS and len(tok) > 1
-    ]
+    tokens: list[str] = []
+    for tok in re.findall(r"[A-Za-z][A-Za-z0-9]*", spaced):
+        lower = tok.lower()
+        if len(lower) > 1 and lower not in _STOP_WORDS:
+            tokens.append(lower)
+    return tokens
 
 
 def is_standalone_single_line_comment(node: Node) -> bool:

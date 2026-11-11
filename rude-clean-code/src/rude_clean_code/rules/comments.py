@@ -66,22 +66,29 @@ class CommentedOutCode(Rule):
 
     def check(self, node: Node) -> Iterator[Diagnostic]:
         """Flag multi-line commented-out Python blocks while sparing prose and directives."""
+        comments_by_line = {c.line: c for c in node.find("comment")}
+        string_lines = node.ctx.string_lines
         block_start: int | None = None
         block_lines: list[str] = []
         for idx, raw_line in enumerate(node.ctx.text_lines, start=1):
-            if is_candidate_code_comment(raw_line):
+            is_comment = (
+                idx in comments_by_line
+                and idx not in string_lines
+                and is_candidate_code_comment(raw_line)
+            )
+            if is_comment:
                 if block_start is None:
                     block_start = idx
                 block_lines.append(raw_line)
                 continue
-            yield from self._flush_block(node, block_start, block_lines)
+            yield from self._flush_block(comments_by_line, block_start, block_lines)
             block_start = None
             block_lines = []
-        yield from self._flush_block(node, block_start, block_lines)
+        yield from self._flush_block(comments_by_line, block_start, block_lines)
 
     def _flush_block(
         self,
-        module_node: Node,
+        comments_by_line: dict[int, Node],
         start_line: int | None,
         block_lines: list[str],
     ) -> Iterator[Diagnostic]:
@@ -89,12 +96,8 @@ class CommentedOutCode(Rule):
             return
         if not parses_as_commented_code(block_lines):
             return
-        comment_node = next(
-            (c for c in module_node.find("comment") if c.line == start_line),
-            module_node,
-        )
         yield self.diagnostic(
-            comment_node,
+            comments_by_line[start_line],
             f"Comment block ({len(block_lines)} >= {self.min_lines} lines) parses as "
             "commented-out Python code; remove dead code and rely on version control",
         )

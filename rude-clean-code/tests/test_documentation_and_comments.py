@@ -58,6 +58,10 @@ def test_cc902_commented_out_code_is_conservative_on_prose_and_directives() -> N
         "# Call validate(order) before persisting.\n"
         "# Status: ready\n"
         "# >>> foo(1)\n"
+        'SAMPLE = """\n'
+        "    # old_x = 1\n"
+        "    # old_y = 2\n"
+        '"""\n'
         "def ok():\n"
         "    return 1  # single line comment\n"
     )
