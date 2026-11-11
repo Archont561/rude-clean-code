@@ -84,6 +84,22 @@ def outer(flag, items):
     assert max_own_scope_depth(fn.body, control_types) == 2
 
 
+_CONFIG_RULE_SAMPLE_OPTIONS: dict[str, dict[str, object]] = {
+    "CC701": {"forbidden_modules": ["sqlalchemy"]},
+    "CC702": {"concrete_classes": ["SqlRepo"]},
+    "CC704": {"forbidden": [["pkg/", "sqlalchemy"]]},
+    "CC801": {"data_modules": ["sqlalchemy"], "repository_paths": ["repos/"]},
+    "CC802": {"product_classes": ["Product"]},
+    "CC803": {
+        "strategy_base": "Base",
+        "required_method": "run",
+        "strategy_paths": ["pkg/"],
+    },
+    "CC804": {"required_decorator": "register", "handler_paths": ["pkg/"]},
+    "CC805": {"service_classes": ["Service"]},
+}
+
+
 def test_rules_tolerate_incomplete_syntax_without_crashing() -> None:
     incomplete_sources = (
         "def incomplete(\n",
@@ -97,5 +113,10 @@ def test_rules_tolerate_incomplete_syntax_without_crashing() -> None:
                 if rule_cls.code in {"CC002", "CC003"}
                 else "pkg/sample.py"
             )
-            diagnostics = check_source(rule_cls, source, filename=filename)
+            diagnostics = check_source(
+                rule_cls,
+                source,
+                options=_CONFIG_RULE_SAMPLE_OPTIONS.get(rule_cls.code),
+                filename=filename,
+            )
             assert any(diag.code == "E999" for diag in diagnostics)

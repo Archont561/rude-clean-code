@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from fnmatch import fnmatch
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -69,6 +69,29 @@ def node_decorators(node: Node) -> list[str]:
     return names
 
 
+def base_candidate_names(base: Node) -> tuple[str, ...]:
+    """Return full and short candidate names for a class inheritance base node."""
+    target = base.child_by_field("value") if base.type == "subscript" else base
+    if target is None:
+        return ()
+    text = target.text
+    if not text:
+        return ()
+    if "." in text:
+        return (text, text.rsplit(".", maxsplit=1)[-1])
+    return (text,)
+
+
+def is_module_level_definition(node: Node) -> bool:
+    """Return whether *node* sits directly at module top level (optionally decorated)."""
+    parent = node.parent
+    if parent is None:
+        return False
+    if parent.type == "decorated_definition":
+        parent = parent.parent
+    return parent is not None and parent.type == "module"
+
+
 def is_test_context(context: FileContext) -> bool:
     """Return whether *context* points to a test module or file inside a test folder."""
     if context.is_test_file() or context.path.stem == "conftest":
@@ -77,17 +100,31 @@ def is_test_context(context: FileContext) -> bool:
     return "tests" in parent_parts or "test" in parent_parts
 
 
+def matches_path_patterns(
+    context: FileContext,
+    patterns: Sequence[str],
+) -> bool:
+    """Return whether *context* matches any configured path fragment or glob."""
+    normalized = tuple(pattern.replace("\\", "/") for pattern in patterns if pattern)
+    if not normalized:
+        return False
+    posix = context.path.as_posix()
+    if context.is_in_path(*normalized):
+        return True
+    for pattern in normalized:
+        if fnmatch(posix, pattern):
+            return True
+        if not pattern.startswith(("/", "*")) and fnmatch(posix, f"*/{pattern}"):
+            return True
+    return False
+
+
 def matches_exclude_paths(
     context: FileContext,
     patterns: tuple[str, ...],
 ) -> bool:
-    """Return whether *context* matches any configured path fragment or glob."""
-    if not patterns:
-        return False
-    posix = context.path.as_posix()
-    return context.is_in_path(*patterns) or any(
-        fnmatch(posix, pattern) for pattern in patterns
-    )
+    """Return whether *context* matches any excluded path fragment or glob."""
+    return matches_path_patterns(context, patterns)
 
 
 def _option_error(

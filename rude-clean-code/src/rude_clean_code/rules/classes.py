@@ -11,6 +11,7 @@ from rude.core.types import Diagnostic, Severity
 
 from rude_clean_code._scope import (
     ThresholdRule,
+    base_candidate_names,
     definition_name,
     is_dunder,
     parse_nonneg_int,
@@ -38,18 +39,6 @@ def _count_direct_methods(body: Node) -> tuple[int, int]:
         if is_dunder(definition_name(method)):
             dunders += 1
     return total, dunders
-
-
-def _base_candidate_names(base: Node) -> tuple[str, ...]:
-    target = base.child_by_field("value") if base.type == "subscript" else base
-    if target is None:
-        return ()
-    text = target.text
-    if not text:
-        return ()
-    if "." in text:
-        return (text, text.rsplit(".", maxsplit=1)[-1])
-    return (text,)
 
 
 class ClassTooLarge(ThresholdRule):
@@ -148,7 +137,7 @@ class TooManyBaseClasses(Rule):
         for base in node.bases:
             if base.type == "keyword_argument":
                 continue
-            if any(candidate in ignored for candidate in _base_candidate_names(base)):
+            if any(candidate in ignored for candidate in base_candidate_names(base)):
                 continue
             count += 1
         if count > self.max_bases:
