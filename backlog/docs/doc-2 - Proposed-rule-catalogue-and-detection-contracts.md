@@ -3,7 +3,7 @@ id: doc-2
 title: Proposed rule catalogue and detection contracts
 type: specification
 created_date: 2026-11-08 19:00
-updated_date: '2026-11-15T14:13:00Z'
+updated_date: '2026-11-15T16:08:00Z'
 tags:
   - specification
   - rules
@@ -129,6 +129,28 @@ and all are candidates for suppression per class or call site with
 | CC604 | Chained attribute or call access | Heuristic / INFO | file | Outermost `ATTRIBUTE` or `CALL` expression chain whose hop count exceeds `max_chain_depth`, as a Law of Demeter indicator. Exempts configurable prefixes (`allowed_prefixes`) and optional multiline fluent chains (`ignore_multiline`). | `max_chain_depth` (3), `allowed_prefixes` (`["self."]`), `ignore_multiline` (true) |
 | CC605 | External access to private member | Heuristic / INFO | file | `ATTRIBUTE` reading or assigning a single-underscore `_name` attribute (not `__dunder__`) on a receiver other than `self`, `cls`, or `super()`. Exempts test files when `exclude_tests` is true and standard protocol names in `allowed_members`. Dunder members stay exempt unless a consumer names them in `flagged_dunders`, which escalates to implementation internals such as `__code__`, `__closure__`, and `__globals__` without flagging ordinary protocol surface such as `__name__`. | `exclude_tests` (true), `allowed_members` (`["_asdict", "_replace", "_make"]`), `flagged_dunders` (`[]`) |
 | CC606 | Feature Envy on an external same-type pair | Heuristic / INFO | file | **Implemented.** A module-level function, or a method defined outside the class of type `T`, that declares two or more non-variadic parameters annotated with the same non-builtin `T` and reads at least `min_attribute_reads` attributes across those parameters. Reports an indicator, never a proven violation, and suggests moving the comparison or combination onto `T` (an `__eq__` method, a dataclass key field, or a method on `T`). Stays silent for builtin and stdlib value annotations, configurable `ignored_types`, methods defined inside `T` itself, `__eq__`/`__ne__`/`__hash__` and dataclass comparison methods, and pass-through wrappers that read no attributes. Imported types are recognised from annotation text alone; no cross-module resolution is attempted. | `min_attribute_reads` (2), `ignored_types` ([]), `exclude_tests` (true) |
+
+### Declined: a broader per-file Feature Envy detector
+
+The clean-code skill ranks Feature Envy as "a method that uses another
+object's data more than its own". `CC606` implements only the narrow,
+honest subset. The general smell was assessed and declined (RCC-15).
+
+Measured on 3,493 functions across 300 files / 90,434 LOC: 31.4% read more
+foreign than own state. Excluding static and class methods drops that to
+4.95%, and of those remaining candidates 37.6% are visitor or protocol
+hooks, with the rest dominated by pure functions written as methods. All 13
+candidates in this repository are `Rule.check(node)` methods — the plugin's
+own extension point. For 76.3% of the narrowed candidates the annotated
+parameter type is not defined in the file, so no local type exists to move
+the behaviour onto, and per-file analysis cannot verify that a remote type
+is even a project type.
+
+No rule code ships and no code is allocated, for the same reason `CC203`,
+`CC502`, and `CC703` stay deferred: an approximation would cost consumers
+more suppression comments than it saves refactors. This becomes answerable
+only if Rude exposes a project-level provider that can resolve cross-file
+type identity.
 
 ## CC7xx Dependencies and architecture
 

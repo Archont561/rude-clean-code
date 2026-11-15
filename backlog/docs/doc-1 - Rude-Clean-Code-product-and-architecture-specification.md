@@ -3,7 +3,7 @@ id: doc-1
 title: Rude Clean Code product and architecture specification
 type: specification
 created_date: 2026-11-08 18:30
-updated_date: '2026-11-15T14:13:00Z'
+updated_date: '2026-11-15T16:08:00Z'
 tags:
   - specification
   - architecture
@@ -62,7 +62,7 @@ docstring accuracy rules).
 | CC601 | Repeated type-switch dispatch | `isinstance`/conditional analysis |
 | CC602 | Suspicious overridden methods (LSP indicators) | Inheritance analysis |
 | CC604–CC605 | Law of Demeter and private member access | Attribute/call chains and `_attr` receivers |
-| CC606 | Feature Envy on an external same-type pair | Same-type annotated parameter pair plus attribute reads across it (implemented) |
+| CC606 | Feature Envy on an external same-type pair | Same-type annotated parameter pair plus attribute reads across it (implemented; the general per-file Feature Envy detector is declined in doc-2 with measurements — RCC-15) |
 | CC701 | Forbidden concrete imports in domain code | Config-driven import analysis |
 | CC801–CC805 | Design-pattern boundaries (repository, factory, strategy, decorator, DI) | Config-driven; see doc-2 |
 | CC901–CC910 | Documentation, `TODO` markers, suppressions, and comment accuracy | AST, docstring sections, and comment analysis; see doc-2 |
