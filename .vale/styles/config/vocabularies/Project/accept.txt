@@ -48,3 +48,6 @@ PyPI
 (?i:isort)
 (?i:tox)
 (?i:ci)
+(?i:dataclasses?)$
+(?i:flagged_dunders)$
+(?i:dataclass)$
