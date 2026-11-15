@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator, Sequence
+from dataclasses import dataclass
 from fnmatch import fnmatch
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -20,6 +21,23 @@ SCOPE_BOUNDARY_TYPES: frozenset[str] = frozenset(
         "lambda",
     }
 )
+
+
+@dataclass(frozen=True, slots=True)
+class ByteSpan:
+    """Byte range of a syntax node, owning its own containment test."""
+
+    start: int
+    end: int
+
+    @classmethod
+    def of(cls, node: Node) -> ByteSpan:
+        """Return the byte span covered by *node*."""
+        return cls(node.start_byte, node.end_byte)
+
+    def contains(self, node: Node) -> bool:
+        """Return whether *node* starts within this span (bounds inclusive)."""
+        return self.start <= node.start_byte <= self.end
 
 
 def definition_name(node: Node) -> str:
