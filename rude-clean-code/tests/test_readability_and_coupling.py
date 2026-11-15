@@ -11,6 +11,7 @@ from rude_clean_code.rules.coupling_heuristics import (
     ChainedAccess,
     ExternalPrivateAccess,
 )
+from rude_clean_code.rules.feature_envy import ExternalSameTypePairEnvy
 from rude_clean_code.rules.function_heuristics import DataClump, UnusedParameter
 
 
@@ -124,6 +125,11 @@ def test_cc605_external_private_member_access_exemptions() -> None:
     assert_no_errors(ExternalPrivateAccess, clean)
     assert_no_errors(
         ExternalPrivateAccess,
+        "def f(fn, obj):\n"
+        "    return fn.__name__, fn.__doc__, obj.__class__, fn.__code__\n",
+    )
+    assert_no_errors(
+        ExternalPrivateAccess,
         "def f(obj):\n    return obj._internal\n",
         filename="tests/test_box.py",
     )
@@ -156,3 +162,153 @@ def test_rcc11_invalid_options_raise_value_error(
     rule = rule_cls()
     with pytest.raises(ValueError, match=option):
         rule.configure({option: bad_value})
+
+
+def test_cc605_flagged_dunders_escalation() -> None:
+    source = "def f(fn):\n    return fn.__code__.co_filename\n"
+    assert_no_errors(ExternalPrivateAccess, source)
+    diags = assert_error_count(
+        ExternalPrivateAccess, source, 1, options={"flagged_dunders": ["__code__"]}
+    )
+    assert diags[0].code == "CC605"
+    assert diags[0].severity == Severity.INFO
+    assert "__code__" in diags[0].message
+
+
+def test_cc605_flagged_dunders_respects_receiver_and_allowed_members() -> None:
+    assert_no_errors(
+        ExternalPrivateAccess,
+        "class Box:\n"
+        "    def read(self):\n"
+        "        return self.__dict__, super().__dict__\n",
+        options={"flagged_dunders": ["__dict__"]},
+    )
+    assert_no_errors(
+        ExternalPrivateAccess,
+        "def f(obj):\n    return obj.__code__\n",
+        options={"flagged_dunders": ["__code__"], "allowed_members": ["__code__"]},
+    )
+    assert_no_errors(
+        ExternalPrivateAccess,
+        "def f(obj):\n    return obj.__closure__\n",
+        options={"flagged_dunders": ["__codes__"]},
+    )
+
+
+def test_cc606_flags_external_same_type_pair_helper() -> None:
+    source = (
+        "from tasknest.task import TaskDefinition\n"
+        "\n"
+        "def same(candidate: TaskDefinition, dep: TaskDefinition) -> bool:\n"
+        "    return candidate.source_path == dep.source_path\n"
+    )
+    diags = assert_error_count(ExternalSameTypePairEnvy, source, 1)
+    assert diags[0].code == "CC606"
+    assert diags[0].severity == Severity.INFO
+    assert "TaskDefinition" in diags[0].message
+    assert "Feature Envy" in diags[0].message
+    assert "violat" not in diags[0].message.lower()
+
+
+def test_cc606_reports_the_issue_27_shape() -> None:
+    source = (
+        "from tasknest.task import TaskDefinition\n"
+        "\n"
+        "def _same_task(candidate: TaskDefinition, dep: TaskDefinition) -> bool:\n"
+        "    if candidate is dep:\n"
+        "        return True\n"
+        "    if candidate.source_path is None or dep.source_path is None:\n"
+        "        return False\n"
+        "    return (\n"
+        "        candidate.source_path.resolve() == dep.source_path.resolve()\n"
+        "        and candidate.callable_fn.__code__.co_filename\n"
+        "        == dep.callable_fn.__code__.co_filename\n"
+        "    )\n"
+    )
+    diags = assert_error_count(ExternalSameTypePairEnvy, source, 1)
+    assert "'candidate', 'dep'" in diags[0].message
+
+
+def test_cc606_annotation_exemptions() -> None:
+    clean = (
+        "from pathlib import Path\n"
+        "from typing import Any, Mapping, Sequence\n"
+        "\n"
+        "def strings(a: str, b: str) -> bool:\n"
+        "    return a.isupper() or b.islower()\n"
+        "\n"
+        "def numbers(a: int, b: int) -> bool:\n"
+        "    return a.bit_length() == b.bit_length()\n"
+        "\n"
+        "def paths(a: Path, b: Path) -> bool:\n"
+        "    return a.parent == b.parent\n"
+        "\n"
+        "def mappings(a: Mapping, b: Mapping) -> bool:\n"
+        "    return a.get('k') == b.get('k')\n"
+        "\n"
+        "def sequences(a: Sequence, b: Sequence) -> bool:\n"
+        "    return a.index(0) == b.index(0)\n"
+        "\n"
+        "def anything(a: Any, b: Any) -> bool:\n"
+        "    return a.value == b.value\n"
+    )
+    assert_no_errors(ExternalSameTypePairEnvy, clean)
+
+
+def test_cc606_structural_exemptions() -> None:
+    clean = (
+        "from tasknest.task import TaskDefinition\n"
+        "\n"
+        "class TaskDefinition:\n"
+        "    def __eq__(self, other: 'TaskDefinition') -> bool:\n"
+        "        return self.source_path == other.source_path\n"
+        "\n"
+        "    def same(self, other: 'TaskDefinition') -> bool:\n"
+        "        return self.source_path == other.source_path\n"
+        "\n"
+        "def passthrough(a: TaskDefinition, b: TaskDefinition) -> TaskDefinition:\n"
+        "    return a\n"
+        "\n"
+        "def one_read(a: TaskDefinition, b: TaskDefinition) -> bool:\n"
+        "    return a.source_path == b\n"
+        "\n"
+        "def different_types(a: TaskDefinition, b: OtherThing) -> bool:\n"
+        "    return a.source_path == b.source_path\n"
+    )
+    assert_no_errors(ExternalSameTypePairEnvy, clean)
+    assert_no_errors(
+        ExternalSameTypePairEnvy,
+        "def same(a: TaskDefinition, b: TaskDefinition) -> bool:\n"
+        "    return a.source_path == b.source_path\n",
+        filename="tests/test_tasknest.py",
+    )
+
+
+def test_cc606_configurable_options() -> None:
+    source = (
+        "def same(a: TaskDefinition, b: TaskDefinition) -> bool:\n"
+        "    return a.source_path == b.source_path\n"
+    )
+    assert_no_errors(
+        ExternalSameTypePairEnvy, source, options={"ignored_types": ["TaskDefinition"]}
+    )
+    assert_no_errors(
+        ExternalSameTypePairEnvy, source, options={"min_attribute_reads": 3}
+    )
+    assert_error_count(
+        ExternalSameTypePairEnvy,
+        source,
+        1,
+        options={"exclude_tests": False},
+        filename="tests/test_tasknest.py",
+    )
+
+
+def test_cc606_invalid_options_raise_value_error() -> None:
+    rule = ExternalSameTypePairEnvy()
+    with pytest.raises(ValueError, match="min_attribute_reads"):
+        rule.configure({"min_attribute_reads": 1})
+    with pytest.raises(ValueError, match="ignored_types"):
+        rule.configure({"ignored_types": "TaskDefinition"})
+    with pytest.raises(ValueError, match="exclude_tests"):
+        rule.configure({"exclude_tests": "yes"})

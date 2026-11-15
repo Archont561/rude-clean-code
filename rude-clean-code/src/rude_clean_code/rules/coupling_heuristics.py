@@ -137,17 +137,19 @@ class ExternalPrivateAccess(Rule):
 
     exclude_tests: bool = True
     allowed_members: tuple[str, ...] = ("_asdict", "_replace", "_make")
+    flagged_dunders: tuple[str, ...] = ()
 
     def __init__(self) -> None:
         self.exclude_tests = True
         self.allowed_members = ("_asdict", "_replace", "_make")
+        self.flagged_dunders = ()
 
     def should_check_file(self, context: FileContext) -> bool:
         """Skip test modules unless ``exclude_tests`` is disabled."""
         return not (self.exclude_tests and is_test_context(context))
 
     def configure(self, options: dict[str, Any]) -> None:
-        """Configure test-file exclusion and exempt protocol attribute names."""
+        """Configure test-file exclusion, exempt names, and escalated dunders."""
         if "exclude_tests" in options:
             self.exclude_tests = parse_bool_option(
                 self.code, "exclude_tests", options["exclude_tests"]
@@ -156,6 +158,10 @@ class ExternalPrivateAccess(Rule):
             self.allowed_members = parse_str_list_option(
                 self.code, "allowed_members", options["allowed_members"]
             )
+        if "flagged_dunders" in options:
+            self.flagged_dunders = parse_str_list_option(
+                self.code, "flagged_dunders", options["flagged_dunders"]
+            )
 
     def check(self, node: Node) -> Iterator[Diagnostic]:
         """Flag ``obj._member`` accesses outside ``self``, ``cls``, or ``super()``."""
@@ -163,9 +169,12 @@ class ExternalPrivateAccess(Rule):
         if attr is None or not attr.text:
             return
         name = attr.text
-        if not name.startswith("_") or name == "_" or is_dunder(name):
-            return
         if name in self.allowed_members:
+            return
+        escalated = is_dunder(name) and name in self.flagged_dunders
+        if not escalated and (
+            not name.startswith("_") or name == "_" or is_dunder(name)
+        ):
             return
         if _is_self_cls_or_super(node.child_by_field("object")):
             return
