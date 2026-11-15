@@ -2,7 +2,28 @@
 
 All notable changes to rude-clean-code are documented here.
 
-## [v0.3.1](https://github.com/Archont561/rude-clean-code/compare/v0.3.0...14a69c334dc2ff938a38e75da3831814de7967d2) (2026-11-11)
+## [v0.4.0](https://github.com/Archont561/rude-clean-code/compare/v0.3.1...70cc100194e2b6c02ed391a7bf02f8229745710b) (2026-11-15)
+
+### Features
+
+* **rules:** add opt-in flagged_dunders escalation to CC605
+([9fe6576](https://github.com/Archont561/rude-clean-code/commit/9fe6576a4725f883dc226bf064630447c0711215))
+* **rules:** add CC606 feature-envy indicator for external same-type pairs
+([68fcdc8](https://github.com/Archont561/rude-clean-code/commit/68fcdc86af92544f2b937b318975c90532185118)),
+closes [#27](https://github.com/Archont561/rude-clean-code/issues/27)
+
+### Documentation
+
+* re-verify the RCC-8 upstream blocker
+([70cc100](https://github.com/Archont561/rude-clean-code/commit/70cc100194e2b6c02ed391a7bf02f8229745710b))
+* decline a broader per-file feature-envy detector with measurements
+([04effdf](https://github.com/Archont561/rude-clean-code/commit/04effdf41ffe5fdf774cd5edf224f60133977930))
+* document CC606 and the CC605 dunder escalation
+([15f67e9](https://github.com/Archont561/rude-clean-code/commit/15f67e94170c2b32ec89b03c7580d5b4ffbf43d2))
+* record Feature Envy indicator tasks from issue 27
+([9de9a54](https://github.com/Archont561/rude-clean-code/commit/9de9a54ad0897aefcd1f302566230508d00c43d7))
+
+## [v0.3.1](https://github.com/Archont561/rude-clean-code/compare/v0.3.0...v0.3.1) (2026-11-11)
 
 ### Fixes
 
