@@ -25,7 +25,7 @@ treat it as a defect and fix it.
 - **Configuring the plugin?** See
   [Rules and configuration profiles](reference/rules.md) for the **Basic**,
   **Strict**, **Documentation**, and **Architecture** profile TOML snippets
-  and the 59 implemented `CC001`–`CC910` rules.
+  and the 60 implemented `CC001`–`CC910` rules.
 - **New here?** Read the [development setup guide](guides/development-setup.md),
   then [running the checks](guides/running-the-checks.md).
 - **Evaluating the project?** Read the

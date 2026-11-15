@@ -22,7 +22,7 @@ this page describes the repository as built.
         rude_clean_code/__init__.py              rude_clean_code/plugin.py (RULES)
                          │                                   │
                          ▼                                   ▼
-             VERSION (lazy, no Rude import)       rules/*.py + _scope.py (59 rules: CC001-CC910)
+             VERSION (lazy, no Rude import)       rules/*.py + _scope.py (60 rules: CC001-CC910)
 ```
 
 ### Components
@@ -31,7 +31,7 @@ this page describes the repository as built.
   only product artifact. Built by hatchling from the `src/` layout, its root
   `rude_clean_code/__init__.py` exports only `VERSION` lazily from
   installed metadata (without importing Rude), while the `rude.plugins`
-  entry point loads `rude_clean_code.plugin:RULES` containing 59 Clean Code
+  entry point loads `rude_clean_code.plugin:RULES` containing 60 Clean Code
   rules: 21 deterministic/structural **Basic** rules (`CC001`–`CC005`,
   `CC101`–`CC104`, `CC107`, `CC201`–`CC202`, `CC207`, `CC301`–`CC303`,
   `CC306`, `CC308`–`CC311`), 20 **Strict** in-file heuristic rules

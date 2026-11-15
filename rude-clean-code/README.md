@@ -1,7 +1,7 @@
 # Rude Clean Code
 
 Clean Code plugin for the [Rude](https://pypi.org/project/rude/) Python linter,
-exposing 59 Clean Code rules across module structure, functions, classes,
+exposing 60 Clean Code rules across module structure, functions, classes,
 complexity, error handling, naming/literals, same-file DRY, SOLID/coupling
 indicators, config-driven architecture and pattern boundaries, and
 documentation/comment hygiene (`CC001`–`CC910`) through Rude's `rude.plugins`

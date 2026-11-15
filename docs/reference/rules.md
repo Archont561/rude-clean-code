@@ -1,11 +1,11 @@
 # Rules and configuration profiles
 
-`rude-clean-code` registers 59 Clean Code rules with Rude through the
+`rude-clean-code` registers 60 Clean Code rules with Rude through the
 `rude.plugins` entry point (`rude_clean_code.plugin`): 21 deterministic and
 structural rules (`CC001`–`CC005`, `CC101`–`CC104`, `CC107`, `CC201`–`CC202`,
-`CC207`, `CC301`–`CC303`, `CC306`, `CC308`–`CC311`), 15 in-file heuristic and
+`CC207`, `CC301`–`CC303`, `CC306`, `CC308`–`CC311`), 16 in-file heuristic and
 indicator rules (`CC105`–`CC106`, `CC108`, `CC204`–`CC206`, `CC304`–`CC305`,
-`CC307`, `CC401`–`CC403`, `CC501`, `CC503`–`CC504`, `CC601`–`CC605` — note
+`CC307`, `CC401`–`CC403`, `CC501`, `CC503`–`CC504`, `CC601`–`CC606` — note
 `CC403`, `CC501`, and `CC504` emit `WARNING`), 3 config-driven architecture
 dependency rules (`CC701`, `CC702`, `CC704`), 5 config-driven design-pattern
 boundary rules (`CC801`–`CC805`), and 10 documentation and comment hygiene
@@ -147,7 +147,7 @@ Deterministic/structural rules, boundary rules (`CC7xx`, `CC801`–`CC804`),
 emit `WARNING` severity; `CC002`, `CC805`, `CC902`, `CC904` (experimental),
 `CC909`, and all heuristic/indicator rules (`CC105`–`CC106`, `CC108`,
 `CC204`–`CC206`, `CC304`–`CC305`, `CC307`, `CC401`–`CC402`, `CC503`,
-`CC601`–`CC605`) emit `INFO`. Warnings and info diagnostics do not fail
+`CC601`–`CC606`) emit `INFO`. Warnings and info diagnostics do not fail
 `rude check` with a non-zero exit code. This repository dogfoods `CC0`–`CC7`
 and `CC9` in [`rude-clean-code/pyproject.toml`](../../rude-clean-code/pyproject.toml)
 (enforcing `CC906` suppression reasons and `CC702`/`CC704` layered-architecture
@@ -226,7 +226,8 @@ the file (`CC305`, `CC602`, `CC603`) stay silent rather than guessing from names
 | `CC602` | Suspicious overridden method | `INFO` | — | Subclass overrides of visible in-file concrete base methods that raise `NotImplementedError`, strip base defaults, or return `None` where the base returns a value (silent when the base is external). |
 | `CC603` | Interface segregation indicator | `INFO` | `max_unimplemented = 2` | Subclasses leaving `> max_unimplemented` methods inherited from a visible in-file base raising `NotImplementedError` (silent when the base is external). |
 | `CC604` | Chained attribute or call access | `INFO` | `max_chain_depth = 3`, `allowed_prefixes = ["self."]`, `ignore_multiline = true` | Single-line `attribute`/`call` expression chains exceeding `max_chain_depth` hops outside `allowed_prefixes` (Law of Demeter indicator). |
-| `CC605` | External access to private member | `INFO` | `exclude_tests = true`, `allowed_members = ["_asdict", "_replace", "_make"]` | Reading or writing single-underscore `_name` attributes on receivers other than `self`, `cls`, or `super()`. |
+| `CC605` | External access to private member | `INFO` | `exclude_tests = true`, `allowed_members = ["_asdict", "_replace", "_make"]`, `flagged_dunders = []` | Reading or writing single-underscore `_name` attributes on receivers other than `self`, `cls`, or `super()`. Dunder members stay exempt unless a consumer names them in `flagged_dunders`, which escalates implementation internals such as `__code__`, `__closure__`, and `__globals__` while ordinary protocol surface such as `__name__` stays silent. |
+| `CC606` | Feature Envy on an external same-type pair | `INFO` | `min_attribute_reads = 2`, `ignored_types = []`, `exclude_tests = true` | A helper outside the class of type `T` that takes two or more parameters annotated with the same non-builtin `T` and reads at least `min_attribute_reads` attributes across them, suggesting the comparison belongs on `T`. Silent for builtin/stdlib value annotations, `ignored_types`, methods defined inside `T`, `__eq__`/`__ne__`/`__hash__`, dataclass comparison methods, and pass-through wrappers. |
 
 ### Architecture and dependencies (`CC7xx`, opt-in config)
 

@@ -39,6 +39,7 @@ rude-clean-code/
 ├── features/
 │   ├── architecture_and_patterns.feature       # Gherkin contract for CC7xx-CC8xx config & boundaries
 │   ├── deterministic_rules.feature             # Gherkin contract for CC001-CC910 discovery & CLI
+│   ├── feature_envy.feature                   # Gherkin contract for CC606 and opt-in CC605 dunders
 │   ├── maturing_and_documentation_rules.feature # Gherkin contract for RCC-6/7/11/12 profiles
 │   ├── module_rules.feature                    # Gherkin contract for CC001-CC005 module rules
 │   └── package_version.feature                 # Gherkin contract for lazy VERSION-only __init__.py
@@ -66,6 +67,7 @@ rude-clean-code/
 │       ├── dry.py                       # CC501 (same-file body duplication)
 │       ├── dry_heuristics.py            # CC503-CC504
 │       ├── errors.py                    # CC309-CC311
+│       ├── feature_envy.py              # CC606
 │       ├── function_heuristics.py       # CC105-CC106, CC108
 │       ├── functions.py                 # CC101-CC104, CC107
 │       ├── heuristics.py                # CC601
@@ -80,6 +82,7 @@ rude-clean-code/
     ├── test_complexity_rules.py         # unit & Hypothesis tests for CC301-CC303
     ├── test_dependency_rules.py         # unit, CLI, & fixture tests for CC701, CC702, CC704
     ├── test_deterministic_rules_bdd.py  # pytest-bdd steps for deterministic_rules.feature
+    ├── test_feature_envy_bdd.py         # pytest-bdd steps for feature_envy.feature
     ├── test_documentation_and_comments.py # unit & regression tests for CC901-CC910
     ├── test_function_rules.py           # unit & Hypothesis tests for CC101-CC104
     ├── test_heuristic_rules.py          # unit & false-positive tests for CC401-CC403, CC501, CC601

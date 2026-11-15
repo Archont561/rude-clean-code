@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the idea. 59 Clean Code rules (`CC001`–`CC910`) are
+        Thanks for the idea. 60 Clean Code rules (`CC001`–`CC910`) are
         implemented; only the three project-wide rules (`CC203`, `CC502`,
         `CC703`) remain planned.
         Rule proposals are most likely to advance if they reference the product
