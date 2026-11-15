@@ -15,6 +15,7 @@ from rude_clean_code.rules.documentation import DOCUMENTATION_RULES
 from rude_clean_code.rules.dry import DRY_RULES
 from rude_clean_code.rules.dry_heuristics import DRY_HEURISTIC_RULES
 from rude_clean_code.rules.errors import ERROR_RULES
+from rude_clean_code.rules.feature_envy import FEATURE_ENVY_RULES
 from rude_clean_code.rules.function_heuristics import FUNCTION_HEURISTIC_RULES
 from rude_clean_code.rules.functions import FUNCTION_RULES
 from rude_clean_code.rules.heuristics import HEURISTIC_RULES
@@ -41,6 +42,7 @@ RULES: list[type[Rule]] = [
     *HEURISTIC_RULES,
     *SOLID_HEURISTIC_RULES,
     *COUPLING_HEURISTIC_RULES,
+    *FEATURE_ENVY_RULES,
     *DEPENDENCY_RULES,
     *PATTERN_RULES,
     *DOCUMENTATION_RULES,
