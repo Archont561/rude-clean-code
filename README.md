@@ -12,7 +12,7 @@
   </a>
 </p>
 
-> Clean Code plugin for the Rude Python linter. Implements 59 rules across modules, functions, classes, complexity, error handling, naming/literals, same-file DRY, SOLID/coupling indicators, config-driven architecture and pattern boundaries, and documentation/comment hygiene (`CC001`–`CC910`); only the three project-wide rules (`CC203`, `CC502`, `CC703`) remain planned.
+> Clean Code plugin for the Rude Python linter. Implements 60 rules across modules, functions, classes, complexity, error handling, naming/literals, same-file DRY, SOLID/coupling indicators, config-driven architecture and pattern boundaries, and documentation/comment hygiene (`CC001`–`CC910`); only the three project-wide rules (`CC203`, `CC502`, `CC703`) remain planned.
 
 ### 🏠 [Homepage](https://github.com/Archont561/rude-clean-code#readme)
 
@@ -172,7 +172,7 @@ src/myapp/domain/orders.py:1:0: CC704 Forbidden import 'sqlalchemy.orm' (matches
 src/myapp/domain/orders.py:1:0: CC801 Data access import 'sqlalchemy.orm' (matches 'sqlalchemy') outside configured repository paths; encapsulate persistence inside a repository
 ```
 
-See [Rules and configuration profiles](docs/reference/rules.md) for all 59
+See [Rules and configuration profiles](docs/reference/rules.md) for all 60
 rules, option defaults, and the full Basic, Strict, Documentation, and
 Architecture profile TOML templates.
 

@@ -1,6 +1,6 @@
 # Contributing to Rude Clean Code
 
-Thanks for helping build Rude Clean Code. The plugin currently ships 59 Clean
+Thanks for helping build Rude Clean Code. The plugin currently ships 60 Clean
 Code rules (`CC001`–`CC910` across modules, functions, classes, complexity,
 error handling, naming and literals, same-file DRY, SOLID/coupling indicators,
 config-driven architecture and pattern boundaries, and documentation/comment

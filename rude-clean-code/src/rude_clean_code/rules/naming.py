@@ -13,6 +13,7 @@ from rude.utils import extract_string_content
 
 from rude_clean_code._scope import (
     SCOPE_BOUNDARY_TYPES,
+    ByteSpan,
     definition_name,
     is_dunder,
     parse_nonneg_int,
@@ -99,13 +100,17 @@ def _is_docstring_node(str_node: Node) -> bool:
 
 
 def _is_cast_type_arg(call_node: Node, target_node: Node) -> bool:
-    func = call_node.child_by_field("function")
-    if func is None or func.text not in {"cast", "typing.cast"}:
+    if not _is_cast_call(call_node):
         return False
     args = call_node.call_arguments
     if not args:
         return False
-    return args[0].start_byte <= target_node.start_byte <= args[0].end_byte
+    return ByteSpan.of(args[0]).contains(target_node)
+
+
+def _is_cast_call(call_node: Node) -> bool:
+    func = call_node.child_by_field("function")
+    return func is not None and func.text in {"cast", "typing.cast"}
 
 
 def _is_in_type_context(node: Node) -> bool:

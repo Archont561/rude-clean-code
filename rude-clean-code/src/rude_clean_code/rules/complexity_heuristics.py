@@ -11,6 +11,7 @@ from rude.core.types import Diagnostic, Severity
 
 from rude_clean_code._scope import (
     SCOPE_BOUNDARY_TYPES,
+    ByteSpan,
     base_candidate_names,
     parse_min_int,
     parse_nonneg_int,
@@ -124,22 +125,30 @@ def _subclass_names(classes: dict[str, Node], base_name: str) -> list[str]:
     return result
 
 
+def _excluded_spans(
+    base_node: Node,
+    subclass_nodes: list[Node],
+) -> list[ByteSpan]:
+    spans = [ByteSpan.of(base_node)]
+    for sub in subclass_nodes:
+        superclasses = sub.child_by_field("superclasses")
+        if superclasses is not None:
+            spans.append(ByteSpan.of(superclasses))
+    return spans
+
+
 def _count_external_consumers(
     module_node: Node,
     base_name: str,
     base_node: Node,
     subclass_nodes: list[Node],
 ) -> int:
-    excluded_spans = [(base_node.start_byte, base_node.end_byte)]
-    for sub in subclass_nodes:
-        superclasses = sub.child_by_field("superclasses")
-        if superclasses is not None:
-            excluded_spans.append((superclasses.start_byte, superclasses.end_byte))
+    spans = _excluded_spans(base_node, subclass_nodes)
     uses = 0
     for node in module_node.walk():
         if node.type != "identifier" or node.text != base_name:
             continue
-        if any(s <= node.start_byte <= e for s, e in excluded_spans):
+        if any(span.contains(node) for span in spans):
             continue
         uses += 1
     return uses
