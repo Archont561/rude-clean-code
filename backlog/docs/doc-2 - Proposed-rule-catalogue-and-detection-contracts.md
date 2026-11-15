@@ -3,7 +3,7 @@ id: doc-2
 title: Proposed rule catalogue and detection contracts
 type: specification
 created_date: 2026-11-08 19:00
-updated_date: '2026-11-09T23:06:00Z'
+updated_date: '2026-11-15T13:54:00Z'
 tags:
   - specification
   - rules
@@ -127,7 +127,8 @@ and all are candidates for suppression per class or call site with
 | CC602 | Suspicious overridden method | Semantic / INFO | file | An override (same name as a base-class method visible in the file) that raises `NotImplementedError`, narrows a parameter by removing defaults the base provides, or discards the base return shape where visible. Only in-file bases are visible; absence of a visible base means silence. | none |
 | CC603 | Interface segregation indicator | Heuristic / INFO | file | A class implementing a protocol/ABC visible in the file while leaving multiple of its methods raising `NotImplementedError` suggests the interface is too fat for this client (complements CC206). | `max_unimplemented` (2) |
 | CC604 | Chained attribute or call access | Heuristic / INFO | file | Outermost `ATTRIBUTE` or `CALL` expression chain whose hop count exceeds `max_chain_depth`, as a Law of Demeter indicator. Exempts configurable prefixes (`allowed_prefixes`) and optional multiline fluent chains (`ignore_multiline`). | `max_chain_depth` (3), `allowed_prefixes` (`["self."]`), `ignore_multiline` (true) |
-| CC605 | External access to private member | Heuristic / INFO | file | `ATTRIBUTE` reading or assigning a single-underscore `_name` attribute (not `__dunder__`) on a receiver other than `self`, `cls`, or `super()`. Exempts test files when `exclude_tests` is true and standard protocol names in `allowed_members`. | `exclude_tests` (true), `allowed_members` (`["_asdict", "_replace", "_make"]`) |
+| CC605 | External access to private member | Heuristic / INFO | file | `ATTRIBUTE` reading or assigning a single-underscore `_name` attribute (not `__dunder__`) on a receiver other than `self`, `cls`, or `super()`. Exempts test files when `exclude_tests` is true and standard protocol names in `allowed_members`. Dunder members stay exempt unless a consumer names them in `flagged_dunders`, which escalates to implementation internals such as `__code__`, `__closure__`, and `__globals__` without flagging ordinary protocol surface such as `__name__`. | `exclude_tests` (true), `allowed_members` (`["_asdict", "_replace", "_make"]`), `flagged_dunders` (`[]`) |
+| CC606 | Feature Envy on an external same-type pair | Heuristic / INFO | file | A module-level function, or a method defined outside the class of type `T`, that declares two or more non-variadic parameters annotated with the same non-builtin `T` and reads at least `min_attribute_reads` attributes across those parameters. Reports an indicator, never a proven violation, and suggests moving the comparison or combination onto `T` (an `__eq__` method, a dataclass key field, or a method on `T`). Stays silent for builtin and stdlib value annotations, configurable `ignored_types`, methods defined inside `T` itself, `__eq__`/`__ne__`/`__hash__` and dataclass comparison methods, and pass-through wrappers that read no attributes. Imported types are recognised from annotation text alone; no cross-module resolution is attempted. | `min_attribute_reads` (2), `ignored_types` ([]), `exclude_tests` (true) |
 
 ## CC7xx Dependencies and architecture
 
@@ -200,6 +201,8 @@ any rule in its row lacks violating and clean tests.
 | 6 | RCC-5 | m-3 | CC801–CC805 (design-pattern boundaries; after RCC-4's shared config machinery) |
 | 7 | RCC-6 | m-4 | CC105, CC204–CC206, CC304–CC305, CC503–CC504, CC602–CC603 (maturing heuristics, false-positive budgets measured first) |
 | 8 | RCC-11 | m-4 | CC106, CC108, CC307, CC604–CC605 (readability, signature, and coupling heuristics; false-positive budgets measured first) |
+| 8a | RCC-13, RCC-14 | m-6 | CC606 and the opt-in CC605 `flagged_dunders` escalation (Feature Envy indicators; false-positive budgets measured first) |
+| 8b | RCC-15 | m-6 | none (assessment spike: decide whether a broader Feature Envy detector is honest per file; no rule code ships) |
 | 9 | RCC-7 | m-4 | CC901–CC904 (documentation and comments) |
 | 10 | RCC-12 | m-4 | CC903 extensions, CC905–CC910 (extended TODO, suppression, and docstring accuracy rules) |
 | 11 | RCC-8 | m-5 | CC203, CC502, CC703 (project scope; only when Rude exposes a project-level provider or a separate indexer distribution is decided, decision-1) |
