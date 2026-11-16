@@ -55,7 +55,7 @@ jobs:
         with:
           name: distributions
           path: dist/
-      - uses: pypa/gh-action-pypi-publish@2442bad8f54b06a326f3030ef5e6a7a674118557 # unstable/v1 (v1.14.3 + pip 26.2.2)
+      - uses: pypa/gh-action-pypi-publish@291acab77c1c711c0667da4695ad2f428dcf00f3 # unstable/v1 (v1.14.3 + pip 26.2.2)
         with:
           packages-dir: dist/
 
