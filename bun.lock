@@ -5,7 +5,7 @@
     "": {
       "name": "rude-clean-code-dev",
       "devDependencies": {
-        "@eugeniughelbur/agents-md": "0.1.0",
+        "@eugeniughelbur/agents-md": "0.2.0",
         "backlog.md": "1.55.3",
         "markdownlint-cli2": "0.24.0",
         "skills": "1.7.6",
@@ -13,7 +13,7 @@
     },
   },
   "packages": {
-    "@eugeniughelbur/agents-md": ["@eugeniughelbur/agents-md@0.1.0", "", { "bin": { "agents-md": "bin/agents-md.js" } }, "sha512-ChFcsSShLXXlM82/Z1BbF5jhgwvKyJoNMYvZOAna5OTuWalX9CbiC0Hvx1oopZ3lMEjTvNFnVzrEeWwGnhVI5Q=="],
+    "@eugeniughelbur/agents-md": ["@eugeniughelbur/agents-md@0.2.0", "", { "bin": { "agents-md": "bin/agents-md.js" } }, "sha512-umPp6s/eL/tRyc7p2N3C98qWkRV944bRWoh8wvauhdKDDyAtAmzAcPeMiMzlFGqjrNq6Kq5QazjcCAq05zYsig=="],
 
     "@isaacs/fs-minipass": ["@isaacs/fs-minipass@4.0.1", "", { "dependencies": { "minipass": "^7.0.4" } }, "sha512-wgm9Ehl2jpeqP3zw/7mo3kRHFp5MEDhqAdwy1fTGkHAwnkGOVsgpvQhL8B5n1qlb01jV3n/bI0ZfZp5lWA1k4w=="],
 
